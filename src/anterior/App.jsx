@@ -9,7 +9,7 @@ import {
   RiArrowDownSLine
  } from 'react-icons/ri'
 // Componentes
-import Sidebar from "./components/shared/Sidebar";
+import Sidebar from "./components/Sidebar";
 import Car from "./components/shared/Car"
 import Header from './components/shared/Header';
 import Card from './components/shared/Card';
