@@ -16,7 +16,7 @@ export const ShopLayout: React.FC<Props> = ({ children }) => {
     <main className="min-h-screen">
       <TopMenu />
       <Sidebar />
-      <CategoryHeader/>
+      {/* <CategoryHeader/> */}
 
       <div className="px-0 sm:px-10">
         {children}

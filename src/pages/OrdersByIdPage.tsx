@@ -1,17 +1,21 @@
+//src/pages/OrdersByIdPage.tsx
+
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
- // Cambia por img HTML normal si no usas Next.js
+import { getOrderById } from "@/services/orders.service";
 
 import { getMockOrderById } from "@/mocks/get-mock-order-by-id";
 import { currencyFormat } from "@/utils";
 import { OrderStatus, Title } from "@/components";
+import { OrderStatusButton } from "@/components/orders/OrderStatusButton";
 
 export default function OrdersByIdPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
   const [order, setOrder] = useState<any | null>(null);
 
+  //MOCK INABILITAR CON EL BACKEND Y ACTIVAR EL OTRO-----------------------------------
   useEffect(() => {
     if (!id) return;
 
@@ -24,9 +28,35 @@ export default function OrdersByIdPage() {
     });
   }, [id, navigate]);
 
-  if (!order) return <div>Cargando...</div>;
+  //TERMINA EL MOCK----------------------------------------------------------------
 
-  const address = order.OrderAddress;
+  //BACKEND ACTIVAR--------------------------------------
+  useEffect(() => {
+    const loadOrder = async () => {
+      try {
+        const { ok, order } = await getOrderById(id);
+        if (ok && order) {
+          setOrder(order);
+        }
+      } catch (error) {
+        console.error("No se pudo cargar la orden");
+      }
+    };
+
+    loadOrder();
+  }, [id]);
+
+  //TERMINA-------------------------------------------------
+
+  if (!order) {
+    return (
+      <div className="container mx-auto p-6 text-center">
+        <p>Cargando detalles de la orden...</p>
+      </div>
+    );
+  }
+
+  //const address = order.OrderAddress;
 
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
@@ -64,7 +94,7 @@ export default function OrdersByIdPage() {
           {/* Checkout */}
           <div className="bg-white rounded-xl shadow-xl p-7">
             <h2 className="text-2xl mb-2">Dirección de entrega</h2>
-            <div className="mb-10">
+            {/* <div className="mb-10">
               <p className="text-xl">
                 {address.firstName} {address.lastName}
               </p>
@@ -73,11 +103,13 @@ export default function OrdersByIdPage() {
               <p>{address.postalCode}</p>
               <p>{address.city}, {address.countryId}</p>
               <p>{address.phone}</p>
-            </div>
+            </div> */}
 
             <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
 
-            <h2 className="text-2xl mb-2">Resumen de orden</h2>
+            <h2 className="mb-2 mt-5 text-2xl font-medium text-gray-900">
+              Resumen de orden
+            </h2>
             <div className="grid grid-cols-2">
               <span>No. Productos</span>
               <span className="text-right">
@@ -92,20 +124,42 @@ export default function OrdersByIdPage() {
               </span>
 
               <span>Impuestos (15%)</span>
-              <span className="text-right">
-                {currencyFormat(order.tax)}
-              </span>
+              <span className="text-right">{currencyFormat(order.tax)}</span>
 
-              <span className="mt-5 text-2xl">Total:</span>
-              <span className="mt-5 text-2xl text-right">
+              <span className="mt-5 text-2xl font-medium text-gray-900">
+                Total:
+              </span>
+              <span className="mt-5 text-2xl font-medium text-gray-900 text-right">
                 {currencyFormat(order.total)}
               </span>
             </div>
 
-            <div className="mt-5 mb-2 w-full">
+            {/* <div className="mt-5 mb-2 w-full">
                 <OrderStatus isPaid />
 
+            </div> */}
+
+            {/* Botón de estado */}
+            <div className="w-full py-3 px-4 rounded-md">
+              {/* <OrderStatusButton orderId={order.id} initialIsPaid={order.isPaid} /> */}
+              <OrderStatusButton
+                orderId={order.id}
+                initialIsPaid={order.isPaid}
+                onStatusChange={(newIsPaid) => {
+                  setOrder((prevOrder: any) => ({
+                    ...prevOrder,
+                    isPaid: newIsPaid,
+                  }));
+                }}
+              />
             </div>
+
+            <Link
+              to="/orders"
+              className="btn-primary w-full block text-center text-sm font-light px-6 mx-2 text-blue-600 hover:text-blue-800 underline"
+            >
+              Volver a ordenes
+            </Link>
           </div>
         </div>
       </div>

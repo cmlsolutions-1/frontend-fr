@@ -1,15 +1,23 @@
-import { useEffect, useState } from 'react';
-import { getPaginatedMockProductsWithImages } from '@/mocks/getPaginatedMockProducts';
-import { Pagination, ProductGrid, Title } from '@/components';
+//src/pages/HomePage.tsx
+
+import { useEffect, useState } from "react";
+import { getPaginatedMockProductsWithImages } from "@/mocks/getPaginatedMockProducts";
+import { Pagination, ProductGrid, Title } from "@/components";
+import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSidebar";
+import { getProducts } from "@/services/products.service";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
+  //1- ESTE ES DE DATOS QUEMADOS
+
   useEffect(() => {
     const fetchProducts = async () => {
-      const response = await getPaginatedMockProductsWithImages({ page: currentPage });
+      const response = await getPaginatedMockProductsWithImages({
+        page: currentPage,
+      });
       setProducts(response.products);
       setTotalPages(response.totalPages);
     };
@@ -17,12 +25,45 @@ const HomePage = () => {
     fetchProducts();
   }, [currentPage]);
 
+  //ESTE ES DEL BACKEND----------------------------------------
+
+  //habilitar este y cerrar el otro de los mocks DEL 1-
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getProducts(currentPage); // Llama al servicio
+        setProducts(data.items || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        console.error("Error al traer productos:", error);
+      }
+    };
+
+    fetchProducts();
+  }, [currentPage]);
+
+  //HASTA ACA----------------------------------------
+
   return (
-    <>
-      <Title title="Distribucciones Ferrelectricos Restrepo" subtitle="Todos los productos" className="mb-2" />
-      <ProductGrid products={products} />
-      <Pagination totalPages={totalPages} />
-    </>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <Title
+        title="Distribucciones Ferrelectricos Restrepo"
+        subtitle="Todos los productos"
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Columna izquierda - Filtros */}
+        <div className="md:col-span-1">
+          <CategoryFilterSidebar />
+        </div>
+
+        {/* Columna derecha - Contenido */}
+        <div className="md:col-span-3">
+          <ProductGrid products={products} />
+          <Pagination totalPages={totalPages} />
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,3 +1,5 @@
+//src/pages/cart//ui/ProductsInCart.tsx
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import React from "react";
@@ -5,9 +7,12 @@ import { useCartStore } from "@/store";
 import { ProductImage, QuantitySelector } from "@/components";
 
 export const ProductsInCart = () => {
+  
+  
   const updateProductQuantity = useCartStore(
     (state) => state.updateProductQuantity
   );
+  
   const removeProduct = useCartStore((state) => state.removeProduct);
 
   const [loaded, setLoaded] = useState(false);
@@ -57,7 +62,7 @@ export const ProductsInCart = () => {
 
             <button
               onClick={() => removeProduct(product)}
-              className="underline mt-3"
+              className="underline mt-3 font-medium text-indigo-600 hover:text-indigo-500"
             >
               Remover
             </button>

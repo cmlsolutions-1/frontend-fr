@@ -1,13 +1,31 @@
+//src/pages/CategoriesPage.tsx
+
 import { mockCategories } from "@/mocks/mock-categories";
 import { Link } from "react-router-dom";
 import React from "react";
 import { displayCategory } from "@/utils/formatters";
 import { categoryImages } from "@/utils/categoryImages";
+import { useCategoryStore } from "@/store/useCategoryStore";
 
 export const revalidate = 3600;
 
+//esto se usa sin el backend
+// export const CategoriesPage = () => {
+//   const categories = mockCategories;
+
+
+//esto se usa con el backend
 export const CategoriesPage = () => {
-  const categories = mockCategories;
+  const { categories, loadCategories } = useCategoryStore();
+  
+  React.useEffect(() => {
+    loadCategories(); // Carga desde el backend o usa mock si falla
+  }, []);
+
+  if (categories.length === 0) {
+    return <p>Cargando categorías...</p>;
+  }
+
 
   return (
     <main className="px-10">

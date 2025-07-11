@@ -1,7 +1,15 @@
-export interface Product {
+//src/interfaces/product.interface.ts
+
+export interface ProductImage {
+  id: number;
+  url: string;
+  productId: string;
+}
+
+export type Product ={
   id: string;
   description: string;
-  images: string[];
+  ProductImage?: ProductImage[];
   inStock: number;
   price: number;
   //sizes: Size[];

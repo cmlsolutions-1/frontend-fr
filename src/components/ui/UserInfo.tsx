@@ -1,6 +1,6 @@
 // src/components/ui/UserInfo.tsx
 import React from 'react';
-import { useAuthStore } from '@/store/auth-mock-store';
+import { useAuthStore } from '@/store/auth-store';
 
 export const UserInfo = () => {
   const user = useAuthStore((state) => state.user);

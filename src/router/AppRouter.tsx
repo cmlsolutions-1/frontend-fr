@@ -1,3 +1,5 @@
+//src/router/AppRouter.tsx
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "@/pages/LoginPage";
@@ -12,28 +14,49 @@ import { NotFoundPage } from "@/pages/not-found";
 import ContenedorPage from "@/pages/ContenedorPage";
 import AdminContenedorPage from "@/pages/AdminContenedorPage";
 import ProximosContenedoresPage from "@/pages/ProximosContenedoresPage";
+import PromotionsPage from "@/pages/PromotionsPage";
 
 import OrdersPage from "@/pages/OrdersPage";
 import OrdersByIdPage from "@/pages/OrdersByIdPage";
+import { SearchPage } from "@/pages/SearchPage";
+import CheckoutPage from "@/pages/checkout/page";
+import UserManagement from "@/pages/admin/UserManagement";
+import { OrderConfirmationPage } from '@/pages/orders/[orderId]';
+import { PrivateRoute } from "./PrivateRoute";
+
+
+
+//CheckoutPage
 
 export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/categories/*" element={<ShopLayout><CategoriesPage /></ShopLayout>}/>
-        <Route path="/cart/*" element={<CartPage/>}/>
-        <Route path="/empty" element={<ShopLayout><EmptyPage /></ShopLayout>} />
-        <Route path="/category/:category" element={<ShopLayout><CategoryByPage /></ShopLayout>}/>
-        <Route path="/homePage/*" element={ <ShopLayout><HomePage /></ShopLayout>}/>
-        <Route path="/product/:slug" element={<ShopLayout><ProductPage /></ShopLayout>} />
-        <Route path="/404" element={<NotFoundPage />} />
+
+        {/* Ruta pública */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/contenedor/:id" element={<ShopLayout><ContenedorPage /></ShopLayout>} />
-        <Route path="/admin/contenedor" element={<ShopLayout><AdminContenedorPage /></ShopLayout>} />
-        <Route path="/proximosContenedores" element={<ShopLayout><ProximosContenedoresPage /></ShopLayout>} />
-        <Route path="/orders" element={<ShopLayout><OrdersPage /></ShopLayout>} />
-        <Route path="/orders/:id" element={<ShopLayout><OrdersByIdPage /></ShopLayout>} />
+
+        {/* Rutas protegidas */}
+        <Route path="/categories/*" element={<PrivateRoute><ShopLayout><CategoriesPage /></ShopLayout></PrivateRoute>}/>
+        <Route path="/cart/*" element={<PrivateRoute><CartPage/></PrivateRoute>}/>
+        <Route path="/checkout" element={<PrivateRoute><CheckoutPage/></PrivateRoute>}/>
+        <Route path="/orders/:id" element={<PrivateRoute><OrdersByIdPage/></PrivateRoute>}/>
+        <Route path="/empty" element={<PrivateRoute><ShopLayout><EmptyPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/category/:category" element={<PrivateRoute><ShopLayout><CategoryByPage /></ShopLayout></PrivateRoute>}/>
+        <Route path="/homePage/*" element={ <PrivateRoute><ShopLayout><HomePage /></ShopLayout></PrivateRoute>}/>
+        <Route path="/product/:slug" element={<PrivateRoute><ShopLayout><ProductPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/404" element={<PrivateRoute><NotFoundPage /></PrivateRoute>} />
+        {/* <Route path="/" element={<LoginPage />} /> */}
+        <Route path="/contenedor/:id" element={<PrivateRoute><ShopLayout><ContenedorPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/admin/contenedor" element={<PrivateRoute><ShopLayout><AdminContenedorPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/proximosContenedores" element={<PrivateRoute><ShopLayout><ProximosContenedoresPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/orders" element={<PrivateRoute><ShopLayout><OrdersPage /></ShopLayout></PrivateRoute>} />
+
+        <Route path="/admin/user-management" element={<PrivateRoute><ShopLayout><UserManagement /></ShopLayout></PrivateRoute>} />
+        
+        <Route path="/orders/:id" element={<PrivateRoute><ShopLayout><OrdersByIdPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/promociones" element={<PrivateRoute><ShopLayout><PromotionsPage /></ShopLayout></PrivateRoute>} />
+        <Route path="/search" element={<PrivateRoute><ShopLayout><SearchPage /></ShopLayout></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );

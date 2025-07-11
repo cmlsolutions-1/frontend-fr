@@ -2,12 +2,15 @@
 import { mockProducts } from './mock-products';
 
 export const getMockProductBySlug = async (slug: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Simula carga
+
   const product = mockProducts.find((p) => p.slug === slug);
 
-  if (!product) return null;
+  //if (!product) return null;
 
-  return {
+  /* return {
     ...product,
-    images: product.ProductImage.map((img) => img.url),
-  };
+    images: [product.ProductImage[0]?.url || "default.jpg"],
+  }; */
+  return product; 
 };

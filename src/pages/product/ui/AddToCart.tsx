@@ -1,3 +1,5 @@
+//src/pages/product/ui/AddToCart
+
 import { useState } from "react";
 import { QuantitySelector} from "@/components";
 //import { QuantitySelector, SizeSelector } from "@/components";
@@ -32,7 +34,7 @@ export const AddToCart = ({ product }: Props) => {
       code: product.code,
       master: product.master,
       inner: product.inner,
-      image: product.images[0]
+      image: product.ProductImage?.[0]?.url || '',
     }
 
     addProductToCart(cartProduct);
@@ -63,7 +65,8 @@ export const AddToCart = ({ product }: Props) => {
       <QuantitySelector quantity={quantity} onQuantityChanged={setQuantity} />
 
       {/* Button */}
-      <button onClick={addToCart} className="btn-primary my-5">
+      <button onClick={addToCart} className="btn-primary my-5 flex items-center justify-center rounded-md border border-transparent 
+                bg-[#F2B318] px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]">
         Agregar al carrito
       </button>
     </>

@@ -1,3 +1,5 @@
+//src/store/cart/cart-store.ts
+
 import type { CartProduct } from "@/interfaces";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

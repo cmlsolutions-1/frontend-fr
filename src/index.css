@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html, body, #root {
+    height: 100vh;  /* Cambiado de 100% a 100vh */
+    width: 100vw;   /* Añadido */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Previene scroll horizontal */
+  }
+

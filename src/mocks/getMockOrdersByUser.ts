@@ -1,10 +1,14 @@
 // src/mocks/getMockOrdersByUser.ts
 import { mockOrders } from './mock-orders';
 
+
 export const getMockOrdersByUser = async () => {
-  // Simular una orden filtrada por usuario logueado (en producción usarías userId)
-  return {
-    ok: true,
-    orders: mockOrders,
-  };
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Simula carga
+  const userHasSession = true; // Cambia esto según sesión
+
+  if (!userHasSession) {
+    return { ok: false, orders: [] };
+  }
+
+  return { ok: true, orders: mockOrders };
 };

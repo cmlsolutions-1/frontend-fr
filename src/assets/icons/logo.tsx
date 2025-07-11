@@ -6,7 +6,7 @@ interface LogoProps {
   height?: number;
 }
 
-export const FrLogo: React.FC<LogoProps> = ({ width = 150, height = 50 }) => {
+export const FrLogo: React.FC<LogoProps> = ({ width = 210, height = 70 }) => {
   return (
     <img
       src="/FR.png"
@@ -15,4 +15,3 @@ export const FrLogo: React.FC<LogoProps> = ({ width = 150, height = 50 }) => {
     />
   );
 };
-

@@ -29,7 +29,7 @@ export const Agregar = ({ product }: Props) => {
       code: product.code,
       master: product.master,
       inner: product.inner,
-      image: product.images[0],
+      image: product.ProductImage?.[0]?.url || "",
     };
 
     addProductToCart(cartProduct);
@@ -43,7 +43,8 @@ export const Agregar = ({ product }: Props) => {
       {/* Button */}
       <button
         onClick={agregar}
-        className="w-full bg-[#20B2AA] hover:bg-[#179b95] text-white font-semibold py-2 transition-colors"
+        className="w-full flex items-center justify-center rounded-md border border-transparent 
+        bg-[#F2B318] px-6 py-2 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]"
       >
         Agregar a mi pedido
       </button>

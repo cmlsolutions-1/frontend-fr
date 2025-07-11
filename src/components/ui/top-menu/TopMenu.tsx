@@ -6,6 +6,7 @@ import { useCartStore } from "@/store";
 import { useUIStore } from "@/store";
 import clsx from "clsx";
 import { FrLogo } from "@/assets/icons/logo";
+import { ProductSearchDropdown } from "@/components/ui/ProductSearchDropdown";
 import { UserInfo } from "../UserInfo";
 
 export const TopMenu = () => {
@@ -28,17 +29,18 @@ export const TopMenu = () => {
             <FrLogo />
           </Link>
         </div>
-        <div className="flex-1 mx-8">
-          <div className="relative">
+        <div className="flex-1 mx-8 flex justify-center">
+          <div className="relative w-full max-w-[600px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <IoSearchOutline />
             </div>
-            <input
-              type="text"
-              className="block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#0099CC] focus:border-[#0099CC] text-sm"
-              placeholder="Buscar por código o nombre de producto"
-            />
+            <ProductSearchDropdown />
           </div>
+        </div>
+        <div className="flex items-center space-x-10">
+          <UserInfo />
+          {/* Barra separadora */}
+          <div className="h-6 border-l border-gray-400 mx-4"></div>
         </div>
       </div>
 

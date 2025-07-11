@@ -17,6 +17,8 @@ export const ProductPage = () => {
   const navigate = useNavigate();
 
   const [product, setProduct] = useState<Product | null>(null);
+  //const images = product.ProductImage.map(img => img.url);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -30,6 +32,7 @@ export const ProductPage = () => {
       }
 
       setProduct(fetchedProduct);
+      setLoading(false);
     };
 
     fetchProduct();
@@ -43,12 +46,12 @@ export const ProductPage = () => {
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow
           title={product.title}
-          images={product.images}
+          images={product.ProductImage.map((img) => img.url)}
           className="block md:hidden"
         />
         <ProductSlideshow
           title={product.title}
-          images={product.images}
+          images={product.ProductImage.map((img) => img.url)}
           className="hidden md:block"
         />
       </div>

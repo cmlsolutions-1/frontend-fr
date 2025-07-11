@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import clsx from 'clsx';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import clsx from "clsx";
 import {
   IoCloseOutline,
   IoLogInOutline,
@@ -10,21 +10,30 @@ import {
   IoSearchOutline,
   IoShirtOutline,
   IoTicketOutline,
-  IoLogoBuffer
-} from 'react-icons/io5';
+  IoLogoBuffer,
+} from "react-icons/io5";
+import { BiSolidOffer } from "react-icons/bi";
 
-import { useAuthStore } from '@/store/auth-mock-store';
-import { useUIStore } from '@/store/ui/ui-store';
-
-
+import { useAuthStore } from "@/store/auth-store";
+import { useUIStore } from "@/store/ui/ui-store";
 
 export const Sidebar = () => {
   const isSideMenuOpen = useUIStore((state) => state.isSideMenuOpen);
   const closeMenu = useUIStore((state) => state.closeSideMenu);
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state) => state.user);
+
+  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
+
   const isAuthenticated = !!user;
-  const isAdmin = user?.role === 'admin';
-  const logout = useAuthStore(state => state.logout);
+  const isAdmin = user?.role === "admin";
+  //const role = user?.role;
+
+  const handleLogout = () => {
+    logout(); // Limpia el estado
+    closeMenu(); // Cierra el menú
+    navigate("/"); // Redirige al login
+  };
 
   return (
     <div>
@@ -56,19 +65,9 @@ export const Sidebar = () => {
           onClick={() => closeMenu()}
         />
 
-        {/* Input */}
-        <div className="relative mt-14">
-          <IoSearchOutline size={20} className="absolute top-2 left-2" />
-          <input
-            type="text"
-            placeholder="Buscar"
-            className="w-full bg-gray-50 rounded pl-10 py-1 pr-10 border-b-2 text-xl border-gray-200 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
         {/* Menú */}
 
-        {!isAuthenticated && (
+        {isAuthenticated && (
           <>
             <Link
               to="/profile"
@@ -90,10 +89,11 @@ export const Sidebar = () => {
           </>
         )}
 
-        {!isAuthenticated && (
+        {isAuthenticated && (
           <button
             className="flex w-full items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            onClick={() => logout()}
+            //onClick={() => logout()}
+            onClick={handleLogout}
           >
             <IoLogOutOutline size={30} />
             <span className="ml-3 text-xl">Salir</span>
@@ -102,7 +102,7 @@ export const Sidebar = () => {
 
         {!isAuthenticated && (
           <Link
-            to="/auth/login"
+            to="/"
             className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
             onClick={() => closeMenu()}
           >
@@ -111,7 +111,7 @@ export const Sidebar = () => {
           </Link>
         )}
 
-        {!isAdmin && (
+        {isAdmin && (
           <>
             {/* Line Separator */}
             <div className="w-full h-px bg-gray-200 my-10" />
@@ -144,12 +144,17 @@ export const Sidebar = () => {
             </Link>
 
             <Link
-              to="/admin/users"
+              to="/promociones"
               onClick={() => closeMenu()}
               className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
             >
+              <BiSolidOffer size={30} />
+              <span className="ml-3 text-xl">Gestion Promociones</span>
+            </Link>
+
+            <Link to="/admin/user-management" onClick={() => closeMenu()} className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />
-              <span className="ml-3 text-xl">Usuarios</span>
+              <span className="ml-3 text-xl">Gestión de Usuarios</span>
             </Link>
           </>
         )}

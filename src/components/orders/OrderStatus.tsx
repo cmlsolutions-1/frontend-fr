@@ -1,3 +1,5 @@
+//src/components/orders/OrderStatus.tsx
+
 import clsx from "clsx";
 import { IoCardOutline } from "react-icons/io5";
 
@@ -18,7 +20,7 @@ export const OrderStatus = ({ isPaid }: Props) => {
     >
       <IoCardOutline size={30} />
       {/* <span className="mx-2">Pendiente de pago</span> */}
-      <span className="mx-2">{isPaid ? "Pagada" : "No pagada"}</span>
+      <span className="mx-2">{isPaid ? "Gestionada" : "No Gestionada"}</span>
     </div>
   );
 };

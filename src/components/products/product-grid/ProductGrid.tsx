@@ -1,3 +1,5 @@
+//src/components/products/product-grid/ProductGrid.tsx
+
 import { Product } from "@/interfaces";
 import { ProductGridItem } from "./ProductGridItem";
 
@@ -7,9 +9,9 @@ interface Props {
 
 export const ProductGrid = ({ products }: Props) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 mb-10">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
       {products.map((product) => (
-        <ProductGridItem key={product.slug} product={product} />
+        <ProductGridItem key={product.id} product={product} />
       ))}
     </div>
   );

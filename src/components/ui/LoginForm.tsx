@@ -1,66 +1,117 @@
-import React, { useState } from 'react';
-import { IoInformationOutline } from 'react-icons/io5';
-import { useAuthStore } from '@/store/auth-mock-store';
-import { Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
+//src/components/ui/LoginForm.tsx
+
+import React, { useState } from "react";
+import { IoInformationOutline } from "react-icons/io5";
+import { useAuthStore } from "@/store/auth-store";
+import { Link, useNavigate } from "react-router-dom";
+import { User, Lock } from "lucide-react";
 
 export const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate(); // Inicializa useNavigate
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async  (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(email, password);
+    const success = await login(email, password);
 
     if (!success) {
       setError(true);
     } else {
-      console.log('Login exitoso, redirigiendo...');
-      navigate('/homePage'); // Redirige a la página de inicio
+      console.log("Login exitoso, redirigiendo...");
+      navigate("/homePage"); // Redirige a la página de inicio
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col">
-      <label htmlFor="email">Correo electrónico</label>
-      <input
-        className="px-5 py-2 border bg-gray-200 rounded mb-5"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <label htmlFor="password">Contraseña</label>
-      <input
-        className="px-5 py-2 border bg-gray-200 rounded mb-5"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+    <div className="flex flex-col md:flex-row h-screen w-screen bg-white">
+      {/* Imagen izquierda */}
+      <div className="relative w-full md:w-3/4 h-64 md:h-auto">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/imgsLogin/3.jpg)" }}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-5" />
 
-      {error && (
-        <div className="flex items-center mb-4 text-red-500 text-sm">
-          <IoInformationOutline className="mr-2 h-5 w-5" />
-          Credenciales incorrectas
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 md:px-16 text-white text-center">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">¡Bienvenido!</h1>
+          <p className="text-sm md:text-xl max-w-md">
+            Inicia sesión para acceder a tu cuenta.
+          </p>
         </div>
-      )}
-
-      <button type="submit" className="btn-primary mb-4">
-        Ingresar
-      </button>
-
-      <div className="flex items-center my-5">
-        <div className="flex-1 border-t border-gray-300" />
-        <span className="mx-2 text-gray-600">O</span>
-        <div className="flex-1 border-t border-gray-300" />
       </div>
 
-      <Link to="/auth/new-account" className="btn-secondary text-center">
-        Crear una nueva cuenta
-      </Link>
-    </form>
-  );
+      {/* Derecha - Formulario */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">
+              Iniciar Sesión
+            </h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Correo electrónico"
+                className="pl-10 h-12 bg-white border border-gray-300 rounded-full w-full"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña"
+                className="pl-10 h-12 bg-white border border-gray-300 rounded-full w-full"
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="flex items-center text-sm text-red-500">
+                <IoInformationOutline className="mr-2 h-5 w-5" />
+                Credenciales incorrectas
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full h-12 bg-[#F2B318] hover:bg-[#F4C048] text-white rounded-full text-lg font-medium"
+            >
+              Ingresar
+            </button>
+
+            {/* Logo de la empresa */}
+            <div className="mt-4 text-center">
+              <img
+                src="/FR.png" // Reemplaza con la ruta correcta del logo
+                alt="Logo Emrapess"
+                className="max-w-full h-12 md:h-16 mx-auto"
+              />
+            </div>
+
+            {/* <div className="text-center">
+              <span className="text-gray-600">¿Nuevo aquí? </span>
+              <Link
+                to="/auth/new-account"
+                className="text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Crear una cuenta
+              </Link>
+            </div> */}
+          </form>
+        </div>
+      </div>
+    </div>
+  ); // aca
 };

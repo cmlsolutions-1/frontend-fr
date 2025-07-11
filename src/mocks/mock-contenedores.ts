@@ -51,7 +51,7 @@ export const mockContenedores = [
       { product: {
       id: '06848',
       title: 'PINZA VOLTIAMPERIMETRICA MINI',
-      slug: 'caja-fuerte',
+      slug: 'pinza-volte-mini',
       description: 'PINZA VOLTIAMPERIMETRICA MINI',
       price: 32700,
       inStock: 5,

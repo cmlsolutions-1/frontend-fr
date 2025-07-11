@@ -18,8 +18,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'cerrajeria',
       ProductImage: [
-        { id: 1, url: '00526.png' },
-        { id: 2, url: '00526-1.png' },
+        { id: 1, url: '00526.png', productId: '00526' },
+        { id: 2, url: '00526-1.png', productId: '00526' },
       ]
     },
     {
@@ -36,8 +36,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'cadenas-guayas',
       ProductImage: [
-        { id: 1, url: '04323.png' },
-        { id: 2, url: '04323-1.png' },
+        { id: 1, url: '04323.png',productId: '04323' },
+        { id: 2, url: '04323-1.png' ,productId: '04323' },
       ]
     },
     {
@@ -54,14 +54,14 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'cerrajeria',
       ProductImage: [
-        { id: 1, url: '06754.png' },
-        { id: 2, url: '06754-1.png' },
+        { id: 1, url: '06754.png', productId: '06754' },
+        { id: 2, url: '06754-1.png', productId: '06754' },
       ]
     },
     {
       id: '06848',
       title: 'PINZA VOLTIAMPERIMETRICA MINI',
-      slug: 'caja-fuerte',
+      slug: 'pinza-volte-mini',
       description: 'PINZA VOLTIAMPERIMETRICA MINI',
       price: 32700,
       inStock: 5,
@@ -72,8 +72,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'electronica',
       ProductImage: [
-        { id: 1, url: '06848.png' },
-        { id: 2, url: '06848-1.png' },
+        { id: 1, url: '06848.png', productId: '06848' },
+        { id: 2, url: '06848-1.png', productId: '06848' },
       ]
     },
     {
@@ -90,14 +90,14 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'electronica',
       ProductImage: [
-        { id: 1, url: '08355.png' },
-        { id: 2, url: '08355-1.png' },
+        { id: 1, url: '08355.png', productId: '08355' },
+        { id: 2, url: '08355-1.png', productId: '08355' },
       ]
     },
     {
       id: '11043',
       title: 'MALACATE CON MANIVELA  800 LBS  C/GUAYA IMPORTADO ',
-      slug: 'cadenas-guayas',
+      slug: 'malacate-manivela-800',
       description: 'MALACATE CON MANIVELA  800 LBS  C/GUAYA IMPORTADO ',
       price: 216000,
       inStock: 5,
@@ -108,8 +108,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'cadenas-guayas',
       ProductImage: [
-        { id: 1, url: '11043.png' },
-        { id: 2, url: '11043-1.png' },
+        { id: 1, url: '11043.png', productId: '11043' },
+        { id: 2, url: '11043-1.png', productId: '11043' },
       ]
     },
     {
@@ -126,8 +126,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'herramienta_electrica',
       ProductImage: [
-        { id: 1, url: '11236.png' },
-        { id: 2, url: '11236-1.png' },
+        { id: 1, url: '11236.png', productId: '11236' },
+        { id: 2, url: '11236-1.png', productId: '11236' },
       ]
     },
     {
@@ -144,8 +144,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'herrajes',
       ProductImage: [
-        { id: 1, url: '12466.png' },
-        { id: 2, url: '12466-1.png' },
+        { id: 1, url: '12466.png', productId: '12466' },
+        { id: 2, url: '12466-1.png', productId: '12466' },
       ]
     },
     {
@@ -162,8 +162,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'herrajes',
       ProductImage: [
-        { id: 1, url: '12467.png' },
-        { id: 2, url: '12467-1.png' },
+        { id: 1, url: '12467.png', productId:'12467' },
+        { id: 2, url: '12467-1.png', productId:'12467' },
       ]
     },
     {
@@ -180,8 +180,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'escaleras',
       ProductImage: [
-        { id: 1, url: '12654.png' },
-        { id: 2, url: '12654-1.png' },
+        { id: 1, url: '12654.png', productId: '12654' },
+        { id: 2, url: '12654-1.png', productId: '12654' },
       ]
     },
     {
@@ -198,8 +198,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'escaleras',
       ProductImage: [
-        { id: 1, url: '12655.png' },
-        { id: 2, url: '12655-1.png' },
+        { id: 1, url: '12655.png', productId: '12655' },
+        { id: 2, url: '12655-1.png', productId: '12655' },
       ]
     },
     {
@@ -216,8 +216,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'herramienta_electrica',
       ProductImage: [
-        { id: 1, url: '13045.png' },
-        { id: 2, url: '13045-1.png' },
+        { id: 1, url: '13045.png', productId: '13045' },
+        { id: 2, url: '13045-1.png', productId: '13045' },
       ]
     },
     {
@@ -234,8 +234,8 @@ export const mockProducts = [
       inner: 1,
       categoryId: 'plomeria',
       ProductImage: [
-        { id: 1, url: '13235.png' },
-        { id: 2, url: '13235-1.png' },
+        { id: 1, url: '13235.png', productId: '13235' },
+        { id: 2, url: '13235-1.png', productId: '13235' },
       ]
     },
     
