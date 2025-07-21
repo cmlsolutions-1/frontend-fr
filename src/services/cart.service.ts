@@ -4,7 +4,7 @@ import { CartItem } from "@/interfaces/cart.interface";
 import { mockProducts } from "@/mocks/mock-products";
 
 
-const API_URL = "http://localhost:3000/api/cart";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const getCartItems = async (): Promise<CartItem[]> => {
   try {

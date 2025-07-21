@@ -1,7 +1,7 @@
 // src/services/user.service.ts
 import type { Cliente, Vendedor } from "@/interfaces";
 
-const API_URL = "http://localhost:3000/api"; 
+const API_URL = import.meta.env.VITE_API_URL;
 
 const mockedUsers = [
   {
@@ -45,7 +45,9 @@ export const loginRequest = async (
   password: string
 ): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_URL}/login`, {
+
+    console.log("Variable: " + API_URL)
+    const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

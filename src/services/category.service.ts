@@ -2,11 +2,11 @@
 import { mockCategories } from "@/mocks/mock-categories";
 import type { Category } from "@/interfaces/category.interface";
 
-const API_URL = "http://localhost:3000/api/categories"; // Cambia esto por la URL real del backend
+const API_URL = import.meta.env.VITE_API_URL; // Cambia esto por la URL real del backend
 
 export const getCategories = async (): Promise<Category[]> => {
   try {
-    const response = await fetch(API_URL);
+    const response = await fetch(`${API_URL}/category/category`);
     
     if (!response.ok) {
       console.warn("Usando datos quemados. No se pudo conectar al backend.");
@@ -23,7 +23,7 @@ export const getCategories = async (): Promise<Category[]> => {
 
 export const getCategoryById = async (id: string): Promise<Category | null> => {
   try {
-    const response = await fetch(`${API_URL}/${id}`);
+    const response = await fetch(`${API_URL}/category/subcategories/${id}`);
     
     if (!response.ok) {
       throw new Error("Categoría no encontrada");

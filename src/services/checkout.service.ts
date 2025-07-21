@@ -1,11 +1,11 @@
 // src/services/checkout.service.ts
 import type { Order } from "@/interfaces/order.interface";
 
-const API_URL = "http://localhost:3000/api/orders"; // Cambia por la URL real del backend
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const createOrder = async (productsToOrder: any[], address: any) => {
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}/order/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export const createOrder = async (productsToOrder: any[], address: any) => {
 
 export const getOrderById = async (id: string): Promise<{ ok: boolean; order?: Order }> => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}/order/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

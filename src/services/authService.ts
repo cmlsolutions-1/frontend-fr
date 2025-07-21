@@ -9,8 +9,10 @@ export interface LoginResponse {
   };
 }
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export async function loginRequest(email: string, password: string): Promise<LoginResponse> {
-  const response = await fetch("https://direccionapi.com/api/login", {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
