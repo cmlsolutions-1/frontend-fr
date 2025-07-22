@@ -1,20 +1,30 @@
 // src/interfaces/user.interface.ts
+export type Role = "Admin" | "SalesPerson" | "Client";
+
 export interface User {
-  id: string; // UUID
+  id: string;
   name: string;
   lastName: string;
-  email: string[]; // Array de correos electrónicos
-  phone: Phone[];
-  address: Address[];
   password: string;
-  role: "admin" | "cliente" | "vendedor";
-  isPrincipal: boolean;
-  isActive: boolean;
+  email: Email[];
+  phone: Phone[];
+  addres: string[];
+  city: string; // solo el ID (como espera el backend)
+  role: Role;
+  priceCategory: string; // ID de categoría de precio
+  salesPerson?: string;  // ID del vendedor si es cliente
+  clients?: string[];    // IDs de clientes si es vendedor
+}
+
+export interface Email {
+  EmailAddres: string;
+  IsPrincipal: boolean;
 }
 
 export interface Phone {
-  numberPhone: string;
-  indicative: string;
+  NumberPhone: string;
+  IsPrincipal: boolean;
+  Indicative: string;
 }
 
 export interface Address {
@@ -33,19 +43,25 @@ export interface Country {
   name: string;
 }
 
-export interface Vendedor extends User {
-  apellido: string;
-  telefono: string;
-  territorio: string;
-  comision: number;
-  ventasDelMes: number;
-  estado: "activo" | "inactivo";
-  fechaIngreso: string;
+export interface Vendedor {
+  id?: string;
+  name: string;
+  lastName: string;
+  email: { EmailAddres: string; IsPrincipal: boolean }[];
+  phone: { NumberPhone: string; Indicative: string; IsPrincipal: boolean }[];
+  addres: string[];
+  city: string;
+  password: string;
+  role: string;
+  priceCategory: string;
+  estado?: string;
+  salesPerson: string;
+  clients: string[];
 }
+
 
 export interface Cliente extends User {
   tipoCliente: "VIP" | "SAS";
-  vendedorId: string;
   fechaRegistro: string;
   estado: "activo" | "inactivo";
 }

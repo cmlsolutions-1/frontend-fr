@@ -18,7 +18,7 @@ export const UserInfo = () => {
               Hola, <span className="font-bold">{user?.name || 'Invitado'}</span>
             </p>
             <div className="bg-[#F2B318] text-white text-xs px-3 py-0.5 rounded-full mt-1">
-              {user?.role === 'admin' ? 'Administrador' : 'Empresario'}
+              {user?.role === 'Admin' ? 'Administrador': user?.role === 'SalesPerson' ? 'Vendedor': 'Cliente'}
             </div>
           </div>
         </div>

@@ -23,8 +23,12 @@ export default function VendedoresManager({
 }: VendedoresManagerProps) {
   const [vendedores, setLocalVendedores] = useState<Vendedor[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [vendedorEditando, setVendedorEditando] = useState<Vendedor | null>(null);
-  const [selectedVendedorId, setSelectedVendedorId] = useState<string | null>(null);
+  const [vendedorEditando, setVendedorEditando] = useState<Vendedor | null>(
+    null
+  );
+  const [selectedVendedorId, setSelectedVendedorId] = useState<string | null>(
+    null
+  );
 
   // Cargar vendedores desde localStorage al iniciar
   useEffect(() => {
@@ -50,15 +54,20 @@ export default function VendedoresManager({
   ) => {
     try {
       if (vendedorEditando) {
-        const vendedorActualizado = await updateVendedor(vendedorEditando.id, data);
+        const vendedorActualizado = await updateVendedor(
+          vendedorEditando.id,
+          data
+        );
         setLocalVendedores((prev) =>
-          prev.map((v) => (v.id === vendedorActualizado.id ? vendedorActualizado : v))
+          prev.map((v) =>
+            v.id === vendedorActualizado.id ? vendedorActualizado : v
+          )
         );
       } else {
         const nuevo = await createVendedor(data);
         setLocalVendedores((prev) => [...prev, nuevo]);
       }
-  
+
       setVendedorEditando(null);
       setModalOpen(false);
     } catch (error) {
@@ -73,7 +82,6 @@ export default function VendedoresManager({
     };
     fetchData();
   }, []);
-  
 
   const eliminarVendedor = (id: string) => {
     if (confirm("¿Estás seguro de eliminar este vendedor?")) {
@@ -82,17 +90,19 @@ export default function VendedoresManager({
   };
 
   const vendedoresFiltrados = vendedores.filter((v) =>
-    `${v.name} ${v.apellido}`.toLowerCase().includes(searchTerm.toLowerCase())
+    `${v.name}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Gestión de Vendedores</h2>
-        <Button onClick={() => {
-          setVendedorEditando(null);
-          setModalOpen(true);
-        }}>
+        <Button
+          onClick={() => {
+            setVendedorEditando(null);
+            setModalOpen(true);
+          }}
+        >
           Nuevo Vendedor
         </Button>
       </div>
@@ -105,51 +115,58 @@ export default function VendedoresManager({
             <th>Nombre</th>
             <th>Email</th>
             <th>Teléfono</th>
-            <th>Territorio</th>
-            <th>Comisión</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {vendedoresFiltrados.length > 0 ? (
-            vendedoresFiltrados.map((v) => (
-              <tr key={v.id} className="text-center border-t">
-                <td>{v.id}</td>
-                <td>{v.name} {v.apellido}</td>
-                <td>{v.email}</td>
-                <td>{v.telefono}</td>
-                <td>{v.territorio}</td>
-                <td>{v.comision}%</td>
-                <td>{v.estado}</td>
-                <td className="space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setVendedorEditando(v);
-                      setModalOpen(true);
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => eliminarVendedor(v.id)}
-                  >
-                    Eliminar
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setSelectedVendedorId(v.id)}
-                  >
-                    Ver Clientes
-                  </Button>
-                </td>
-              </tr>
-            ))
+            vendedoresFiltrados.map((v) => {
+              const emailPrincipal =
+                v.email.find((e) => e.IsPrincipal)?.EmailAddres || "—";
+              const telefonoPrincipal = v.phone.find((p) => p.IsPrincipal);
+              const telefonoStr = telefonoPrincipal
+                ? `${telefonoPrincipal.Indicative} ${telefonoPrincipal.NumberPhone}`
+                : "—";
+
+              return (
+                <tr key={v.id} className="text-center border-t">
+                  <td>{v.id}</td>
+                  <td>
+                    {v.name} {v.lastName}
+                  </td>
+                  <td>{emailPrincipal}</td>
+                  <td>{telefonoStr}</td>
+                  <td>{v.estado || "—"}</td>
+                  <td className="space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setVendedorEditando(v);
+                        setModalOpen(true);
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => eliminarVendedor(v.id)}
+                    >
+                      Eliminar
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setSelectedVendedorId(v.id)}
+                    >
+                      Ver Clientes
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
-              <td colSpan={8} className="text-center py-4 text-gray-500">
+              <td colSpan={6} className="text-center py-4 text-gray-500">
                 No hay vendedores registrados.
               </td>
             </tr>

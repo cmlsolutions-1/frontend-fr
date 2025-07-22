@@ -26,7 +26,7 @@ export const Sidebar = () => {
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "Admin";
   //const role = user?.role;
 
   const handleLogout = () => {

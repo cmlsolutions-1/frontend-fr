@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'user';
+export type Role = 'Admin' | 'SalesPerson' | 'Client';
 
 export interface User {
   id: string;
@@ -14,13 +14,13 @@ export const mockUsers: User[] = [
     email: 'admin@example.com',
     password: '123456',
     name: 'Admin User',
-    role: 'admin',
+    role: 'Admin',
   },
   {
     id: '2',
     email: 'user@example.com',
     password: '123456',
     name: 'Regular User',
-    role: 'user',
+    role: 'Client',
   },
 ];
