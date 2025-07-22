@@ -29,44 +29,8 @@ const UserManagement: React.FC = () => {
 
       if (data.length === 0) {
         const defaultVendedores: Vendedor[] = [
-          {
-            id: "1",
-            name: "Ana",
-            lastName: "Martínez",
-            apellido: "Martínez",
-            email: ["ana.martinez@ferrelectricos.com"],
-            phone: [],
-            telefono: "3001234567",
-            address: [],
-            territorio: "Zona Norte",
-            password: "",
-            role: "vendedor",
-            isPrincipal: true,
-            isActive: true,
-            comision: 5.5,
-            ventasDelMes: 15,
-            estado: "activo",
-            fechaIngreso: "2023-06-15",
-          },
-          {
-            id: "2",
-            name: "Luis",
-            lastName: "Hernández",
-            apellido: "Hernández",
-            email: ["luis.hernandez@ferrelectricos.com"],
-            phone: [],
-            telefono: "3107654321",
-            address: [],
-            territorio: "Zona Sur",
-            password: "",
-            role: "vendedor",
-            isPrincipal: true,
-            isActive: true,
-            comision: 6.0,
-            ventasDelMes: 0,
-            estado: "activo",
-            fechaIngreso: "2023-08-20",
-          },
+          
+            
         ];
         setVendedores(defaultVendedores);
         localStorage.setItem("vendedores", JSON.stringify(defaultVendedores));
@@ -183,8 +147,8 @@ const UserManagement: React.FC = () => {
       case "vendedores":
         return (
           <VendedoresManager
-            searchTerm={searchTerm}
-            setVendedores={setVendedores} // Prop para actualizar la lista de vendedores
+            // searchTerm={searchTerm}
+            // setVendedores={setVendedores} // Prop para actualizar la lista de vendedores
           />
         );
       default:

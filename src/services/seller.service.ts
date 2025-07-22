@@ -3,15 +3,44 @@ import type { Vendedor } from "@/interfaces/user.interface";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Obtener todos los vendedores
+//obtener todos los vendedores
 export const getVendedores = async (): Promise<Vendedor[]> => {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}/users/salesPerson`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
     if (!res.ok) throw new Error("Error al obtener vendedores");
-    return await res.json();
+
+    const data = await res.json();
+
+    // Mapear los datos del backend al modelo del frontend
+    return data.map((item: any): Vendedor => ({
+      id: item.id,
+      name: item.name,
+      lastName: item.lastName,
+      password: "", // ⚠️ No viene del backend, pero es obligatorio en la interfaz
+      email: item.emails?.map((e: any) => ({
+        EmailAddres: e.emailAddress,
+        IsPrincipal: e.isPrincipal,
+      })) || [],
+      phone: item.phones?.map((p: any) => ({
+        NumberPhone: p.numberPhone,
+        Indicative: p.indicative,
+        IsPrincipal: p.isPrincipal,
+      })) || [],
+      addres: Array.isArray(item.address) ? item.address : [],
+      city: item.cityId,
+      role: item.role,
+      priceCategory: "", // ⚠️ No viene en el backend
+      estado: item.state === "Active" ? "activo" : "inactivo",
+      salesPerson: "", // Asumiendo que no aplica aquí
+      clients: item.extra?.clients || [],
+    }));
   } catch (error) {
     console.error("Fallo al obtener vendedores:", error);
-    return JSON.parse(localStorage.getItem("vendedores") || "[]");
+    return [];
   }
 };
 
@@ -21,7 +50,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   const finalId = vendedor.id && vendedor.id.trim() !== "" 
     ? vendedor.id 
     : crypto.randomUUID();
-    
+
   const payload = {
     id: finalId,
     name: vendedor.name,

@@ -1,206 +1,191 @@
 // src/components/userGestion/VendedoresManager.tsx
-import { useEffect, useState } from "react";
-import { Vendedor } from "@/components/userGestion/types";
+import { useState, useEffect } from "react";
 import VendedorModal from "./VendedorModal";
 import { Button } from "@/components/ui/Button";
-import ClientesManager from "./ClientesManager";
-import {
-  createVendedor,
-  updateVendedor,
-  deleteVendedor,
-} from "@/services/seller.service";
-
 import { getVendedores } from "@/services/seller.service";
+import type { Vendedor } from "@/interfaces/user.interface";
 
-interface VendedoresManagerProps {
-  searchTerm: string;
-  setVendedores: (vendedores: Vendedor[]) => void;
-}
+export default function VendedoresManager() {
+  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingVendedor, setEditingVendedor] = useState<Vendedor | null>(null);
 
-export default function VendedoresManager({
-  searchTerm,
-  setVendedores,
-}: VendedoresManagerProps) {
-  const [vendedores, setLocalVendedores] = useState<Vendedor[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [vendedorEditando, setVendedorEditando] = useState<Vendedor | null>(
-    null
-  );
-  const [selectedVendedorId, setSelectedVendedorId] = useState<string | null>(
-    null
-  );
-
-  // Cargar vendedores desde localStorage al iniciar
+  // Cargar vendedores al montar el componente
   useEffect(() => {
-    const datosGuardados = localStorage.getItem("vendedores");
-    if (datosGuardados) {
+    const loadVendedores = async () => {
       try {
-        const parsed = JSON.parse(datosGuardados);
-        if (Array.isArray(parsed)) setLocalVendedores(parsed);
-      } catch (error) {
-        console.error("Error al leer vendedores del localStorage:", error);
+        const data = await getVendedores();
+        setVendedores(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error al cargar vendedores:", err);
+        setError("No se pudieron cargar los vendedores. Intenta nuevamente.");
+        setVendedores([]);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, []);
-
-  // Guardar vendedores en localStorage y propagar al padre
-  useEffect(() => {
-    localStorage.setItem("vendedores", JSON.stringify(vendedores));
-    setVendedores(vendedores);
-  }, [vendedores, setVendedores]);
-
-  const agregarOActualizarVendedor = async (
-    data: Omit<Vendedor, "fechaIngreso" | "ventasDelMes">
-  ) => {
-    try {
-      if (vendedorEditando) {
-        const vendedorActualizado = await updateVendedor(
-          vendedorEditando.id,
-          data
-        );
-        setLocalVendedores((prev) =>
-          prev.map((v) =>
-            v.id === vendedorActualizado.id ? vendedorActualizado : v
-          )
-        );
-      } else {
-        const nuevo = await createVendedor(data);
-        setLocalVendedores((prev) => [...prev, nuevo]);
-      }
-
-      setVendedorEditando(null);
-      setModalOpen(false);
-    } catch (error) {
-      console.error("Error al guardar vendedor:", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getVendedores();
-      setLocalVendedores(data);
     };
-    fetchData();
+
+    loadVendedores();
   }, []);
 
-  const eliminarVendedor = (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este vendedor?")) {
-      setLocalVendedores((prev) => prev.filter((v) => v.id !== id));
-    }
+  const getPrimaryEmail = (vendedor: Vendedor) => {
+    return Array.isArray(vendedor.email) && vendedor.email.length > 0
+      ? vendedor.email[0].EmailAddres.trim() || "No especificado"
+      : "Sin email";
   };
 
-  const vendedoresFiltrados = vendedores.filter((v) =>
-    `${v.name}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getPrimaryPhone = (vendedor: Vendedor) => {
+    const phone = vendedor.phone?.[0];
+    if (!phone) return "Sin teléfono";
+    return `${phone.Indicative} ${phone.NumberPhone}`.trim().length > 5
+      ? `${phone.Indicative} ${phone.NumberPhone}`
+      : "No especificado";
+  };
+
+  // Función para abrir modal de creación
+  const handleCreate = () => {
+    setEditingVendedor(null);
+    setIsModalOpen(true);
+  };
+
+  // Función para abrir modal de edición
+  const handleEdit = (vendedor: Vendedor) => {
+    setEditingVendedor(vendedor);
+    setIsModalOpen(true);
+  };
+
+  // Función que se llama después de guardar (crear o editar)
+  const handleSave = async (vendedorGuardado: Vendedor) => {
+    if (editingVendedor) {
+      // Actualizar en la lista
+      setVendedores((prev) =>
+        prev.map((v) => (v.id === vendedorGuardado.id ? vendedorGuardado : v))
+      );
+    } else {
+      // Agregar nuevo vendedor
+      setVendedores((prev) => [...prev, vendedorGuardado]);
+    }
+    setIsModalOpen(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Cargando vendedores...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-700 p-4 rounded-md mb-4">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Gestión de Vendedores</h2>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Gestión de Vendedores
+        </h1>
         <Button
-          onClick={() => {
-            setVendedorEditando(null);
-            setModalOpen(true);
-          }}
+          onClick={handleCreate}
+          className="bg-green-600 hover:bg-green-700"
         >
-          Nuevo Vendedor
+          + Nuevo Vendedor
         </Button>
       </div>
 
       {/* Tabla de vendedores */}
-      <table className="w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {vendedoresFiltrados.length > 0 ? (
-            vendedoresFiltrados.map((v) => {
-              const emailPrincipal =
-                v.email.find((e) => e.IsPrincipal)?.EmailAddres || "—";
-              const telefonoPrincipal = v.phone.find((p) => p.IsPrincipal);
-              const telefonoStr = telefonoPrincipal
-                ? `${telefonoPrincipal.Indicative} ${telefonoPrincipal.NumberPhone}`
-                : "—";
-
-              return (
-                <tr key={v.id} className="text-center border-t">
-                  <td>{v.id}</td>
-                  <td>
-                    {v.name} {v.lastName}
+      {vendedores.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">
+          No hay vendedores registrados.
+        </p>
+      ) : (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Nombre
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Teléfono
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Ciudad
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {vendedores.map((vendedor) => (
+                <tr key={vendedor.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {vendedor.id.slice(0, 8)}...
                   </td>
-                  <td>{emailPrincipal}</td>
-                  <td>{telefonoStr}</td>
-                  <td>{v.estado || "—"}</td>
-                  <td className="space-x-2">
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {vendedor.name} {vendedor.lastName}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {getPrimaryEmail(vendedor)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {getPrimaryPhone(vendedor)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {vendedor.city || "Desconocida"}
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        vendedor.estado === "activo"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {vendedor.estado?.charAt(0).toUpperCase() +
+                        vendedor.estado?.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm">
                     <Button
                       variant="outline"
-                      onClick={() => {
-                        setVendedorEditando(v);
-                        setModalOpen(true);
-                      }}
+                      size="sm"
+                      onClick={() => handleEdit(vendedor)}
+                      className="mr-2"
                     >
                       Editar
                     </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => eliminarVendedor(v.id)}
-                    >
-                      Eliminar
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setSelectedVendedorId(v.id)}
-                    >
-                      Ver Clientes
-                    </Button>
                   </td>
                 </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan={6} className="text-center py-4 text-gray-500">
-                No hay vendedores registrados.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {/* Clientes del vendedor */}
-      {selectedVendedorId && (
-        <div className="mt-6">
-          <h3 className="text-xl font-bold mb-4">
-            Clientes Asociados al Vendedor
-          </h3>
-          <ClientesManager
-            searchTerm=""
-            vendedores={vendedores}
-            selectedVendedorId={selectedVendedorId}
-          />
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => setSelectedVendedorId(null)}
-          >
-            Volver a Vendedores
-          </Button>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Modal para agregar/editar vendedor */}
+      {/* Modal para crear/editar */}
       <VendedorModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={agregarOActualizarVendedor}
-        vendedor={vendedorEditando}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        vendedor={editingVendedor}
       />
     </div>
   );

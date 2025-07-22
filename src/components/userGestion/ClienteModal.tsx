@@ -1,5 +1,4 @@
 // src/components/userGestion/ClienteModal.tsx
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
@@ -18,12 +17,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { Cliente, Vendedor, Phone, Address, City, Country } from "@/interfaces/user.interface";
+import { Cliente, Vendedor } from "@/interfaces/user.interface";
 
 interface ClienteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (cliente: Omit<Cliente, "fechaRegistro">) => void;
+  onSave: (cliente: Omit<Cliente, "fechaRegistro">) => Promise<void>;
   cliente?: Cliente | null;
   vendedores: Vendedor[];
 }
@@ -39,62 +38,45 @@ export default function ClienteModal({
     id: "",
     name: "",
     lastName: "",
-    email: [""],
-    phone: [{ indicative: "+57", numberPhone: "" }],
-    address: [
-      {
-        city: { id: "1", name: "" },
-        country: { id: "1", name: "Colombia" },
-        postalCode: "",
-      },
-    ],
+    email: [{ EmailAddres: "", IsPrincipal: true }],
+    phone: [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
+    addres: [""],
+    city: "",
     password: "",
-    role: "cliente",
-    isPrincipal: false,
-    isActive: true,
+    role: "Client",
+    priceCategory: "",
+    salesPerson: "", // ID del vendedor asignado
+    clients: [],
     tipoCliente: "VIP",
-    vendedorId: "",
     estado: "activo",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Cargar cliente para edición
   useEffect(() => {
-    if (cliente) {
+    if (cliente && isOpen) {
       setFormData({
         ...cliente,
-        email: cliente.email.length ? cliente.email : [""],
-        phone: cliente.phone.length ? cliente.phone : [{ indicative: "+57", numberPhone: "" }],
-        address: cliente.address.length
-          ? cliente.address
-          : [
-              {
-                city: { id: "1", name: "" },
-                country: { id: "1", name: "Colombia" },
-                postalCode: "",
-              },
-            ],
+        email: cliente.email.length > 0 ? cliente.email : [{ EmailAddres: "", IsPrincipal: true }],
+        phone: cliente.phone.length > 0 ? cliente.phone : [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
+        addres: cliente.addres.length > 0 ? cliente.addres : [""],
       });
     } else {
       setFormData({
         id: "",
         name: "",
         lastName: "",
-        email: [""],
-        phone: [{ indicative: "+57", numberPhone: "" }],
-        address: [
-          {
-            city: { id: "1", name: "" },
-            country: { id: "1", name: "Colombia" },
-            postalCode: "",
-          },
-        ],
+        email: [{ EmailAddres: "", IsPrincipal: true }],
+        phone: [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
+        addres: [""],
+        city: "",
         password: "",
-        role: "cliente",
-        isPrincipal: false,
-        isActive: true,
+        role: "Client",
+        priceCategory: "",
+        salesPerson: "",
+        clients: [],
         tipoCliente: "VIP",
-        vendedorId: "",
         estado: "activo",
       });
     }
@@ -108,134 +90,177 @@ export default function ClienteModal({
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
     if (!formData.lastName.trim()) newErrors.lastName = "El apellido es requerido";
 
-    if (!formData.email[0]?.trim()) {
-      newErrors.email = "El email es requerido";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email[0])) {
-      newErrors.email = "El email no es válido";
-    }
+    const email = formData.email[0]?.EmailAddres;
+    if (!email) newErrors.email = "El email es requerido";
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email inválido";
 
-    if (!formData.phone[0]?.numberPhone?.trim()) {
-      newErrors.telefono = "El teléfono es requerido";
-    }
+    const phone = formData.phone[0]?.NumberPhone;
+    if (!phone) newErrors.phone = "El teléfono es requerido";
 
-    if (!formData.address[0]?.city?.name?.trim()) {
-      newErrors.ciudad = "La ciudad es requerida";
-    }
-
-    if (!formData.address[0]?.postalCode?.trim()) {
-      newErrors.direccion = "El código postal es requerido";
-    }
-
-    if (!formData.vendedorId.trim()) newErrors.vendedorId = "El vendedor es requerido";
+    if (!formData.city) newErrors.city = "La ciudad es requerida";
+    if (!formData.priceCategory) newErrors.priceCategory = "La categoría de precio es requerida";
+    if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
+    if (!formData.salesPerson) newErrors.salesPerson = "Debe asignar un vendedor";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onSave(formData);
-      onClose();
+  const handleChange = <K extends keyof Omit<Cliente, "fechaRegistro">>(
+    field: K,
+    value: Omit<Cliente, "fechaRegistro">[K]
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
     }
   };
 
-  const handleInputChange = (field: keyof Omit<Cliente, "fechaRegistro">, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    let finalId = formData.id;
+    if (!finalId || finalId.trim() === "") {
+      finalId = crypto.randomUUID();
+      handleChange("id", finalId);
+    }
+
+    if (validateForm()) {
+      try {
+        await onSave(formData);
+        onClose();
+      } catch (err) {
+        console.error("Error al guardar cliente:", err);
+      }
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white shadow-lg rounded-md">
+      <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
-          <DialogTitle>{cliente ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
+          <DialogTitle>{cliente ? "Editar" : "Nuevo"} Cliente</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {/* ID */}
-          <InputGroup
-            label="ID *"
-            value={formData.id}
-            onChange={(val) => handleInputChange("id", val)}
-            error={errors.id}
-          />
+          <div className="space-y-2">
+            <Label>ID *</Label>
+            <Input
+              value={formData.id}
+              onChange={(e) => handleChange("id", e.target.value)}
+              className={errors.id ? "border-red-500" : ""}
+            />
+            {errors.id && <p className="text-red-500 text-sm">{errors.id}</p>}
+          </div>
 
           {/* Nombre y Apellido */}
           <div className="grid grid-cols-2 gap-4">
-            <InputGroup
-              label="Nombre *"
-              value={formData.name}
-              onChange={(val) => handleInputChange("name", val)}
-              error={errors.name}
-            />
-            <InputGroup
-              label="Apellido *"
-              value={formData.lastName}
-              onChange={(val) => handleInputChange("lastName", val)}
-              error={errors.lastName}
-            />
+            <div className="space-y-2">
+              <Label>Nombre *</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className={errors.name ? "border-red-500" : ""}
+              />
+              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Apellido *</Label>
+              <Input
+                value={formData.lastName}
+                onChange={(e) => handleChange("lastName", e.target.value)}
+                className={errors.lastName ? "border-red-500" : ""}
+              />
+              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+            </div>
           </div>
 
           {/* Email */}
-          <InputGroup
-            label="Email *"
-            value={formData.email[0]}
-            onChange={(val) => handleInputChange("email", [val])}
-            error={errors.email}
-          />
+          <div className="space-y-2">
+            <Label>Email *</Label>
+            <Input
+              value={formData.email[0].EmailAddres}
+              onChange={(e) =>
+                handleChange("email", [
+                  { ...formData.email[0], EmailAddres: e.target.value },
+                ])
+              }
+              className={errors.email ? "border-red-500" : ""}
+            />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          </div>
 
           {/* Teléfono */}
-          <InputGroup
-            label="Teléfono *"
-            value={formData.phone[0].numberPhone}
-            onChange={(val) =>
-              handleInputChange("phone", [{ ...formData.phone[0], numberPhone: val }])
-            }
-            error={errors.telefono}
-          />
+          <div className="space-y-2">
+            <Label>Teléfono *</Label>
+            <Input
+              value={formData.phone[0].NumberPhone}
+              onChange={(e) =>
+                handleChange("phone", [
+                  { ...formData.phone[0], NumberPhone: e.target.value },
+                ])
+              }
+              className={errors.phone ? "border-red-500" : ""}
+            />
+            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+          </div>
+
+          {/* Contraseña */}
+          <div className="space-y-2">
+            <Label>Contraseña *</Label>
+            <Input
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              className={errors.password ? "border-red-500" : ""}
+            />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+          </div>
+
+          {/* Dirección (texto libre) */}
+          <div className="space-y-2">
+            <Label>Dirección</Label>
+            <Input
+              value={formData.addres[0]}
+              onChange={(e) => handleChange("addres", [e.target.value])}
+            />
+          </div>
 
           {/* Ciudad */}
-          <InputGroup
-            label="Ciudad *"
-            value={formData.address[0].city.name}
-            onChange={(val) =>
-              handleInputChange("address", [
-                {
-                  ...formData.address[0],
-                  city: { ...formData.address[0].city, name: val },
-                },
-              ])
-            }
-            error={errors.ciudad}
-          />
+          <div className="space-y-2">
+            <Label>Ciudad *</Label>
+            <Input
+              value={formData.city}
+              onChange={(e) => handleChange("city", e.target.value)}
+              className={errors.city ? "border-red-500" : ""}
+            />
+            {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+          </div>
 
-          {/* Código Postal (como dirección genérica) */}
-          <InputGroup
-            label="Código Postal *"
-            value={formData.address[0].postalCode}
-            onChange={(val) =>
-              handleInputChange("address", [
-                { ...formData.address[0], postalCode: val },
-              ])
-            }
-            error={errors.direccion}
-          />
+          {/* Categoría de Precio */}
+          <div className="space-y-2">
+            <Label>Categoría de Precio *</Label>
+            <Input
+              value={formData.priceCategory}
+              onChange={(e) => handleChange("priceCategory", e.target.value)}
+              className={errors.priceCategory ? "border-red-500" : ""}
+            />
+            {errors.priceCategory && <p className="text-red-500 text-sm">{errors.priceCategory}</p>}
+          </div>
 
-          {/* Tipo de cliente */}
+          {/* Tipo de Cliente */}
           <div className="space-y-2">
             <Label>Tipo de Cliente *</Label>
             <Select
               value={formData.tipoCliente}
-              onValueChange={(value: "VIP" | "SAS") =>
-                handleInputChange("tipoCliente", value)
-              }
+              onValueChange={(value: "VIP" | "SAS") => handleChange("tipoCliente", value)}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona el tipo" />
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona tipo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="VIP">VIP</SelectItem>
@@ -244,15 +269,15 @@ export default function ClienteModal({
             </Select>
           </div>
 
-          {/* Vendedor */}
+          {/* Asignar Vendedor */}
           <div className="space-y-2">
-            <Label>Asignar Vendedor *</Label>
+            <Label>Vendedor Asignado *</Label>
             <Select
-              value={formData.vendedorId}
-              onValueChange={(value) => handleInputChange("vendedorId", value)}
+              value={formData.salesPerson}
+              onValueChange={(value) => handleChange("salesPerson", value)}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona un vendedor" />
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar vendedor" />
               </SelectTrigger>
               <SelectContent>
                 {vendedores.map((v) => (
@@ -262,16 +287,34 @@ export default function ClienteModal({
                 ))}
               </SelectContent>
             </Select>
-            {errors.vendedorId && (
-              <p className="text-sm text-red-500">{errors.vendedorId}</p>
-            )}
+            {errors.salesPerson && <p className="text-red-500 text-sm">{errors.salesPerson}</p>}
           </div>
 
-          <DialogFooter className="gap-2 pt-4">
+          {/* Estado */}
+          <div className="space-y-2">
+            <Label>Estado</Label>
+            <Select
+              value={formData.estado}
+              onValueChange={(value: "activo" | "inactivo") => handleChange("estado", value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="activo">Activo</SelectItem>
+                <SelectItem value="inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-primary text-white hover:bg-primary-dark">
+            <Button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700"
+            >
               {cliente ? "Actualizar" : "Crear"} Cliente
             </Button>
           </DialogFooter>
@@ -280,26 +323,3 @@ export default function ClienteModal({
     </Dialog>
   );
 }
-
-// Componente auxiliar para agrupar inputs y errores
-const InputGroup = ({
-  label,
-  value,
-  onChange,
-  error,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  error?: string;
-}) => (
-  <div className="space-y-2">
-    <Label>{label}</Label>
-    <Input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={error ? "border-red-500" : ""}
-    />
-    {error && <p className="text-sm text-red-500">{error}</p>}
-  </div>
-);

@@ -236,16 +236,15 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>Rol</Label>
             <Select
-              value={formData.role}
-              onValueChange={(value) => handleChange("role", value)}
+              value="SalesPerson" // valor fijo
+              onValueChange={() => {}} // no hace nada
+              disabled // desactiva interacción
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-default">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="SalesPerson">Vendedor</SelectItem>
-                <SelectItem value="Admin">Administrador</SelectItem>
-                <SelectItem value="Client">Cliente</SelectItem>
               </SelectContent>
             </Select>
           </div>
