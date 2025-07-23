@@ -17,12 +17,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { Cliente, Vendedor } from "@/interfaces/user.interface";
+import { Cliente, Vendedor, Role } from "@/interfaces/user.interface";
 
 interface ClienteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (cliente: Omit<Cliente, "fechaRegistro">) => Promise<void>;
+  onSave: (cliente: Cliente) => Promise<void>;
   cliente?: Cliente | null;
   vendedores: Vendedor[];
 }
@@ -34,107 +34,113 @@ export default function ClienteModal({
   cliente,
   vendedores,
 }: ClienteModalProps) {
-  const [formData, setFormData] = useState<Omit<Cliente, "fechaRegistro">>({
+  const [formData, setFormData] = useState<Cliente>({
     id: "",
     name: "",
     lastName: "",
-    email: [{ EmailAddres: "", IsPrincipal: true }],
-    phone: [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
-    addres: [""],
-    city: "",
     password: "",
+    emails: [{ emailAddress: "", isPrincipal: true }],
+    phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+    address: [""],
+    city: "",
     role: "Client",
     priceCategory: "",
-    salesPerson: "", // ID del vendedor asignado
-    clients: [],
-    tipoCliente: "VIP",
-    estado: "activo",
+    salesPerson: "",
+    state: "activo"
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>({});
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Cargar cliente para edición
   useEffect(() => {
     if (cliente && isOpen) {
       setFormData({
         ...cliente,
-        email: cliente.email.length > 0 ? cliente.email : [{ EmailAddres: "", IsPrincipal: true }],
-        phone: cliente.phone.length > 0 ? cliente.phone : [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
-        addres: cliente.addres.length > 0 ? cliente.addres : [""],
+        emails: cliente.emails.length > 0 ? cliente.emails : [{ emailAddress: "", isPrincipal: true }],
+        phones: cliente.phones.length > 0 ? cliente.phones : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+        address: cliente.address.length > 0 ? cliente.address : [""],
       });
     } else {
       setFormData({
         id: "",
         name: "",
         lastName: "",
-        email: [{ EmailAddres: "", IsPrincipal: true }],
-        phone: [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
-        addres: [""],
-        city: "",
         password: "",
+        emails: [{ emailAddress: "", isPrincipal: true }],
+        phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+        address: [""],
+        city: "",
         role: "Client",
         priceCategory: "",
         salesPerson: "",
-        clients: [],
-        tipoCliente: "VIP",
-        estado: "activo",
+        state: "activo"
       });
     }
     setErrors({});
+    setApiError(null);
   }, [cliente, isOpen]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof Cliente, string>> = {};
 
     if (!formData.id.trim()) newErrors.id = "El ID es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
     if (!formData.lastName.trim()) newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.email[0]?.EmailAddres;
-    if (!email) newErrors.email = "El email es requerido";
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email inválido";
+    const email = formData.emails[0]?.emailAddress;
+    if (!email) newErrors.emails = "El email es requerido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.emails = "Email inválido";
 
-    const phone = formData.phone[0]?.NumberPhone;
-    if (!phone) newErrors.phone = "El teléfono es requerido";
+    const phone = formData.phones[0]?.numberPhone;
+    if (!phone) newErrors.phones = "El teléfono es requerido";
+    else if (!/^[0-9]{7,15}$/.test(phone)) newErrors.phones = "Teléfono inválido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
     if (!formData.priceCategory) newErrors.priceCategory = "La categoría de precio es requerida";
     if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
+    if (formData.password.length < 6) newErrors.password = "La contraseña debe tener al menos 6 caracteres";
     if (!formData.salesPerson) newErrors.salesPerson = "Debe asignar un vendedor";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = <K extends keyof Omit<Cliente, "fechaRegistro">>(
+  const handleChange = <K extends keyof Cliente>(
     field: K,
-    value: Omit<Cliente, "fechaRegistro">[K]
+    value: Cliente[K]
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Corrección para el error de tipo
     if (errors[field]) {
-      setErrors((prev) => {
-        const { [field]: _, ...rest } = prev;
-        return rest;
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
       });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    let finalId = formData.id;
-    if (!finalId || finalId.trim() === "") {
-      finalId = crypto.randomUUID();
-      handleChange("id", finalId);
-    }
+    setLoading(true);
+    setApiError(null);
 
-    if (validateForm()) {
-      try {
-        await onSave(formData);
-        onClose();
-      } catch (err) {
-        console.error("Error al guardar cliente:", err);
-      }
+    try {
+      await onSave({
+        ...formData,
+        state: formData.state || "activo"
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar cliente:", error);
+      setApiError(error instanceof Error ? error.message : "Error desconocido");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,6 +151,12 @@ export default function ClienteModal({
           <DialogTitle>{cliente ? "Editar" : "Nuevo"} Cliente</DialogTitle>
         </DialogHeader>
 
+        {apiError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* ID */}
           <div className="space-y-2">
@@ -153,6 +165,7 @@ export default function ClienteModal({
               value={formData.id}
               onChange={(e) => handleChange("id", e.target.value)}
               className={errors.id ? "border-red-500" : ""}
+              disabled={!!cliente}
             />
             {errors.id && <p className="text-red-500 text-sm">{errors.id}</p>}
           </div>
@@ -183,30 +196,53 @@ export default function ClienteModal({
           <div className="space-y-2">
             <Label>Email *</Label>
             <Input
-              value={formData.email[0].EmailAddres}
+              type="email"
+              value={formData.emails[0]?.emailAddress || ""}
               onChange={(e) =>
-                handleChange("email", [
-                  { ...formData.email[0], EmailAddres: e.target.value },
+                handleChange("emails", [
+                  { ...formData.emails[0], emailAddress: e.target.value },
                 ])
               }
-              className={errors.email ? "border-red-500" : ""}
+              className={errors.emails ? "border-red-500" : ""}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.emails && <p className="text-red-500 text-sm">{errors.emails}</p>}
           </div>
 
           {/* Teléfono */}
           <div className="space-y-2">
             <Label>Teléfono *</Label>
-            <Input
-              value={formData.phone[0].NumberPhone}
-              onChange={(e) =>
-                handleChange("phone", [
-                  { ...formData.phone[0], NumberPhone: e.target.value },
-                ])
-              }
-              className={errors.phone ? "border-red-500" : ""}
-            />
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+            <div className="flex gap-2">
+              <div className="w-24">
+                <Select
+                  value={formData.phones[0]?.indicative || "+57"}
+                  onValueChange={(value) =>
+                    handleChange("phones", [
+                      { ...formData.phones[0], indicative: value },
+                    ])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="+57" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="+57">+57 (CO)</SelectItem>
+                    <SelectItem value="+1">+1 (US)</SelectItem>
+                    <SelectItem value="+52">+52 (MX)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input
+                value={formData.phones[0]?.numberPhone || ""}
+                onChange={(e) =>
+                  handleChange("phones", [
+                    { ...formData.phones[0], numberPhone: e.target.value },
+                  ])
+                }
+                className={`flex-1 ${errors.phones ? "border-red-500" : ""}`}
+                placeholder="3112345678"
+              />
+            </div>
+            {errors.phones && <p className="text-red-500 text-sm">{errors.phones}</p>}
           </div>
 
           {/* Contraseña */}
@@ -221,12 +257,12 @@ export default function ClienteModal({
             {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
           </div>
 
-          {/* Dirección (texto libre) */}
+          {/* Dirección */}
           <div className="space-y-2">
             <Label>Dirección</Label>
             <Input
-              value={formData.addres[0]}
-              onChange={(e) => handleChange("addres", [e.target.value])}
+              value={formData.address[0] || ""}
+              onChange={(e) => handleChange("address", [e.target.value])}
             />
           </div>
 
@@ -252,28 +288,11 @@ export default function ClienteModal({
             {errors.priceCategory && <p className="text-red-500 text-sm">{errors.priceCategory}</p>}
           </div>
 
-          {/* Tipo de Cliente */}
-          <div className="space-y-2">
-            <Label>Tipo de Cliente *</Label>
-            <Select
-              value={formData.tipoCliente}
-              onValueChange={(value: "VIP" | "SAS") => handleChange("tipoCliente", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="VIP">VIP</SelectItem>
-                <SelectItem value="SAS">SAS</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Asignar Vendedor */}
           <div className="space-y-2">
             <Label>Vendedor Asignado *</Label>
             <Select
-              value={formData.salesPerson}
+              value={formData.salesPerson || ""}
               onValueChange={(value) => handleChange("salesPerson", value)}
             >
               <SelectTrigger>
@@ -294,8 +313,8 @@ export default function ClienteModal({
           <div className="space-y-2">
             <Label>Estado</Label>
             <Select
-              value={formData.estado}
-              onValueChange={(value: "activo" | "inactivo") => handleChange("estado", value)}
+              value={formData.state || "activo"}
+              onValueChange={(value: "activo" | "inactivo") => handleChange("state", value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -314,8 +333,9 @@ export default function ClienteModal({
             <Button
               type="submit"
               className="bg-green-600 hover:bg-green-700"
+              disabled={loading}
             >
-              {cliente ? "Actualizar" : "Crear"} Cliente
+              {loading ? "Guardando..." : cliente ? "Actualizar" : "Crear"} Cliente
             </Button>
           </DialogFooter>
         </form>

@@ -17,6 +17,7 @@ export interface Phone {
 
 // === USER BASE ===
 export interface User {
+  _id?: string;
   id: string;
   name: string;
   lastName: string;
@@ -34,4 +35,5 @@ export interface User {
 
 // === VENDEDOR ===
 export interface Vendedor extends User {}
+export interface Cliente extends User {}
 
