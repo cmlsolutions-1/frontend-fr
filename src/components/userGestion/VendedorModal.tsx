@@ -37,13 +37,13 @@ export default function VendedorModal({
     name: "",
     lastName: "",
     password: "",
-    email: [{ EmailAddres: "", IsPrincipal: true }],
-    phone: [{ NumberPhone: "", Indicative: "57", IsPrincipal: true }],
-    addres: [""],
+    emails: [{ emailAddress: "", isPrincipal: true }],
+    phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+    address: [""],
     city: "",
-    role: "SalesPerson", // o "Admin" si es necesario
+    role: "SalesPerson",
     priceCategory: "",
-    estado: "activo",
+    state: "activo",
     salesPerson: "",
     clients: [],
   };
@@ -70,11 +70,13 @@ export default function VendedorModal({
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.email[0]?.EmailAddres;
-    if (!email) newErrors.email = "El email es requerido";
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email inválido";
+    const email = formData.emails[0]?.emailAddress;
+    if (!formData.emails?.[0]?.emailAddress?.trim()) {
+      setErrors({ ...errors, email: "El email es obligatorio" });
+      return;
+    }
 
-    const phone = formData.phone[0]?.NumberPhone;
+    const phone = formData.phones[0]?.numberPhone;
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
@@ -87,37 +89,69 @@ export default function VendedorModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (
-    field: keyof Vendedor,
-    value: string | number | boolean
+  const handleChange = <K extends keyof Vendedor>(
+    field: K,
+    value: Vendedor[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let updatedFormData = { ...formData };
-
-    if (!updatedFormData.id || updatedFormData.id.trim() === "") {
-      updatedFormData.id = crypto.randomUUID(); // Asignar ID nuevo
+    // Validación mejorada del email
+    if (
+      !formData.emails ||
+      formData.emails.length === 0 ||
+      !formData.emails[0].emailAddress
+    ) {
+      setErrors((prev) => ({ ...prev, email: "El email es requerido" }));
+      return;
     }
 
-    if (validateForm()) {
-      setLoading(true);
-      try {
-        await onSave(updatedFormData); // Enviar datos con ID garantizado
-        setFormData(initialFormState);
-        setErrors({});
-        setApiError(null);
-        onClose();
-      } catch (err) {
-        console.error("Error al guardar vendedor:", err);
-        setApiError("Error al guardar el vendedor.");
-      } finally {
-        setLoading(false);
-      }
+    // Asegurar que el email esté en minúsculas y sin espacios
+    const cleanedEmails = formData.emails.map((email) => ({
+      emailAddress: email.emailAddress.trim().toLowerCase(),
+      isPrincipal: email.isPrincipal,
+    }));
+
+    // Preparar datos finales con el formato exacto
+    const vendedorToSave: Vendedor = {
+      ...formData,
+      id: formData.id || crypto.randomUUID(),
+      emails: [
+        {
+          emailAddress: formData.emails[0].emailAddress.trim(),
+          isPrincipal: true,
+        },
+      ],
+      phones: [
+        {
+          numberPhone:
+            formData.phones[0]?.numberPhone?.replace(/\D/g, "") || "",
+          indicative: formData.phones[0]?.indicative || "+57",
+          isPrincipal: true,
+        },
+      ],
+      address: [formData.address[0] || ""],
+      state: formData.state || "activo",
+    };
+
+    setLoading(true);
+    try {
+      await onSave(vendedorToSave);
+      onClose();
+    } catch (error) {
+      console.error("Error completo:", error);
+    setApiError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,6 +169,8 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>ID *</Label>
             <Input
+              id="id"
+              name="id"
               value={formData.id}
               onChange={(e) => handleChange("id", e.target.value)}
               className={errors.id ? "border-red-500" : ""}
@@ -147,6 +183,8 @@ export default function VendedorModal({
             <div className="space-y-2">
               <Label>Nombre *</Label>
               <Input
+                id="name"
+                name="name"
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
                 className={errors.name ? "border-red-500" : ""}
@@ -158,6 +196,8 @@ export default function VendedorModal({
             <div className="space-y-2">
               <Label>Apellido *</Label>
               <Input
+                id="lastName"
+                name="lastName"
                 value={formData.lastName}
                 onChange={(e) => handleChange("lastName", e.target.value)}
                 className={errors.lastName ? "border-red-500" : ""}
@@ -172,12 +212,13 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>Email *</Label>
             <Input
-              value={formData.email[0].EmailAddres}
+              id="email"
+              name="email"
+              value={formData.emails[0]?.emailAddress || ""}
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  email: [{ ...prev.email[0], EmailAddres: e.target.value }],
-                }))
+                handleChange("emails", [
+                  { ...formData.emails[0], emailAddress: e.target.value },
+                ])
               }
               className={errors.email ? "border-red-500" : ""}
             />
@@ -190,12 +231,13 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>Teléfono *</Label>
             <Input
-              value={formData.phone[0].NumberPhone}
+              id="phone"
+              name="phone"
+              value={formData.phones[0]?.numberPhone || ""}
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  phone: [{ ...prev.phone[0], NumberPhone: e.target.value }],
-                }))
+                handleChange("phones", [
+                  { ...formData.phones[0], numberPhone: e.target.value },
+                ])
               }
               className={errors.phone ? "border-red-500" : ""}
             />
@@ -208,6 +250,8 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>Contraseña *</Label>
             <Input
+              id="password"
+              name="password"
               type="password"
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
@@ -222,66 +266,51 @@ export default function VendedorModal({
           <div className="space-y-2">
             <Label>Dirección</Label>
             <Input
-              value={formData.addres[0]}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  addres: [e.target.value],
-                }))
-              }
+              id="address"
+              name="address"
+              value={formData.address[0] || ""}
+              onChange={(e) => handleChange("address", [e.target.value])}
             />
           </div>
 
-          {/* Rol */}
+          {/* Ciudad */}
           <div className="space-y-2">
-            <Label>Rol</Label>
-            <Select
-              value="SalesPerson" // valor fijo
-              onValueChange={() => {}} // no hace nada
-              disabled // desactiva interacción
-            >
-              <SelectTrigger className="cursor-default">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SalesPerson">Vendedor</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Ciudad *</Label>
+            <Input
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={(e) => handleChange("city", e.target.value)}
+              className={errors.city ? "border-red-500" : ""}
+            />
+            {errors.city && (
+              <p className="text-red-500 text-sm">{errors.city}</p>
+            )}
           </div>
 
-          {/* Ciudad y Categoría de precio */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Ciudad *</Label>
-              <Input
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-                className={errors.city ? "border-red-500" : ""}
-              />
-              {errors.city && (
-                <p className="text-red-500 text-sm">{errors.city}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Categoría de precio *</Label>
-              <Input
-                value={formData.priceCategory}
-                onChange={(e) => handleChange("priceCategory", e.target.value)}
-                className={errors.priceCategory ? "border-red-500" : ""}
-              />
-              {errors.priceCategory && (
-                <p className="text-red-500 text-sm">{errors.priceCategory}</p>
-              )}
-            </div>
+          {/* Categoría de precio */}
+          <div className="space-y-2">
+            <Label>Categoría de precio *</Label>
+            <Input
+              id="priceCategory"
+              name="priceCategory"
+              value={formData.priceCategory}
+              onChange={(e) => handleChange("priceCategory", e.target.value)}
+              className={errors.priceCategory ? "border-red-500" : ""}
+            />
+            {errors.priceCategory && (
+              <p className="text-red-500 text-sm">{errors.priceCategory}</p>
+            )}
           </div>
 
           {/* Estado */}
           <div className="space-y-2">
             <Label>Estado</Label>
             <Select
-              value={formData.estado}
-              onValueChange={(value) => handleChange("estado", value)}
+              value={formData.state}
+              onValueChange={(value) =>
+                handleChange("state", value as "activo" | "inactivo")
+              }
             >
               <SelectTrigger>
                 <SelectValue />

@@ -4,6 +4,8 @@ import VendedorModal from "./VendedorModal";
 import { Button } from "@/components/ui/Button";
 import { getVendedores } from "@/services/seller.service";
 import type { Vendedor } from "@/interfaces/user.interface";
+import { createVendedor, updateVendedor } from "@/services/seller.service";
+import { User } from "@/interfaces/user.interface";
 
 export default function VendedoresManager() {
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
@@ -30,20 +32,31 @@ export default function VendedoresManager() {
     loadVendedores();
   }, []);
 
-  const getPrimaryEmail = (vendedor: Vendedor) => {
-    return Array.isArray(vendedor.email) && vendedor.email.length > 0
-      ? vendedor.email[0].EmailAddres.trim() || "No especificado"
-      : "Sin email";
-  };
-
-  const getPrimaryPhone = (vendedor: Vendedor) => {
-    const phone = vendedor.phone?.[0];
-    if (!phone) return "Sin teléfono";
-    return `${phone.Indicative} ${phone.NumberPhone}`.trim().length > 5
-      ? `${phone.Indicative} ${phone.NumberPhone}`
-      : "No especificado";
-  };
-
+  function getPrimaryEmail(user: User): string {
+    // Verifica si existe emails directamente
+    if (!user.emails || !Array.isArray(user.emails)) return "Sin correo";
+    
+    // Si no hay emails registrados
+    if (user.emails.length === 0) return "Sin correo";
+    
+    // Busca el email principal o toma el primero
+    const email = user.emails.find(e => e?.isPrincipal) ?? user.emails[0];
+    return email?.emailAddress?.trim() || "Sin correo";
+  }
+  
+  function getPrimaryPhone(user: User): string {
+    // Verifica si existe phones directamente
+    if (!user.phones || !Array.isArray(user.phones)) return "Sin teléfono";
+    
+    // Si no hay teléfonos registrados
+    if (user.phones.length === 0) return "Sin teléfono";
+    
+    // Busca el teléfono principal o toma el primero
+    const phone = user.phones.find(p => p?.isPrincipal) ?? user.phones[0];
+    const indicative = phone?.indicative || "";
+    const number = phone?.numberPhone || "";
+    return indicative && number ? `${indicative} ${number}` : "Sin teléfono";
+  }
   // Función para abrir modal de creación
   const handleCreate = () => {
     setEditingVendedor(null);
@@ -57,17 +70,33 @@ export default function VendedoresManager() {
   };
 
   // Función que se llama después de guardar (crear o editar)
-  const handleSave = async (vendedorGuardado: Vendedor) => {
-    if (editingVendedor) {
-      // Actualizar en la lista
-      setVendedores((prev) =>
-        prev.map((v) => (v.id === vendedorGuardado.id ? vendedorGuardado : v))
-      );
-    } else {
-      // Agregar nuevo vendedor
-      setVendedores((prev) => [...prev, vendedorGuardado]);
+  const handleSave = async (vendedor: Vendedor) => {
+    try {
+      let vendedorFinal: Vendedor;
+  
+      if (editingVendedor) {
+        vendedorFinal = await updateVendedor(vendedor.id, vendedor);
+      } else {
+        // Al crear, usa la respuesta completa del backend
+        vendedorFinal = await createVendedor(vendedor);
+        
+        // Asegúrate de que los arrays de emails y phones existan
+        if (!vendedorFinal.emails) vendedorFinal.emails = [];
+        if (!vendedorFinal.phones) vendedorFinal.phones = [];
+      }
+  
+      setVendedores((prev) => {
+        const yaExiste = prev.some((v) => v.id === vendedorFinal.id);
+        return yaExiste
+          ? prev.map((v) => (v.id === vendedorFinal.id ? vendedorFinal : v))
+          : [...prev, vendedorFinal];
+      });
+  
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Error al guardar vendedor:", err);
+      alert("Ocurrió un error al guardar el vendedor.");
     }
-    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -135,9 +164,12 @@ export default function VendedoresManager() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {vendedores.map((vendedor) => (
+                
                 <tr key={vendedor.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {vendedor.id.slice(0, 8)}...
+                    {typeof vendedor.id === "string"
+                      ? vendedor.id.slice(0, 8) + "..."
+                      : "—"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
                     {vendedor.name} {vendedor.lastName}
@@ -154,13 +186,15 @@ export default function VendedoresManager() {
                   <td className="px-6 py-4 text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        vendedor.estado === "activo"
+                        vendedor.state === "activo"
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {vendedor.estado?.charAt(0).toUpperCase() +
-                        vendedor.estado?.slice(1)}
+                      {typeof vendedor.state === "string"
+                        ? vendedor.state.charAt(0).toUpperCase() +
+                          vendedor.state.slice(1)
+                        : "Desconocido"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right text-sm">

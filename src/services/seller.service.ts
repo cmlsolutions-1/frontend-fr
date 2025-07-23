@@ -15,29 +15,24 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
 
     const data = await res.json();
 
-    // Mapear los datos del backend al modelo del frontend
-    return data.map((item: any): Vendedor => ({
-      id: item.id,
-      name: item.name,
-      lastName: item.lastName,
-      password: "", // ⚠️ No viene del backend, pero es obligatorio en la interfaz
-      email: item.emails?.map((e: any) => ({
-        EmailAddres: e.emailAddress,
-        IsPrincipal: e.isPrincipal,
-      })) || [],
-      phone: item.phones?.map((p: any) => ({
-        NumberPhone: p.numberPhone,
-        Indicative: p.indicative,
-        IsPrincipal: p.isPrincipal,
-      })) || [],
-      addres: Array.isArray(item.address) ? item.address : [],
-      city: item.cityId,
-      role: item.role,
-      priceCategory: "", // ⚠️ No viene en el backend
-      estado: item.state === "Active" ? "activo" : "inactivo",
-      salesPerson: "", // Asumiendo que no aplica aquí
-      clients: item.extra?.clients || [],
-    }));
+    // Mapear los datos manteniendo la estructura original
+    return data.map(
+      (item: any): Vendedor => ({
+        id: item.id,
+        name: item.name,
+        lastName: item.lastName,
+        password: "", // Campo requerido pero no viene del backend
+        emails: item.emails || [], // Mantener estructura original
+        phones: item.phones || [], // Mantener estructura original
+        address: Array.isArray(item.address) ? item.address : [],
+        city: item.cityId,
+        role: item.role,
+        priceCategory: "", // No viene en el backend
+        state: item.state === "Active" ? "activo" : "inactivo",
+        salesPerson: "", // Asumiendo que no aplica aquí
+        clients: item.extra?.clients || [],
+      })
+    );
   } catch (error) {
     console.error("Fallo al obtener vendedores:", error);
     return [];
@@ -46,48 +41,84 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
 
 // Crear un vendedor
 export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
-  // Asegúrate de que el vendedor tenga un ID
-  const finalId = vendedor.id && vendedor.id.trim() !== "" 
-    ? vendedor.id 
-    : crypto.randomUUID();
+  // Validación exhaustiva del email
+  if (
+    !vendedor.emails ||
+    !Array.isArray(vendedor.emails) ||
+    vendedor.emails.length === 0 ||
+    !vendedor.emails[0]?.emailAddress?.trim()
+  ) {
+    console.error("Datos de email inválidos:", vendedor.emails);
+    throw new Error("Debe proporcionar al menos un email válido");
+  }
 
+  // Estructura EXACTA que espera el backend
   const payload = {
-    id: finalId,
-    name: vendedor.name,
-    lastName: vendedor.lastName,
-    email: vendedor.email.map(e => ({
-      EmailAddres: e.EmailAddres,
-      IsPrincipal: e.IsPrincipal,
-    })),
-    phone: vendedor.phone.map(p => ({
-      NumberPhone: p.NumberPhone,
-      Indicative: p.Indicative,
-      IsPrincipal: p.IsPrincipal,
-    })),
-    addres: vendedor.addres,
+    id: vendedor.id,
+    name: vendedor.name.trim(),
+    lastName: vendedor.lastName.trim(),
+    email: [
+      {
+        emailAddres: vendedor.emails[0].emailAddress.trim(),
+        isPrincipal: true,
+      },
+    ],
+    phone: [
+      {
+        numberPhone: vendedor.phones[0]?.numberPhone?.replace(/\D/g, "") || "",
+        indicative: vendedor.phones[0]?.indicative || "+57",
+        isPrincipal: true,
+      },
+    ],
+    address: [vendedor.address[0] || ""],
     city: vendedor.city,
     password: vendedor.password,
     role: vendedor.role,
-    priceCategory: vendedor.priceCategory,
-    salesPerson: vendedor.salesPerson || undefined,
-    clients: vendedor.clients || [],
+    state: "Active",
+    priceCategory: vendedor.priceCategory || "",
   };
 
-  const res = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  console.log("Payload final para el backend:", payload);
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => null);
-    throw new Error(err?.message || "Error al crear vendedor");
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      console.error("Error detallado del backend:", responseData);
+      throw new Error(responseData.message || "Error al crear vendedor");
+    }
+
+    // Mapear la respuesta al formato del frontend
+    return {
+      ...responseData,
+      emails:
+        responseData.email?.map((e: any) => ({
+          emailAddress: e.emailAddres,
+          isPrincipal: e.isPrincipal,
+        })) || [],
+      phones:
+        responseData.phone?.map((p: any) => ({
+          numberPhone: p.numberPhone,
+          indicative: p.indicative,
+          isPrincipal: p.isPrincipal,
+        })) || [],
+      address: Array.isArray(responseData.address)
+        ? responseData.address
+        : [responseData.address],
+      city: responseData.cityId || responseData.city,
+      state: responseData.state === "Active" ? "activo" : "inactivo",
+    };
+  } catch (error) {
+    console.error("Error en la solicitud:", error);
+    throw new Error("No se pudo conectar con el servidor");
   }
-
-  return await res.json();
 };
-
-
 
 // Actualizar un vendedor
 export const updateVendedor = async (
