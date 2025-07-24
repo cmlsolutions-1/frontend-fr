@@ -58,9 +58,9 @@ export default function ClienteModal({
     if (cliente && isOpen) {
       setFormData({
         ...cliente,
-        emails: cliente.emails.length > 0 ? cliente.emails : [{ emailAddress: "", isPrincipal: true }],
-        phones: cliente.phones.length > 0 ? cliente.phones : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
-        address: cliente.address.length > 0 ? cliente.address : [""],
+        emails: (cliente.emails && cliente.emails.length > 0) ? cliente.emails : [{ emailAddress: "", isPrincipal: true }],
+        phones: (cliente.phones && cliente.phones.length > 0) ? cliente.phones : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+        address: (cliente.address && cliente.address.length > 0) ? cliente.address : [""],
       });
     } else {
       setFormData({

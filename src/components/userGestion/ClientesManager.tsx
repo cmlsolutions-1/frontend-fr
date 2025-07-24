@@ -128,11 +128,16 @@ export default function ClientesManager({
       salesPerson: vendedor._id, // aquí enviamos el _id que espera el backend
       id: editingCliente?.id || crypto.randomUUID(), // usamos el existente o uno nuevo
     };
+    console.log("Objeto que se pasará a saveClient:", {
+      ...(editingCliente ? { ...editingCliente, ...payloadToSend } : payloadToSend)
+      });
 
   
       let updatedCliente: Cliente;
 
     if (editingCliente) {
+      const finalPayloadForEdit = { ...editingCliente, ...payloadToSend };
+      console.log("Payload final para editar:", finalPayloadForEdit);
       updatedCliente = await saveClient({
         ...editingCliente,
         ...payloadToSend,

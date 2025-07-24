@@ -9,7 +9,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
-  if (!cliente.salesPerson) {
+  if (cliente.salesPerson) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
 
