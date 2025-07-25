@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Plus, Edit, Trash2, Mail, Phone, MapPin } from "lucide-react";
 import ClienteModal from "@/components/userGestion/ClienteModal";
 import { Cliente, Vendedor } from "@/interfaces/user.interface";
-import { saveClient, getClientsBySeller } from "@/services/client.service";
+import { saveClient, updateClient, getClientsBySeller } from "@/services/client.service";
 
 interface ClientesManagerProps {
   searchTerm: string;
@@ -73,6 +73,8 @@ export default function ClientesManager({
       return;
     }
 
+    
+
     const term = searchTerm.toLowerCase();
     const result = clientes.filter(c =>
       c.name.toLowerCase().includes(term) ||
@@ -113,51 +115,56 @@ export default function ClientesManager({
 
   const handleSaveCliente = async (clienteData: Cliente) => {
     try {
-    // Buscar el vendedor por el id (cédula) recibido
-    const vendedor = vendedores.find(
-      (v) => v.id === clienteData.salesPerson // clienteData.salesPerson es la cédula
-    );
-
-    if (!vendedor) {
-      alert("Vendedor no encontrado. Verifica la selección.");
-      return;
-    }
-
-    const payloadToSend = {
-      ...clienteData,
-      salesPerson: vendedor._id, // aquí enviamos el _id que espera el backend
-      id: editingCliente?.id || crypto.randomUUID(), // usamos el existente o uno nuevo
-    };
-    console.log("Objeto que se pasará a saveClient:", {
-      ...(editingCliente ? { ...editingCliente, ...payloadToSend } : payloadToSend)
+      console.log("handleSaveCliente recibió:", clienteData);
+      console.log("Lista de vendedores disponibles:", vendedores);
+  
+      const vendedor = vendedores.find((v) => {
+        const match = v.id === clienteData.salesPerson;
+        console.log(`Comparando v.id (${v.id}) con clienteData.salesPerson (${clienteData.salesPerson}): ${match}`);
+        return match;
       });
 
+      console.log("clienteData.salesPerson:", clienteData.salesPerson);
+      console.log("vendedores:", vendedores);
+  
+      if (!vendedor) {
+        const errorMsg = `Vendedor no encontrado para ID/Cédula: '${clienteData.salesPerson}'. Verifica la selección o la lista de vendedores.`;
+        console.error(errorMsg);
+        alert(errorMsg);
+        return;
+      }
+  
+      console.log("Vendedor encontrado:", vendedor);
+  
+      const payloadToSend: Cliente = {
+        ...clienteData,
+        salesPerson: vendedor._id, // lo que espera el backend
+        id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
+      };
   
       let updatedCliente: Cliente;
-
-    if (editingCliente) {
-      const finalPayloadForEdit = { ...editingCliente, ...payloadToSend };
-      console.log("Payload final para editar:", finalPayloadForEdit);
-      updatedCliente = await saveClient({
-        ...editingCliente,
-        ...payloadToSend,
-      });
-    } else {
-      updatedCliente = await saveClient(payloadToSend);
+  
+      if (editingCliente) {
+        console.log("Editando cliente existente. Payload:", payloadToSend);
+        updatedCliente = await updateClient(payloadToSend);
+      } else {
+        console.log("Creando nuevo cliente. Payload:", payloadToSend);
+        updatedCliente = await saveClient(payloadToSend);
+      }
+  
+      const updatedClientes = editingCliente
+        ? clientes.map((c) => c.id === editingCliente.id ? updatedCliente : c)
+        : [...clientes, updatedCliente];
+  
+      setClientes(updatedClientes);
+      saveClientesToLocalStorage(updatedClientes);
+      setIsModalOpen(false);
+    } catch (err: any) {
+      console.error("Error al guardar cliente:", err);
+      alert(err.message || "No se pudo guardar el cliente. Intente nuevamente.");
     }
-
-    const updatedClientes = editingCliente
-      ? clientes.map((c) => c.id === editingCliente.id ? updatedCliente : c)
-      : [...clientes, updatedCliente];
-
-    setClientes(updatedClientes);
-    saveClientesToLocalStorage(updatedClientes);
-    setIsModalOpen(false);
-  } catch (err) {
-    console.error("Error al guardar cliente:", err);
-    alert("No se pudo guardar el cliente. Intente nuevamente.");
-  }
-};
+  };
+  
 
   if (loading) {
     return (

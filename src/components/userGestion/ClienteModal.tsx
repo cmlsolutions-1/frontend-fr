@@ -46,10 +46,12 @@ export default function ClienteModal({
     role: "Client",
     priceCategory: "",
     salesPerson: "",
-    state: "activo"
+    state: "activo",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>(
+    {}
+  );
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -58,9 +60,18 @@ export default function ClienteModal({
     if (cliente && isOpen) {
       setFormData({
         ...cliente,
-        emails: (cliente.emails && cliente.emails.length > 0) ? cliente.emails : [{ emailAddress: "", isPrincipal: true }],
-        phones: (cliente.phones && cliente.phones.length > 0) ? cliente.phones : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
-        address: (cliente.address && cliente.address.length > 0) ? cliente.address : [""],
+        emails:
+          cliente.emails && cliente.emails.length > 0
+            ? cliente.emails
+            : [{ emailAddress: "", isPrincipal: true }],
+        phones:
+          cliente.phones && cliente.phones.length > 0
+            ? cliente.phones
+            : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+        address:
+          cliente.address && cliente.address.length > 0
+            ? cliente.address
+            : [""],
       });
     } else {
       setFormData({
@@ -75,7 +86,7 @@ export default function ClienteModal({
         role: "Client",
         priceCategory: "",
         salesPerson: "",
-        state: "activo"
+        state: "activo",
       });
     }
     setErrors({});
@@ -87,21 +98,28 @@ export default function ClienteModal({
 
     if (!formData.id.trim()) newErrors.id = "El ID es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
-    if (!formData.lastName.trim()) newErrors.lastName = "El apellido es requerido";
+    if (!formData.lastName.trim())
+      newErrors.lastName = "El apellido es requerido";
 
     const email = formData.emails[0]?.emailAddress;
     if (!email) newErrors.emails = "El email es requerido";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.emails = "Email inválido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      newErrors.emails = "Email inválido";
 
     const phone = formData.phones[0]?.numberPhone;
     if (!phone) newErrors.phones = "El teléfono es requerido";
-    else if (!/^[0-9]{7,15}$/.test(phone)) newErrors.phones = "Teléfono inválido";
+    else if (!/^[0-9]{7,15}$/.test(phone))
+      newErrors.phones = "Teléfono inválido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
-    if (!formData.priceCategory) newErrors.priceCategory = "La categoría de precio es requerida";
-    if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
-    if (formData.password.length < 6) newErrors.password = "La contraseña debe tener al menos 6 caracteres";
-    if (!formData.salesPerson) newErrors.salesPerson = "Debe asignar un vendedor";
+    if (!formData.priceCategory)
+      newErrors.priceCategory = "La categoría de precio es requerida";
+    if (!formData.password.trim())
+      newErrors.password = "La contraseña es requerida";
+    if (formData.password.length < 6)
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+    if (!formData.salesPerson)
+      newErrors.salesPerson = "Debe asignar un vendedor";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -111,11 +129,11 @@ export default function ClienteModal({
     field: K,
     value: Cliente[K]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Corrección para el error de tipo
     if (errors[field]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
@@ -133,7 +151,7 @@ export default function ClienteModal({
     try {
       await onSave({
         ...formData,
-        state: formData.state || "activo"
+        state: formData.state || "activo",
       });
       onClose();
     } catch (error) {
@@ -179,7 +197,9 @@ export default function ClienteModal({
                 onChange={(e) => handleChange("name", e.target.value)}
                 className={errors.name ? "border-red-500" : ""}
               />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-sm">{errors.name}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Apellido *</Label>
@@ -188,7 +208,9 @@ export default function ClienteModal({
                 onChange={(e) => handleChange("lastName", e.target.value)}
                 className={errors.lastName ? "border-red-500" : ""}
               />
-              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">{errors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -205,7 +227,9 @@ export default function ClienteModal({
               }
               className={errors.emails ? "border-red-500" : ""}
             />
-            {errors.emails && <p className="text-red-500 text-sm">{errors.emails}</p>}
+            {errors.emails && (
+              <p className="text-red-500 text-sm">{errors.emails}</p>
+            )}
           </div>
 
           {/* Teléfono */}
@@ -242,7 +266,9 @@ export default function ClienteModal({
                 placeholder="3112345678"
               />
             </div>
-            {errors.phones && <p className="text-red-500 text-sm">{errors.phones}</p>}
+            {errors.phones && (
+              <p className="text-red-500 text-sm">{errors.phones}</p>
+            )}
           </div>
 
           {/* Contraseña */}
@@ -254,7 +280,9 @@ export default function ClienteModal({
               onChange={(e) => handleChange("password", e.target.value)}
               className={errors.password ? "border-red-500" : ""}
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
           </div>
 
           {/* Dirección */}
@@ -274,7 +302,9 @@ export default function ClienteModal({
               onChange={(e) => handleChange("city", e.target.value)}
               className={errors.city ? "border-red-500" : ""}
             />
-            {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+            {errors.city && (
+              <p className="text-red-500 text-sm">{errors.city}</p>
+            )}
           </div>
 
           {/* Categoría de Precio */}
@@ -285,28 +315,33 @@ export default function ClienteModal({
               onChange={(e) => handleChange("priceCategory", e.target.value)}
               className={errors.priceCategory ? "border-red-500" : ""}
             />
-            {errors.priceCategory && <p className="text-red-500 text-sm">{errors.priceCategory}</p>}
+            {errors.priceCategory && (
+              <p className="text-red-500 text-sm">{errors.priceCategory}</p>
+            )}
           </div>
 
           {/* Asignar Vendedor */}
           <div className="space-y-2">
             <Label>Vendedor Asignado *</Label>
             <Select
-              value={formData.salesPerson || ""}
-              onValueChange={(value) => handleChange("salesPerson", value)}
+              value={formData.salesPerson}
+              onValueChange={(value) => handleChange("salesPerson", value)
+            }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar vendedor" />
               </SelectTrigger>
               <SelectContent>
                 {vendedores.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
+                  <SelectItem key={v._id} value={v.id}>
                     {v.name} {v.lastName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.salesPerson && <p className="text-red-500 text-sm">{errors.salesPerson}</p>}
+            {errors.salesPerson && (
+              <p className="text-red-500 text-sm">{errors.salesPerson}</p>
+            )}
           </div>
 
           {/* Estado */}
@@ -314,7 +349,9 @@ export default function ClienteModal({
             <Label>Estado</Label>
             <Select
               value={formData.state || "activo"}
-              onValueChange={(value: "activo" | "inactivo") => handleChange("state", value)}
+              onValueChange={(value: "activo" | "inactivo") =>
+                handleChange("state", value)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -335,7 +372,8 @@ export default function ClienteModal({
               className="bg-green-600 hover:bg-green-700"
               disabled={loading}
             >
-              {loading ? "Guardando..." : cliente ? "Actualizar" : "Crear"} Cliente
+              {loading ? "Guardando..." : cliente ? "Actualizar" : "Crear"}{" "}
+              Cliente
             </Button>
           </DialogFooter>
         </form>

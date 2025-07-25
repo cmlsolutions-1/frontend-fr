@@ -24,11 +24,11 @@ export interface User {
   password: string;
   emails: Email[];
   phones: Phone[];
-  address: string[];        // singular, no "addres"
+  address: string[];        
   city: string;
   role: Role;
   priceCategory: string;
-  salesPerson?: string;
+  salesPerson?: string; 
   clients?: string[];
   state?: "activo" | "inactivo";
 }

@@ -71,37 +71,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
       throw new Error(responseData.message || `Error al registrar el cliente (${response.status})`);
     }
 
-/*     // Transformar la respuesta al formato de tu frontend
-    const createdClient: Cliente = {
-      ...responseData.user,
-      emails: responseData.user.emails,
-      phones: responseData.user.phones,
-      address: responseData.user.address,
-      state: responseData.user.state === 'Active' ? 'activo' : 'inactivo',
-      // Agrega otros campos necesarios
-    };
 
-    console.log("Cliente creado exitosamente:", createdClient);
-    return createdClient;
-
-  } catch (error) {
-    console.error("Error en la solicitud:", error);
-    throw new Error("No se pudo registrar el cliente. Por favor intente nuevamente.");
-  }
-}; */
-
-
-/* //-- funcion para traer los clientes de un vendedor
-export const getClientsBySeller = async (sellerId: string): Promise<Cliente[]> => {
-  try {
-    const res = await fetch(`${API_URL}/users/salesperson/${sellerId}/clients`);
-    if (!res.ok) throw new Error("Error al obtener clientes");
-    return await res.json();
-  } catch (error) {
-    console.error("Error al obtener clientes:", error);
-    return [];
-  }
-}; */
 
 let createdClientData;
     if (responseData && typeof responseData === 'object' && 'id' in responseData) {
@@ -155,6 +125,147 @@ let createdClientData;
     }
   }
 };
+
+export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
+  // Validaciones básicas para la actualización
+  if (!cliente.id) {
+    throw new Error("El ID del cliente es requerido para la actualización.");
+  }
+
+  const emailPrincipal = cliente.emails?.[0]?.emailAddress;
+  if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
+    throw new Error("Debe proporcionar un email válido");
+  }
+
+  if (cliente.salesPerson) { // Asegurarse de que se tiene el ID del vendedor (ya sea cédula o _id)
+    throw new Error("Debe asignar un vendedor al cliente");
+  }
+
+  if (!cliente.phones?.[0]?.numberPhone) {
+    throw new Error("El teléfono es requerido");
+  }
+
+  // Estructura EXACTA que espera el backend para la actualización (UpdateUserDto)
+  // Basado en tu ejemplo de Postman y la definición del DTO
+  const payload = {
+    id: cliente.id, // El ID es obligatorio para UpdateUserDto
+    name: cliente.name?.trim() || undefined, // Enviar solo si hay valor
+    lastName: cliente.lastName?.trim() || undefined,
+    // Campos que pueden ser actualizados, enviar solo si existen/son válidos
+    email: cliente.emails && cliente.emails.length > 0 ? cliente.emails.map(e => ({
+      emailAddress: e.emailAddress?.trim(),
+      isPrincipal: e.isPrincipal
+    })) : undefined,
+    phone: cliente.phones && cliente.phones.length > 0 ? cliente.phones.map(p => ({
+      numberPhone: p.numberPhone?.replace(/\D/g, ''), // Limpiar
+      indicative: p.indicative,
+      isPrincipal: p.isPrincipal
+    })) : undefined,
+    address: cliente.address && cliente.address.length > 0 ? cliente.address : undefined,
+    city: cliente.city || undefined,
+    priceCategory: cliente.priceCategory || undefined,
+    // Importante: El DTO espera 'idSalesPerson', no 'salesPerson'
+    idSalesPerson: cliente.salesPerson || undefined, // Asumimos que ya es el _id correcto
+    // state: cliente.state === "activo" ? "Active" : "Inactive", // Descomenta si necesitas actualizar el estado
+  };
+
+  // Limpiar el payload de campos undefined para no enviarlos innecesariamente
+  const cleanPayload = Object.fromEntries(
+    Object.entries(payload).filter(([_, v]) => v !== undefined)
+  );
+
+  console.log("Payload a enviar para ACTUALIZAR:", JSON.stringify(cleanPayload, null, 2));
+
+  try {
+    console.log("Cliente antes del fetch:", cliente);
+    const response = await fetch(`${API_URL}/users/`, {
+      method: "PUT", 
+      headers: {
+        "Content-Type": "application/json",
+
+      },
+      body: JSON.stringify({
+          id: cliente.id,
+          name: cliente.name,
+          lastName: cliente.lastName,
+          email: cliente.emails,
+          phone: cliente.phones,
+          address: cliente.address,
+          city: cliente.city,
+          priceCategory: cliente.priceCategory,
+          idSalesPerson: cliente.salesPerson, // 👈 usa este nombre exacto
+        }),
+      });
+
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (parseError) {
+      responseData = { message: `Error HTTP: ${response.status} ${response.statusText}` };
+    }
+
+    if (!response.ok) {
+      console.error("Error del backend al actualizar:", responseData);
+      throw new Error(responseData.message || `Error al actualizar el cliente (${response.status})`);
+    }
+
+    // Manejar la respuesta del backend. Asumir que devuelve el cliente actualizado.
+    // Ajusta esta parte según la estructura real de la respuesta del backend.
+    let updatedClientData: any = {};
+    if (responseData && typeof responseData === 'object') {
+      if ('user' in responseData && responseData.user && typeof responseData.user === 'object' && 'id' in responseData.user) {
+        // Si la respuesta es { user: ..., token: ... }
+        updatedClientData = responseData.user;
+      } else if ('id' in responseData) {
+        // Si la respuesta es el cliente directamente
+        updatedClientData = responseData;
+      } else {
+        // Estructura inesperada, usar datos del payload como base
+        console.warn("Respuesta inesperada del backend (éxito en actualización):", responseData);
+        updatedClientData = { ...cleanPayload, ...responseData }; // Mezclar
+      }
+    }
+
+    // Mapear el estado del backend al formato del frontend si es necesario
+    const mappedState = updatedClientData.state === 'Active' ? 'activo' :
+                       updatedClientData.state === 'Inactive' ? 'inactivo' :
+                       updatedClientData.state || cliente.state || 'activo'; // Fallback
+
+    // Crear el objeto Cliente final para devolver al frontend
+    // Es importante asegurarse de que los campos requeridos estén presentes
+    const updatedClient: Cliente = {
+      id: updatedClientData.id || cliente.id,
+      _id: updatedClientData._id, // Si el backend lo proporciona
+      name: updatedClientData.name ?? cliente.name,
+      lastName: updatedClientData.lastName ?? cliente.lastName,
+      emails: updatedClientData.email || updatedClientData.emails || cliente.emails,
+      phones: updatedClientData.phone || updatedClientData.phones || cliente.phones,
+      address: updatedClientData.address || cliente.address,
+      city: updatedClientData.city || cliente.city,
+      password: "", // Nunca devolver la contraseña
+      role: updatedClientData.role || cliente.role || "Client",
+      priceCategory: updatedClientData.priceCategory || cliente.priceCategory,
+      salesPerson: updatedClientData.idSalesPerson || updatedClientData.salesPerson || cliente.salesPerson, // Mapear idSalesPerson del backend
+      state: mappedState,
+      // clients: updatedClientData.clients || cliente.clients || [],
+    };
+
+    console.log("Cliente actualizado exitosamente:", updatedClient);
+    return updatedClient;
+
+  } catch (error) {
+    console.error("Error en la solicitud updateClient:", error);
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error("Error de conexión. Verifique su red e intente nuevamente.");
+    }
+    if (error instanceof Error) {
+      throw error; // Relanzar errores con mensaje
+    } else {
+      throw new Error("No se pudo actualizar el cliente. Por favor intente nuevamente.");
+    }
+  }
+};
+
 
 export const getClientsBySeller = async (sellerId: string): Promise<Cliente[]> => {
   try {
