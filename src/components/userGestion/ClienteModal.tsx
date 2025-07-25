@@ -54,10 +54,15 @@ export default function ClienteModal({
   );
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  
 
   // Cargar cliente para edición
   useEffect(() => {
     if (cliente && isOpen) {
+      const vendedorAsignado = vendedores.find(
+      (v) => v.id === cliente.salesPerson // cliente.salesPerson tiene el id (cédula)
+    );
+    
       setFormData({
         ...cliente,
         emails:
@@ -68,10 +73,9 @@ export default function ClienteModal({
           cliente.phones && cliente.phones.length > 0
             ? cliente.phones
             : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
-        address:
-          cliente.address && cliente.address.length > 0
-            ? cliente.address
+        address: cliente.address && cliente.address.length > 0 ? cliente.address
             : [""],
+            salesPerson: vendedorAsignado?._id || "",
       });
     } else {
       setFormData({
@@ -91,7 +95,7 @@ export default function ClienteModal({
     }
     setErrors({});
     setApiError(null);
-  }, [cliente, isOpen]);
+  }, [cliente, isOpen, vendedores]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof Cliente, string>> = {};
@@ -324,7 +328,7 @@ export default function ClienteModal({
           <div className="space-y-2">
             <Label>Vendedor Asignado *</Label>
             <Select
-              value={formData.salesPerson}
+              value={formData.salesPerson ?? ""}
               onValueChange={(value) => handleChange("salesPerson", value)
             }
             >
@@ -332,11 +336,24 @@ export default function ClienteModal({
                 <SelectValue placeholder="Seleccionar vendedor" />
               </SelectTrigger>
               <SelectContent>
-                {vendedores.map((v) => (
-                  <SelectItem key={v._id} value={v.id}>
+                {vendedores.map((v, i) => {
+                  const key = v._id || v.id;
+                      if (!key) {
+                        console.warn(`Vendedor sin identificador válido en índice ${i}:`, v);
+                        return null;
+
+                      }
+                      return (
+                        <SelectItem key={key} value={String(key)}>
+                          {v.name} {v.lastName}
+                        </SelectItem>
+                      );
+
+                {/* {vendedores.filter((v)=>v._id).map((v) => (
+                  <SelectItem key={v._id} value={String(v._id)}>
                     {v.name} {v.lastName}
-                  </SelectItem>
-                ))}
+                  </SelectItem> */}
+                })}
               </SelectContent>
             </Select>
             {errors.salesPerson && (

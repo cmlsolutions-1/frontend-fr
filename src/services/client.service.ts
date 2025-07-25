@@ -1,4 +1,7 @@
 import type { Cliente } from "@/interfaces/user.interface";
+import { normalizeClientPayload } from "@/utils/normalizeClientPayload";
+import { UpdateUserDto } from "@/interfaces/update-user";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -137,9 +140,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
     throw new Error("Debe proporcionar un email válido");
   }
 
-  if (cliente.salesPerson) { // Asegurarse de que se tiene el ID del vendedor (ya sea cédula o _id)
-    throw new Error("Debe asignar un vendedor al cliente");
-  }
+if (!cliente.salesPerson || typeof cliente.salesPerson !== "string" || cliente.salesPerson.trim() === "") {
+  throw new Error("Debe asignar un vendedor al cliente");
+}
 
   if (!cliente.phones?.[0]?.numberPhone) {
     throw new Error("El teléfono es requerido");
@@ -147,7 +150,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
 
   // Estructura EXACTA que espera el backend para la actualización (UpdateUserDto)
   // Basado en tu ejemplo de Postman y la definición del DTO
-  const payload = {
+  /* const payload = {
     id: cliente.id, // El ID es obligatorio para UpdateUserDto
     name: cliente.name?.trim() || undefined, // Enviar solo si hay valor
     lastName: cliente.lastName?.trim() || undefined,
@@ -172,6 +175,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   // Limpiar el payload de campos undefined para no enviarlos innecesariamente
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(([_, v]) => v !== undefined)
+  ); */
+  const cleanPayload = Object.fromEntries(
+  Object.entries(normalizeClientPayload(cliente)).filter(([_, v]) => v !== undefined)
   );
 
   console.log("Payload a enviar para ACTUALIZAR:", JSON.stringify(cleanPayload, null, 2));
@@ -184,17 +190,8 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
         "Content-Type": "application/json",
 
       },
-      body: JSON.stringify({
-          id: cliente.id,
-          name: cliente.name,
-          lastName: cliente.lastName,
-          email: cliente.emails,
-          phone: cliente.phones,
-          address: cliente.address,
-          city: cliente.city,
-          priceCategory: cliente.priceCategory,
-          idSalesPerson: cliente.salesPerson, // 👈 usa este nombre exacto
-        }),
+      body: JSON.stringify(cleanPayload),
+
       });
 
     let responseData;
