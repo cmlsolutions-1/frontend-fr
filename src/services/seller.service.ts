@@ -18,6 +18,7 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
     // Mapear los datos manteniendo la estructura original
     return data.map(
       (item: any): Vendedor => ({
+        _id: item._id,
         id: item.id,
         name: item.name,
         lastName: item.lastName,

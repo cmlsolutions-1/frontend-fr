@@ -57,7 +57,7 @@ export default function ClienteModal({
   const [apiError, setApiError] = useState<string | null>(null);
   
 
-  const handleSaveCliente = () => {
+  /* const handleSaveCliente = () => {
     console.log("handleSaveCliente recibió:", formData);
     const vendedor = vendedores.find(
       (v) => (v._id ?? v.id) === formData.salesPerson
@@ -85,7 +85,7 @@ export default function ClienteModal({
         console.error("Error al guardar cliente:", err);
         // mostrar toast de error si es necesario
       });
-  };
+  }; */
   
 
 /*   // Cargar cliente para edición

@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Plus, Edit, Trash2, Mail, Phone, MapPin } from "lucide-react";
 import ClienteModal from "@/components/userGestion/ClienteModal";
 import { Cliente, Vendedor } from "@/interfaces/user.interface";
-import { saveClient, updateClient, getClientsBySeller } from "@/services/client.service";
+import {
+  saveClient,
+  updateClient,
+  getClientsBySeller,
+} from "@/services/client.service";
 
 interface ClientesManagerProps {
   searchTerm: string;
@@ -33,10 +37,10 @@ const saveClientesToLocalStorage = (clientes: Cliente[]) => {
   }
 };
 
-export default function ClientesManager({ 
-  searchTerm, 
-  vendedores, 
-  selectedVendedorId 
+export default function ClientesManager({
+  searchTerm,
+  vendedores,
+  selectedVendedorId,
 }: ClientesManagerProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]);
@@ -50,12 +54,12 @@ export default function ClientesManager({
     setLoading(true);
     try {
       const data = loadClientesFromLocalStorage();
-      
+
       // Filtrar por vendedor si está seleccionado
-      const filtered = selectedVendedorId 
-        ? data.filter(c => c.salesPerson === selectedVendedorId)
+      const filtered = selectedVendedorId
+        ? data.filter((c) => c.salesPerson === selectedVendedorId)
         : data;
-      
+
       setClientes(filtered);
       setError(null);
     } catch (err) {
@@ -65,7 +69,7 @@ export default function ClientesManager({
       setLoading(false);
     }
   }, [selectedVendedorId]);
-  
+
   // Filtrar por búsqueda
   useEffect(() => {
     if (!searchTerm) {
@@ -73,14 +77,13 @@ export default function ClientesManager({
       return;
     }
 
-    
-
     const term = searchTerm.toLowerCase();
-    const result = clientes.filter(c =>
-      c.name.toLowerCase().includes(term) ||
-      c.lastName.toLowerCase().includes(term) ||
-      c.emails?.[0]?.emailAddress?.toLowerCase().includes(term) ||
-      c.phones?.[0]?.numberPhone?.includes(searchTerm)
+    const result = clientes.filter(
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        c.lastName.toLowerCase().includes(term) ||
+        c.emails?.[0]?.emailAddress?.toLowerCase().includes(term) ||
+        c.phones?.[0]?.numberPhone?.includes(searchTerm)
     );
 
     setFilteredClientes(result);
@@ -102,9 +105,9 @@ export default function ClientesManager({
     try {
       // Intenta eliminar en el backend primero
       //await deleteClient(id);
-      
+
       // Si tiene éxito, actualiza el estado local
-      const updated = clientes.filter(c => c.id !== id);
+      const updated = clientes.filter((c) => c.id !== id);
       setClientes(updated);
       saveClientesToLocalStorage(updated);
     } catch (err) {
@@ -117,34 +120,39 @@ export default function ClientesManager({
     try {
       console.log("handleSaveCliente recibió:", clienteData);
       console.log("Lista de vendedores disponibles:", vendedores);
-  
+
       const vendedor = vendedores.find((v) => {
-        const match = v.id === clienteData.salesPerson;
-        console.log(`Comparando v.id (${v.id}) con clienteData.salesPerson (${clienteData.salesPerson}): ${match}`);
+        const match = v._id === clienteData.salesPerson;
+        console.log(
+          `Comparando v._id (${v._id}) con clienteData.salesPerson (${clienteData.salesPerson}): ${match}`
+        );
         return match;
       });
 
       console.log("clienteData.salesPerson:", clienteData.salesPerson);
       console.log("vendedores:", vendedores);
-  
+
       if (!vendedor) {
-        const errorMsg = `Vendedor no encontrado para ID/Cédula: '${clienteData.salesPerson}'. Verifica la selección o la lista de vendedores.`;
+        const errorMsg = `Vendedor no encontrado para _id: '${clienteData.salesPerson}'. Verifica la selección o la lista de vendedores.`;
         console.error(errorMsg);
         alert(errorMsg);
         return;
       }
-  
+
       console.log("Vendedor encontrado:", vendedor);
-  
+
       const payloadToSend: Cliente = {
         ...clienteData,
-        salesPerson: vendedor._id || vendedor.id, // lo que espera el backend
+        salesPerson: clienteData.salesPerson, // lo que espera el backend
         id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
       };
-      console.log("Creando nuevo cliente. Payload:", payloadToSend);
-  
+      console.log(
+        "Payload a enviar (ya sea para crear o actualizar):",
+        payloadToSend
+      );
+
       let updatedCliente: Cliente;
-  
+
       if (editingCliente) {
         console.log("Editando cliente existente. Payload:", payloadToSend);
         updatedCliente = await updateClient(payloadToSend);
@@ -152,20 +160,21 @@ export default function ClientesManager({
         console.log("Creando nuevo cliente. Payload:", payloadToSend);
         updatedCliente = await saveClient(payloadToSend);
       }
-  
+
       const updatedClientes = editingCliente
-        ? clientes.map((c) => c.id === editingCliente.id ? updatedCliente : c)
+        ? clientes.map((c) => (c.id === editingCliente.id ? updatedCliente : c))
         : [...clientes, updatedCliente];
-  
+
       setClientes(updatedClientes);
       saveClientesToLocalStorage(updatedClientes);
       setIsModalOpen(false);
     } catch (err: any) {
       console.error("Error al guardar cliente:", err);
-      alert(err.message || "No se pudo guardar el cliente. Intente nuevamente.");
+      alert(
+        err.message || "No se pudo guardar el cliente. Intente nuevamente."
+      );
     }
   };
-  
 
   if (loading) {
     return (
@@ -187,13 +196,19 @@ export default function ClientesManager({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Clientes</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Gestión de Clientes
+          </h1>
           <p className="text-gray-600 mt-1">
-            {filteredClientes.length} cliente{filteredClientes.length !== 1 ? "s" : ""} encontrado
+            {filteredClientes.length} cliente
+            {filteredClientes.length !== 1 ? "s" : ""} encontrado
             {filteredClientes.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button onClick={handleCreateCliente} className="bg-blue-600 hover:bg-blue-700">
+        <Button
+          onClick={handleCreateCliente}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nuevo Cliente
         </Button>
@@ -205,77 +220,87 @@ export default function ClientesManager({
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-  {filteredClientes.map((cliente) => {
-    // Datos seguros con valores por defecto
-    const email = cliente.emails?.[0]?.emailAddress || "Sin email";
-    const phoneNumber = cliente.phones?.[0]?.numberPhone || "Sin teléfono";
-    const phoneIndicative = cliente.phones?.[0]?.indicative || "+57";
-    const address = cliente.address?.[0] || "Sin dirección";
-    const priceCategory = cliente.priceCategory || "Sin categoría";
+          {filteredClientes.map((cliente) => {
+            // Datos seguros con valores por defecto
+            const email = cliente.emails?.[0]?.emailAddress || "Sin email";
+            const phoneNumber =
+              cliente.phones?.[0]?.numberPhone || "Sin teléfono";
+            const phoneIndicative = cliente.phones?.[0]?.indicative || "+57";
+            const address = cliente.address?.[0] || "Sin dirección";
+            const priceCategory = cliente.priceCategory || "Sin categoría";
 
-    return (
-      <Card key={cliente.id} className="hover:shadow-lg transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-lg">
-                {cliente.name} {cliente.lastName}
-              </CardTitle>
-              <div className="text-sm font-mono text-gray-500 mt-1">ID: {cliente.id}</div>
-              <Badge 
-                variant={cliente.state === "activo" ? "default" : "secondary"} 
-                className="mt-1"
+            return (
+              <Card
+                key={cliente.id}
+                className="hover:shadow-lg transition-shadow"
               >
-                {cliente.state || "Sin estado"}
-              </Badge>
-              <Badge 
-                variant={priceCategory === "VIP" ? "default" : "secondary"} 
-                className="mt-1 ml-1"
-              >
-                {priceCategory}
-              </Badge>
-            </div>
-            <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => handleEditCliente(cliente)}
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteCliente(cliente.id)}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Mail className="w-4 h-4" />
-            <span className="truncate">{email}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Phone className="w-4 h-4" />
-            <span>
-              {phoneNumber === "Sin teléfono" 
-                ? "Sin teléfono"
-                : `${phoneIndicative} ${phoneNumber}`}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MapPin className="w-4 h-4" />
-            <span className="truncate">{address}</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  })}
-</div>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">
+                        {cliente.name} {cliente.lastName}
+                      </CardTitle>
+                      <div className="text-sm font-mono text-gray-500 mt-1">
+                        ID: {cliente.id}
+                      </div>
+                      <Badge
+                        variant={
+                          cliente.state === "activo" ? "default" : "secondary"
+                        }
+                        className="mt-1"
+                      >
+                        {cliente.state || "Sin estado"}
+                      </Badge>
+                      <Badge
+                        variant={
+                          priceCategory === "VIP" ? "default" : "secondary"
+                        }
+                        className="mt-1 ml-1"
+                      >
+                        {priceCategory}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditCliente(cliente)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCliente(cliente.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Mail className="w-4 h-4" />
+                    <span className="truncate">{email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Phone className="w-4 h-4" />
+                    <span>
+                      {phoneNumber === "Sin teléfono"
+                        ? "Sin teléfono"
+                        : `${phoneIndicative} ${phoneNumber}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span className="truncate">{address}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
 
       <ClienteModal
