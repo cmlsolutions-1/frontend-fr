@@ -133,72 +133,82 @@ let createdClientData;
   }
 };
 
+// src/services/client.service.ts
 export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   // Validaciones básicas para la actualización
-  if (!cliente.id) {
-    throw new Error("El ID del cliente es requerido para la actualización.");
+  // Priorizar _id para la actualización, pero fallback a id si _id no está
+  const clientIdToUpdate = cliente._id || cliente.id; 
+  if (!clientIdToUpdate) {
+    throw new Error("El ID (_id o id) del cliente es requerido para la actualización.");
   }
-
   const emailPrincipal = cliente.emails?.[0]?.emailAddress;
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
-
   if (!cliente.salesPerson) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
-
   if (!cliente.phones?.[0]?.numberPhone) {
     throw new Error("El teléfono es requerido");
   }
 
-  // Estructura EXACTA que espera el backend para la actualización (UpdateUserDto)
-  // Basado en tu ejemplo de Postman y la definición del DTO
-  /* const payload = {
-    id: cliente.id, // El ID es obligatorio para UpdateUserDto
-    name: cliente.name?.trim() || undefined, // Enviar solo si hay valor
-    lastName: cliente.lastName?.trim() || undefined,
-    // Campos que pueden ser actualizados, enviar solo si existen/son válidos
-    email: cliente.emails && cliente.emails.length > 0 ? cliente.emails.map(e => ({
-      emailAddress: e.emailAddress?.trim(),
-      isPrincipal: e.isPrincipal
-    })) : undefined,
-    phone: cliente.phones && cliente.phones.length > 0 ? cliente.phones.map(p => ({
-      numberPhone: p.numberPhone?.replace(/\D/g, ''), // Limpiar
-      indicative: p.indicative,
-      isPrincipal: p.isPrincipal
-    })) : undefined,
-    address: cliente.address && cliente.address.length > 0 ? cliente.address : undefined,
-    city: cliente.city || undefined,
-    priceCategory: cliente.priceCategory || undefined,
-    // Importante: El DTO espera 'idSalesPerson', no 'salesPerson'
-    idSalesPerson: cliente.salesPerson || undefined, // Asumimos que ya es el _id correcto
-    // state: cliente.state === "activo" ? "Active" : "Inactive", // Descomenta si necesitas actualizar el estado
+  // --- Construcción DIRECTA del payload para la actualización usando _id ---
+  const payloadToSend: any = {
+    // Usar _id como el identificador principal para MongoDB
+    _id: clientIdToUpdate, // <-- Cambio clave aquí
   };
 
-  // Limpiar el payload de campos undefined para no enviarlos innecesariamente
-  const cleanPayload = Object.fromEntries(
-    Object.entries(payload).filter(([_, v]) => v !== undefined)
-  ); */
-  const cleanPayload = Object.fromEntries(
-  Object.entries(normalizeClientPayload(cliente)).filter(([_, v]) => v !== undefined)
-  );
+  // Añadir solo los campos que tienen valor
+  if (cliente.name?.trim()) payloadToSend.name = cliente.name.trim();
+  if (cliente.lastName?.trim()) payloadToSend.lastName = cliente.lastName.trim();
+  
+  if (cliente.emails && cliente.emails.length > 0) {
+    payloadToSend.email = cliente.emails.map(e => ({
+      emailAddress: e.emailAddress?.trim(),
+      isPrincipal: e.isPrincipal
+    }));
+  }
 
-  console.log("Payload a enviar para ACTUALIZAR:", JSON.stringify(cleanPayload, null, 2));
+  if (cliente.phones && cliente.phones.length > 0) {
+    payloadToSend.phone = cliente.phones.map(p => ({
+      numberPhone: p.numberPhone?.replace(/\D/g, ''),
+      indicative: p.indicative,
+      isPrincipal: p.isPrincipal
+    }));
+  }
+
+  if (cliente.address && cliente.address.length > 0) {
+    payloadToSend.address = cliente.address;
+  }
+
+  if (cliente.city) payloadToSend.city = cliente.city;
+  if (cliente.priceCategory) payloadToSend.priceCategory = cliente.priceCategory;
+  
+  // Campo CRÍTICO para la actualización: idSalesPerson (no salesPerson)
+  // Asumimos que cliente.salesPerson ya contiene el _id del vendedor
+  payloadToSend.idSalesPerson = cliente.salesPerson; 
+
+  // Si necesitas actualizar el estado, descomenta la siguiente línea
+  // payloadToSend.state = cliente.state === "activo" ? "Active" : "Inactive"; 
+
+  console.log("Payload a enviar para ACTUALIZAR (usando _id):", JSON.stringify(payloadToSend, null, 2));
 
   try {
-    console.log("Cliente antes del fetch:", cliente);
+    console.log("Cliente antes del fetch (para actualizar):", cliente);
     const response = await fetch(`${API_URL}/users/`, {
-      method: "PUT", 
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
-
+        // Agrega aquí otros headers necesarios como Authorization si los hay
       },
-      body: JSON.stringify(cleanPayload),
+      body: JSON.stringify(payloadToSend),
+    });
 
-      });
+    // ... (resto del manejo de respuesta e igualación de objeto, igual que antes) ...
+    // (El código para manejar la respuesta y mapear el objeto resultante Cliente
+    //  no cambia, ya que se basa en los datos devueltos por el backend)
 
-    let responseData;
+     let responseData;
     try {
       responseData = await response.json();
     } catch (parseError) {
@@ -210,8 +220,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       throw new Error(responseData.message || `Error al actualizar el cliente (${response.status})`);
     }
 
-    // Manejar la respuesta del backend. Asumir que devuelve el cliente actualizado.
-    // Ajusta esta parte según la estructura real de la respuesta del backend.
+    // --- Manejo de la respuesta del backend ---
     let updatedClientData: any = {};
     if (responseData && typeof responseData === 'object') {
       if ('user' in responseData && responseData.user && typeof responseData.user === 'object' && 'id' in responseData.user) {
@@ -223,7 +232,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       } else {
         // Estructura inesperada, usar datos del payload como base
         console.warn("Respuesta inesperada del backend (éxito en actualización):", responseData);
-        updatedClientData = { ...cleanPayload, ...responseData }; // Mezclar
+        updatedClientData = { ...payloadToSend, ...responseData }; // Mezclar
       }
     }
 
@@ -232,11 +241,11 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
                        updatedClientData.state === 'Inactive' ? 'inactivo' :
                        updatedClientData.state || cliente.state || 'activo'; // Fallback
 
-    // Crear el objeto Cliente final para devolver al frontend
-    // Es importante asegurarse de que los campos requeridos estén presentes
+    // --- Crear el objeto Cliente final para devolver al frontend ---
     const updatedClient: Cliente = {
+      // Priorizar _id e id del backend, fallback a los del cliente original
+      _id: updatedClientData._id || cliente._id, 
       id: updatedClientData.id || cliente.id,
-      _id: updatedClientData._id, // Si el backend lo proporciona
       name: updatedClientData.name ?? cliente.name,
       lastName: updatedClientData.lastName ?? cliente.lastName,
       emails: updatedClientData.email || updatedClientData.emails || cliente.emails,
@@ -246,9 +255,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       password: "", // Nunca devolver la contraseña
       role: updatedClientData.role || cliente.role || "Client",
       priceCategory: updatedClientData.priceCategory || cliente.priceCategory,
-      salesPerson: updatedClientData.idSalesPerson || updatedClientData.salesPerson || cliente.salesPerson, // Mapear idSalesPerson del backend
+      // MUY IMPORTANTE: El backend responde con 'idSalesPerson', mapearlo a 'salesPerson' del frontend
+      salesPerson: updatedClientData.idSalesPerson || updatedClientData.salesPerson || cliente.salesPerson, 
       state: mappedState,
-      // clients: updatedClientData.clients || cliente.clients || [],
     };
 
     console.log("Cliente actualizado exitosamente:", updatedClient);
