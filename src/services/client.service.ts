@@ -8,11 +8,15 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
   // Validaciones obligatorias
   // Validar email primero
+
+  
+
   const emailPrincipal = cliente.emails?.[0]?.emailAddress;
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
-  if (cliente.salesPerson) {
+  
+  if (!cliente.salesPerson) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
 
@@ -140,9 +144,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
     throw new Error("Debe proporcionar un email válido");
   }
 
-if (!cliente.salesPerson || typeof cliente.salesPerson !== "string" || cliente.salesPerson.trim() === "") {
-  throw new Error("Debe asignar un vendedor al cliente");
-}
+  if (!cliente.salesPerson) {
+    throw new Error("Debe asignar un vendedor al cliente");
+  }
 
   if (!cliente.phones?.[0]?.numberPhone) {
     throw new Error("El teléfono es requerido");
@@ -286,3 +290,5 @@ export const getClientsBySeller = async (sellerId: string): Promise<Cliente[]> =
     // return [];
   }
 };
+
+

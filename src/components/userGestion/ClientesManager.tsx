@@ -138,9 +138,10 @@ export default function ClientesManager({
   
       const payloadToSend: Cliente = {
         ...clienteData,
-        salesPerson: vendedor._id, // lo que espera el backend
+        salesPerson: vendedor._id || vendedor.id, // lo que espera el backend
         id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
       };
+      console.log("Creando nuevo cliente. Payload:", payloadToSend);
   
       let updatedCliente: Cliente;
   
