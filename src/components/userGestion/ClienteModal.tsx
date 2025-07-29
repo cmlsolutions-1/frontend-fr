@@ -40,8 +40,8 @@ export default function ClienteModal({
     name: "",
     lastName: "",
     password: "",
-    emails: [{ emailAddress: "", isPrincipal: true }],
-    phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+    emails: [{ EmailAddress: "", IsPrincipal: true }],
+    phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
     city: "",
     role: "Client",
@@ -57,77 +57,6 @@ export default function ClienteModal({
   const [apiError, setApiError] = useState<string | null>(null);
   
 
-  /* const handleSaveCliente = () => {
-    console.log("handleSaveCliente recibió:", formData);
-    const vendedor = vendedores.find(
-      (v) => (v._id ?? v.id) === formData.salesPerson
-    );
-  
-    if (!vendedor) {
-      console.error("Debe asignar un vendedor válido al cliente.");
-      // Muestra mensaje al usuario si quieres
-      return;
-    }
-  
-    const clienteData = {
-      ...formData,
-      salesPerson: vendedor._id ?? vendedor.id, // 👈 Esto es lo que espera tu backend
-    };
-  
-    console.log("Creando nuevo cliente. Payload:", clienteData);
-  
-    saveClient(clienteData)
-      .then((res) => {
-        console.log("Cliente guardado:", res);
-        // mostrar toast de éxito, cerrar modal, etc.
-      })
-      .catch((err) => {
-        console.error("Error al guardar cliente:", err);
-        // mostrar toast de error si es necesario
-      });
-  }; */
-  
-
-/*   // Cargar cliente para edición
-  useEffect(() => {
-    if (cliente && isOpen) {
-      const vendedorAsignado = vendedores.find(
-        (v) => (v._id ?? v.id) === cliente.salesPerson // cliente.salesPerson tiene el id (cédula)
-    );
-    
-      setFormData({
-        ...cliente,
-        emails:
-          cliente.emails && cliente.emails.length > 0
-            ? cliente.emails
-            : [{ emailAddress: "", isPrincipal: true }],
-        phones:
-          cliente.phones && cliente.phones.length > 0
-            ? cliente.phones
-            : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
-        address: cliente.address && cliente.address.length > 0 ? cliente.address
-            : [""],
-            salesPerson: vendedorAsignado?._id ?? vendedorAsignado?.id ?? "",
-      });
-    } else {
-      setFormData({
-        id: "",
-        name: "",
-        lastName: "",
-        password: "",
-        emails: [{ emailAddress: "", isPrincipal: true }],
-        phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
-        address: [""],
-        city: "",
-        role: "Client",
-        priceCategory: "",
-        salesPerson: "",
-        state: "activo",
-      });
-    }
-    setErrors({});
-    setApiError(null);
-  }, [cliente, isOpen, vendedores]); */
 
   useEffect(() => {
   if (cliente && isOpen) {
@@ -146,11 +75,11 @@ export default function ClienteModal({
       emails:
         cliente.emails && cliente.emails.length > 0
           ? cliente.emails
-          : [{ emailAddress: "", isPrincipal: true }],
+          : [{ EmailAddress: "", IsPrincipal: true }],
       phones:
         cliente.phones && cliente.phones.length > 0
           ? cliente.phones
-          : [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+          : [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
       address: cliente.address && cliente.address.length > 0 ? cliente.address : [""],
       salesPerson: vendedorAsignado?._id || "",
     });
@@ -160,8 +89,8 @@ export default function ClienteModal({
       name: "",
       lastName: "",
       password: "",
-      emails: [{ emailAddress: "", isPrincipal: true }],
-      phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+      emails: [{ EmailAddress: "", IsPrincipal: true }],
+      phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
       address: [""],
       city: "",
       role: "Client",
@@ -184,12 +113,12 @@ export default function ClienteModal({
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.emails[0]?.emailAddress;
+    const email = formData.emails[0]?.EmailAddress;
     if (!email) newErrors.emails = "El email es requerido";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.emails = "Email inválido";
 
-    const phone = formData.phones[0]?.numberPhone;
+    const phone = formData.phones[0]?.NumberPhone;
     if (!phone) newErrors.phones = "El teléfono es requerido";
     else if (!/^[0-9]{7,15}$/.test(phone))
       newErrors.phones = "Teléfono inválido";
@@ -302,10 +231,10 @@ export default function ClienteModal({
             <Label>Email *</Label>
             <Input
               type="email"
-              value={formData.emails[0]?.emailAddress || ""}
+              value={formData.emails[0]?.EmailAddress || ""}
               onChange={(e) =>
                 handleChange("emails", [
-                  { ...formData.emails[0], emailAddress: e.target.value },
+                  { ...formData.emails[0], EmailAddress: e.target.value },
                 ])
               }
               className={errors.emails ? "border-red-500" : ""}
@@ -321,10 +250,10 @@ export default function ClienteModal({
             <div className="flex gap-2">
               <div className="w-24">
                 <Select
-                  value={formData.phones[0]?.indicative || "+57"}
+                  value={formData.phones[0]?.Indicative || "+57"}
                   onValueChange={(value) =>
                     handleChange("phones", [
-                      { ...formData.phones[0], indicative: value },
+                      { ...formData.phones[0], Indicative: value },
                     ])
                   }
                 >
@@ -339,10 +268,10 @@ export default function ClienteModal({
                 </Select>
               </div>
               <Input
-                value={formData.phones[0]?.numberPhone || ""}
+                value={formData.phones[0]?.NumberPhone || ""}
                 onChange={(e) =>
                   handleChange("phones", [
-                    { ...formData.phones[0], numberPhone: e.target.value },
+                    { ...formData.phones[0], NumberPhone: e.target.value },
                   ])
                 }
                 className={`flex-1 ${errors.phones ? "border-red-500" : ""}`}

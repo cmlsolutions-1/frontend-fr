@@ -47,7 +47,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     !vendedor.emails ||
     !Array.isArray(vendedor.emails) ||
     vendedor.emails.length === 0 ||
-    !vendedor.emails[0]?.emailAddress?.trim()
+    !vendedor.emails[0]?.EmailAddress?.trim()
   ) {
     console.error("Datos de email inválidos:", vendedor.emails);
     throw new Error("Debe proporcionar al menos un email válido");
@@ -60,15 +60,15 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     lastName: vendedor.lastName.trim(),
     email: [
       {
-        emailAddres: vendedor.emails[0].emailAddress.trim(),
-        isPrincipal: true,
+        EmailAddres: vendedor.emails[0].EmailAddress.trim(),
+        IsPrincipal: true,
       },
     ],
     phone: [
       {
-        numberPhone: vendedor.phones[0]?.numberPhone?.replace(/\D/g, "") || "",
-        indicative: vendedor.phones[0]?.indicative || "+57",
-        isPrincipal: true,
+        NumberPhone: vendedor.phones[0]?.NumberPhone?.replace(/\D/g, "") || "",
+        Indicative: vendedor.phones[0]?.Indicative || "+57",
+        IsPrincipal: true,
       },
     ],
     address: [vendedor.address[0] || ""],
@@ -100,14 +100,14 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
       ...responseData,
       emails:
         responseData.email?.map((e: any) => ({
-          emailAddress: e.emailAddres,
-          isPrincipal: e.isPrincipal,
+          EmailAddress: e.EmailAddres,
+          IsPrincipal: e.IsPrincipal,
         })) || [],
       phones:
         responseData.phone?.map((p: any) => ({
-          numberPhone: p.numberPhone,
-          indicative: p.indicative,
-          isPrincipal: p.isPrincipal,
+          NumberPhone: p.NumberPhone,
+          Indicative: p.Indicative,
+          IsPrincipal: p.IsPrincipal,
         })) || [],
       address: Array.isArray(responseData.address)
         ? responseData.address
@@ -121,22 +121,146 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   }
 };
 
+// src/services/seller.service.ts (o donde tengas updateVendedor)
+
 // Actualizar un vendedor
-export const updateVendedor = async (
-  id: string,
-  data: Partial<Vendedor>
-): Promise<Vendedor> => {
+// Asumiendo que la interfaz Vendedor también usa Email[] y Phone[] con mayúsculas
+export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
+  // Validaciones básicas para la actualización (similares a updateClient)
+  // Priorizar _id para la actualización, pero fallback a id si _id no está
+  const sellerIdToUpdate = vendedor._id || vendedor.id;
+  if (!sellerIdToUpdate) {
+    throw new Error("El ID (_id o id) del vendedor es requerido para la actualización.");
+  }
+
+  // --- Construcción DIRECTA del payload para la actualización usando _id ---
+  // Similar a updateClient, enviamos el _id en el cuerpo
+  const payloadToSend: any = {
+    // Usar _id como el identificador principal
+    _id: sellerIdToUpdate,
+    // Añadir campos que se pueden actualizar. Ajusta según tu backend y la interfaz Vendedor.
+    // Asumiendo que Vendedor tiene una estructura similar a Cliente
+    name: vendedor.name?.trim() || undefined,
+    lastName: vendedor.lastName?.trim() || undefined,
+
+    // Manejar emails (si aplica)
+    // Ajusta según si los vendedores tienen emails y la estructura exacta
+    email: vendedor.emails && vendedor.emails.length > 0 ?
+      vendedor.emails.map(e => ({
+        EmailAddress: e.EmailAddress?.trim(), // Mayúscula
+        IsPrincipal: e.IsPrincipal
+      })) : undefined,
+
+    // Manejar phones (si aplica)
+    // Ajusta según si los vendedores tienen teléfonos y la estructura exacta
+    phone: vendedor.phones && vendedor.phones.length > 0 ?
+      vendedor.phones.map(p => ({
+        NumberPhone: p.NumberPhone?.replace(/\D/g, ''), // Mayúscula y limpieza
+        Indicative: p.Indicative,
+        IsPrincipal: p.IsPrincipal
+      })) : undefined,
+
+    address: vendedor.address && vendedor.address.length > 0 ? vendedor.address : undefined,
+    city: vendedor.city || undefined,
+    // password: vendedor.password || undefined, // Cuidado al actualizar passwords
+    // role: vendedor.role || undefined, // Generalmente no se cambia el rol
+    priceCategory: vendedor.priceCategory || undefined, // Si aplica
+    // salesPerson: vendedor.salesPerson || undefined, // Un vendedor no tiene un "salesPerson" asignado, eso es para clientes
+    state: vendedor.state === "activo" ? "Active" :
+           vendedor.state === "inactivo" ? "Inactive" : undefined,
+    // clients: vendedor.clients || undefined, // Si se maneja la lista de clientes directamente
+  };
+
+  // Limpiar el payload de campos undefined para no enviarlos innecesariamente
+  const cleanPayload = Object.fromEntries(
+    Object.entries(payloadToSend).filter(([_, v]) => v !== undefined)
+  );
+
+  console.log("Payload a enviar para ACTUALIZAR VENDEDOR (usando _id):", JSON.stringify(cleanPayload, null, 2));
+
   try {
-    const res = await fetch(`${API_URL}/${id}`, {
+    console.log("Vendedor antes del fetch (para actualizar):", vendedor);
+    // Usar la misma URL base que updateClient
+    const response = await fetch(`${API_URL}/users/`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+        // Agrega aquí otros headers necesarios como Authorization si los hay
+      },
+      body: JSON.stringify(cleanPayload),
     });
-    if (!res.ok) throw new Error("Error al actualizar vendedor");
-    return await res.json();
+
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (parseError) {
+      // Manejar respuestas no JSON (por ejemplo, 404, 500)
+      responseData = { message: `Error HTTP: ${response.status} ${response.statusText}` };
+    }
+
+    if (!response.ok) {
+      console.error("Error del backend al actualizar vendedor:", responseData);
+      throw new Error(responseData.message || `Error al actualizar el vendedor (${response.status})`);
+    }
+
+    // --- Manejo de la respuesta del backend ---
+    // Asumir una estructura similar a la de updateClient
+    let updatedSellerData: any = {};
+    if (responseData && typeof responseData === 'object') {
+      if ('user' in responseData && responseData.user && typeof responseData.user === 'object' && 'id' in responseData.user) {
+        // Si la respuesta es { user: ..., token: ... }
+        updatedSellerData = responseData.user;
+      } else if ('id' in responseData) {
+        // Si la respuesta es el vendedor/usuario directamente
+        updatedSellerData = responseData;
+      } else {
+        // Estructura inesperada, usar datos del payload como base
+        console.warn("Respuesta inesperada del backend (éxito en actualización de vendedor):", responseData);
+        updatedSellerData = { ...cleanPayload, ...responseData }; // Mezclar
+      }
+    }
+
+    // Mapear el estado del backend al formato del frontend si es necesario
+    const mappedState = updatedSellerData.state === 'Active' ? 'activo' :
+                       updatedSellerData.state === 'Inactive' ? 'inactivo' :
+                       updatedSellerData.state || vendedor.state || 'activo'; // Fallback
+
+    // --- Crear el objeto Vendedor final para devolver al frontend ---
+    // Asegúrate de que todos los campos requeridos por la interfaz Vendedor estén presentes
+    const updatedVendedor: Vendedor = {
+      // Priorizar _id e id del backend, fallback a los del vendedor original
+      _id: updatedSellerData._id || vendedor._id,
+      id: updatedSellerData.id || vendedor.id,
+      name: updatedSellerData.name ?? vendedor.name,
+      lastName: updatedSellerData.lastName ?? vendedor.lastName,
+      // Mapear emails si vienen en la respuesta
+      emails: updatedSellerData.email || updatedSellerData.emails || vendedor.emails || [], // Default a array vacío
+      // Mapear phones si vienen en la respuesta
+      phones: updatedSellerData.phone || updatedSellerData.phones || vendedor.phones || [], // Default a array vacío
+      address: updatedSellerData.address || vendedor.address || [],
+      city: updatedSellerData.city || vendedor.city || '',
+      password: "", // Nunca devolver la contraseña
+      role: updatedSellerData.role || vendedor.role || "SalesPerson", // Default a SalesPerson
+      priceCategory: updatedSellerData.priceCategory || vendedor.priceCategory || "",
+      // salesPerson: updatedSellerData.salesPerson || vendedor.salesPerson || "", // No debería aplicar
+      state: mappedState,
+      clients: updatedSellerData.clients || vendedor.clients || [], // Default a array vacío
+      // Añade aquí cualquier otro campo específico de Vendedor que tenga tu interfaz
+    };
+
+    console.log("Vendedor actualizado exitosamente:", updatedVendedor);
+    return updatedVendedor;
+
   } catch (error) {
-    console.error("Error actualizando vendedor:", error);
-    throw error;
+    console.error("Error en la solicitud updateVendedor:", error);
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error("Error de conexión. Verifique su red e intente nuevamente.");
+    }
+    if (error instanceof Error) {
+      throw error; // Relanzar errores con mensaje
+    } else {
+      throw new Error("No se pudo actualizar el vendedor. Por favor intente nuevamente.");
+    }
   }
 };
 

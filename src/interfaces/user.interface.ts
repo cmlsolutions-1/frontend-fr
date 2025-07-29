@@ -4,15 +4,15 @@ export type Role = "Admin" | "SalesPerson" | "Client";
 
 // === EMAIL ===
 export interface Email {
-  emailAddress: string;     // minúscula
-  isPrincipal: boolean;
+  EmailAddress: string;     
+  IsPrincipal: boolean;
 }
 
 // === PHONE ===
 export interface Phone {
-  numberPhone: string;
-  indicative: string;
-  isPrincipal: boolean;
+  NumberPhone: string;
+  Indicative: string;
+  IsPrincipal: boolean;
 }
 
 // === USER BASE ===

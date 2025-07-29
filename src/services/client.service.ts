@@ -1,5 +1,5 @@
 import type { Cliente } from "@/interfaces/user.interface";
-import { normalizeClientPayload } from "@/utils/normalizeClientPayload";
+
 import { UpdateUserDto } from "@/interfaces/update-user";
 
 
@@ -11,7 +11,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
 
   
 
-  const emailPrincipal = cliente.emails?.[0]?.emailAddress;
+  const emailPrincipal = cliente.emails?.[0]?.EmailAddress;
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
@@ -20,11 +20,11 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     throw new Error("Debe asignar un vendedor al cliente");
   }
 
-  if (!cliente.emails?.[0]?.emailAddress) {
+  if (!cliente.emails?.[0]?.EmailAddress) {
     throw new Error("El email es requerido");
   }
 
-  if (!cliente.phones?.[0]?.numberPhone) {
+  if (!cliente.phones?.[0]?.NumberPhone) {
     throw new Error("El teléfono es requerido");
   }
 
@@ -34,13 +34,13 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     name: cliente.name.trim(),
     lastName: cliente.lastName.trim(),
     email: [{
-      emailAddres: cliente.emails[0].emailAddress.trim(),
-      isPrincipal: true,
+      EmailAddres: cliente.emails[0].EmailAddress.trim(),
+      IsPrincipal: true,
     }],
     phone: [{
-      numberPhone: cliente.phones[0].numberPhone.replace(/\D/g, ''),
-      indicative: cliente.phones[0].indicative || "+57",
-      isPrincipal: true,
+      NumberPhone: cliente.phones[0].NumberPhone.replace(/\D/g, ''),
+      Indicative: cliente.phones[0].Indicative || "+57",
+      IsPrincipal: true,
     }],
     address: cliente.address || [""],
     city: cliente.city,
@@ -141,14 +141,14 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   if (!clientIdToUpdate) {
     throw new Error("El ID (_id o id) del cliente es requerido para la actualización.");
   }
-  const emailPrincipal = cliente.emails?.[0]?.emailAddress;
+  const emailPrincipal = cliente.emails?.[0]?.EmailAddress;
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
   if (!cliente.salesPerson) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
-  if (!cliente.phones?.[0]?.numberPhone) {
+  if (!cliente.phones?.[0]?.NumberPhone) {
     throw new Error("El teléfono es requerido");
   }
 
@@ -164,16 +164,16 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   
   if (cliente.emails && cliente.emails.length > 0) {
     payloadToSend.email = cliente.emails.map(e => ({
-      emailAddress: e.emailAddress?.trim(),
-      isPrincipal: e.isPrincipal
+      EmailAddress: e.EmailAddress?.trim(),
+      IsPrincipal: e.IsPrincipal
     }));
   }
 
   if (cliente.phones && cliente.phones.length > 0) {
     payloadToSend.phone = cliente.phones.map(p => ({
-      numberPhone: p.numberPhone?.replace(/\D/g, ''),
-      indicative: p.indicative,
-      isPrincipal: p.isPrincipal
+      NumberPhone: p.NumberPhone?.replace(/\D/g, ''),
+      Indicative: p.Indicative,
+      IsPrincipal: p.IsPrincipal
     }));
   }
 

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Plus, Edit, Trash2, Mail, Phone, MapPin } from "lucide-react";
+import { Plus, Edit, Trash2, Mail, MapPin, PhoneOutgoing } from "lucide-react";
 import ClienteModal from "@/components/userGestion/ClienteModal";
-import { Cliente, Vendedor } from "@/interfaces/user.interface";
+import { Cliente, Email, Phone, Vendedor } from "@/interfaces/user.interface";
 import {
   saveClient,
   updateClient,
@@ -18,13 +18,97 @@ interface ClientesManagerProps {
 }
 
 // Helper para cargar clientes del localStorage
+// src/components/userGestion/ClientesManager.tsx
+
+// Helper para cargar clientes del localStorage y NORMALIZARLOS
 const loadClientesFromLocalStorage = (): Cliente[] => {
   try {
     const stored = localStorage.getItem("clientes");
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+
+    const parsedData = JSON.parse(stored);
+
+    // Asegurarse de que cada objeto tenga la estructura de Cliente
+    const normalizedData: Cliente[] = parsedData.map((item: any) => {
+      // --- Normalizar emails ---
+      let normalizedEmails: Email[] = [{ EmailAddress: '', IsPrincipal: true }]; // Valor por defecto
+
+      if (Array.isArray(item.emails) && item.emails.length > 0) {
+        const rawEmail = item.emails[0]; // Tomar el primer email
+        let emailValue = '';
+
+        // Probar diferentes formas en que el email podría haberse guardado
+        if (typeof rawEmail.EmailAddress === 'string') {
+          emailValue = rawEmail.EmailAddress;
+        } else if (typeof rawEmail.emailAddress === 'string') {
+          emailValue = rawEmail.emailAddress;
+        } else if (typeof rawEmail.EmailAddres === 'string') { // Typo que viste
+          emailValue = rawEmail.EmailAddres;
+        } else if (typeof item.email === 'string') { // Formato simple del DTO de lista
+          emailValue = item.email;
+        }
+
+        normalizedEmails = [{
+          EmailAddress: emailValue,
+          IsPrincipal: rawEmail.IsPrincipal ?? rawEmail.isPrincipal ?? true
+        }];
+      } else if (typeof item.email === 'string') {
+        // Si viene un email simple (como en GetClientsBySalesPersonDto)
+        normalizedEmails = [{ EmailAddress: item.email, IsPrincipal: true }];
+      }
+
+      // --- Normalizar phones ---
+      let normalizedPhones: Phone[] = [{ NumberPhone: '', Indicative: '+57', IsPrincipal: true }]; // Valor por defecto
+
+      if (Array.isArray(item.phones) && item.phones.length > 0) {
+        const rawPhone = item.phones[0]; // Tomar el primer teléfono
+        let phoneValue = '';
+
+        // Probar diferentes formas en que el teléfono podría haberse guardado
+        if (typeof rawPhone.NumberPhone === 'string') {
+          phoneValue = rawPhone.NumberPhone;
+        } else if (typeof rawPhone.numberPhone === 'string') {
+          phoneValue = rawPhone.numberPhone;
+        } else if (typeof item.phone === 'string') { // Formato simple del DTO de lista
+          phoneValue = item.phone;
+        }
+
+        normalizedPhones = [{
+          NumberPhone: phoneValue,
+          Indicative: rawPhone.Indicative ?? rawPhone.indicative ?? '+57',
+          IsPrincipal: rawPhone.IsPrincipal ?? rawPhone.isPrincipal ?? true
+        }];
+      } else if (typeof item.phone === 'string') {
+         // Si viene un phone simple (como en GetClientsBySalesPersonDto)
+        normalizedPhones = [{ NumberPhone: item.phone, Indicative: '+57', IsPrincipal: true }];
+      }
+
+      // --- Devolver un objeto que cumpla con la interfaz Cliente ---
+      return {
+        _id: item._id ?? '', // Si viene
+        id: item.id ?? crypto.randomUUID(), // Si no viene id, generar uno? O mantener item.id ?? ''
+        name: item.name ?? '',
+        lastName: item.lastName ?? '',
+        emails: normalizedEmails,
+        phones: normalizedPhones,
+        address: Array.isArray(item.address) ? item.address : (item.address ? [item.address] : ['']),
+        city: item.city ?? '',
+        password: '', // Nunca debería estar en localStorage
+        role: item.role === 'Client' ? 'Client' : 'Client', // Asegurar rol
+        priceCategory: item.priceCategory ?? '',
+        salesPerson: item.salesPerson ?? item.idSalesPerson ?? '', // Probar ambas formas
+        state: item.state === 'Active' ? 'activo' :
+               item.state === 'Inactive' ? 'inactivo' :
+               item.state === 'activo' || item.state === 'inactivo' ? item.state :
+               'activo', // Mapeo y valor por defecto
+        // emailVerified, emailValidated si los usas
+      };
+    });
+
+    return normalizedData;
   } catch (err) {
-    console.error("Error al cargar desde localStorage:", err);
-    return [];
+    console.error("Error al cargar/normalizar desde localStorage:", err);
+    return []; // Devolver array vacío en caso de error
   }
 };
 
@@ -49,11 +133,14 @@ export default function ClientesManager({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  
+
   // Cargar clientes desde localStorage (ya que getClientsBySeller no está disponible)
   useEffect(() => {
     setLoading(true);
     try {
       const data = loadClientesFromLocalStorage();
+      console.log("Clientes RAW desde localStorage:", data);
 
       // Filtrar por vendedor si está seleccionado
       const filtered = selectedVendedorId
@@ -82,8 +169,8 @@ export default function ClientesManager({
       (c) =>
         c.name.toLowerCase().includes(term) ||
         c.lastName.toLowerCase().includes(term) ||
-        c.emails?.[0]?.emailAddress?.toLowerCase().includes(term) ||
-        c.phones?.[0]?.numberPhone?.includes(searchTerm)
+        c.emails?.[0]?.EmailAddress?.toLowerCase().includes(term) ||
+        c.phones?.[0]?.NumberPhone?.includes(searchTerm)
     );
 
     setFilteredClientes(result);
@@ -222,10 +309,10 @@ export default function ClientesManager({
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredClientes.map((cliente) => {
             // Datos seguros con valores por defecto
-            const email = cliente.emails?.[0]?.emailAddress || "Sin email";
+            const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddress || "Sin email";
             const phoneNumber =
-              cliente.phones?.[0]?.numberPhone || "Sin teléfono";
-            const phoneIndicative = cliente.phones?.[0]?.indicative || "+57";
+              cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
+            const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";
             const address = cliente.address?.[0] || "Sin dirección";
             const priceCategory = cliente.priceCategory || "Sin categoría";
 
@@ -285,7 +372,7 @@ export default function ClientesManager({
                     <span className="truncate">{email}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Phone className="w-4 h-4" />
+                    <PhoneOutgoing className="w-4 h-4" />
                     <span>
                       {phoneNumber === "Sin teléfono"
                         ? "Sin teléfono"

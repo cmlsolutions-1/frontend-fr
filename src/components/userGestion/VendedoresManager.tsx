@@ -40,8 +40,8 @@ export default function VendedoresManager() {
     if (user.emails.length === 0) return "Sin correo";
     
     // Busca el email principal o toma el primero
-    const email = user.emails.find(e => e?.isPrincipal) ?? user.emails[0];
-    return email?.emailAddress?.trim() || "Sin correo";
+    const email = user.emails.find(e => e?.IsPrincipal) ?? user.emails[0];
+    return email?.EmailAddress?.trim() || "Sin correo";
   }
   
   function getPrimaryPhone(user: User): string {
@@ -52,9 +52,9 @@ export default function VendedoresManager() {
     if (user.phones.length === 0) return "Sin teléfono";
     
     // Busca el teléfono principal o toma el primero
-    const phone = user.phones.find(p => p?.isPrincipal) ?? user.phones[0];
-    const indicative = phone?.indicative || "";
-    const number = phone?.numberPhone || "";
+    const phone = user.phones.find(p => p?.IsPrincipal) ?? user.phones[0];
+    const indicative = phone?.Indicative || "";
+    const number = phone?.NumberPhone || "";
     return indicative && number ? `${indicative} ${number}` : "Sin teléfono";
   }
   // Función para abrir modal de creación
@@ -70,34 +70,42 @@ export default function VendedoresManager() {
   };
 
   // Función que se llama después de guardar (crear o editar)
-  const handleSave = async (vendedor: Vendedor) => {
+  const handleSave = async (vendedorData: Vendedor) => {
     try {
       let vendedorFinal: Vendedor;
   
       if (editingVendedor) {
-        vendedorFinal = await updateVendedor(vendedor.id, vendedor);
-      } else {
-        // Al crear, usa la respuesta completa del backend
-        vendedorFinal = await createVendedor(vendedor);
-        
-        // Asegúrate de que los arrays de emails y phones existan
-        if (!vendedorFinal.emails) vendedorFinal.emails = [];
-        if (!vendedorFinal.phones) vendedorFinal.phones = [];
-      }
-  
-      setVendedores((prev) => {
-        const yaExiste = prev.some((v) => v.id === vendedorFinal.id);
-        return yaExiste
-          ? prev.map((v) => (v.id === vendedorFinal.id ? vendedorFinal : v))
-          : [...prev, vendedorFinal];
-      });
-  
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error("Error al guardar vendedor:", err);
-      alert("Ocurrió un error al guardar el vendedor.");
+        const vendedorParaActualizar: Vendedor = {
+        ...editingVendedor, // ID, _id y datos originales
+        ...vendedorData,   // Datos actualizados del formulario (puede sobrescribir id/_id si están)
+        // Asegurar que el ID para actualizar esté presente
+        id: editingVendedor.id, // Preferir el ID original
+        _id: editingVendedor._id, // Preferir el _id original
+      };
+
+      // Ahora pasamos el objeto completo que sabemos que tiene id/_id
+      vendedorFinal = await updateVendedor(vendedorParaActualizar);
+      // --- Fin del cambio ---
+    } else {
+      vendedorFinal = await createVendedor(vendedorData);
+      if (!vendedorFinal.emails) vendedorFinal.emails = [];
+      if (!vendedorFinal.phones) vendedorFinal.phones = [];
     }
-  };
+
+    setVendedores((prev) => {
+      const yaExiste = prev.some((v) => v.id === vendedorFinal.id);
+      return yaExiste
+        ? prev.map((v) => (v.id === vendedorFinal.id ? vendedorFinal : v))
+        : [...prev, vendedorFinal];
+    });
+
+    setIsModalOpen(false);
+  } catch (err) {
+    console.error("Error al guardar vendedor:", err);
+    // Es mejor mostrar el mensaje de error específico si existe
+    alert(`Ocurrió un error al guardar el vendedor: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+  }
+};
 
   if (loading) {
     return (

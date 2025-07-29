@@ -37,8 +37,8 @@ export default function VendedorModal({
     name: "",
     lastName: "",
     password: "",
-    emails: [{ emailAddress: "", isPrincipal: true }],
-    phones: [{ numberPhone: "", indicative: "+57", isPrincipal: true }],
+    emails: [{ EmailAddress: "", IsPrincipal: true }],
+    phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
     city: "",
     role: "SalesPerson",
@@ -70,13 +70,13 @@ export default function VendedorModal({
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.emails[0]?.emailAddress;
-    if (!formData.emails?.[0]?.emailAddress?.trim()) {
+    const email = formData.emails[0]?.EmailAddress;
+    if (!formData.emails?.[0]?.EmailAddress?.trim()) {
       setErrors({ ...errors, email: "El email es obligatorio" });
       return;
     }
 
-    const phone = formData.phones[0]?.numberPhone;
+    const phone = formData.phones[0]?.NumberPhone;
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
@@ -109,7 +109,7 @@ export default function VendedorModal({
     if (
       !formData.emails ||
       formData.emails.length === 0 ||
-      !formData.emails[0].emailAddress
+      !formData.emails[0].EmailAddress
     ) {
       setErrors((prev) => ({ ...prev, email: "El email es requerido" }));
       return;
@@ -117,8 +117,8 @@ export default function VendedorModal({
 
     // Asegurar que el email esté en minúsculas y sin espacios
     const cleanedEmails = formData.emails.map((email) => ({
-      emailAddress: email.emailAddress.trim().toLowerCase(),
-      isPrincipal: email.isPrincipal,
+      EmailAddress: email.EmailAddress.trim().toLowerCase(),
+      IsPrincipal: email.IsPrincipal,
     }));
 
     // Preparar datos finales con el formato exacto
@@ -127,16 +127,16 @@ export default function VendedorModal({
       id: formData.id || crypto.randomUUID(),
       emails: [
         {
-          emailAddress: formData.emails[0].emailAddress.trim(),
-          isPrincipal: true,
+          EmailAddress: formData.emails[0].EmailAddress.trim(),
+          IsPrincipal: true,
         },
       ],
       phones: [
         {
-          numberPhone:
-            formData.phones[0]?.numberPhone?.replace(/\D/g, "") || "",
-          indicative: formData.phones[0]?.indicative || "+57",
-          isPrincipal: true,
+          NumberPhone:
+            formData.phones[0]?.NumberPhone?.replace(/\D/g, "") || "",
+          Indicative: formData.phones[0]?.Indicative || "+57",
+          IsPrincipal: true,
         },
       ],
       address: [formData.address[0] || ""],
@@ -214,10 +214,10 @@ export default function VendedorModal({
             <Input
               id="email"
               name="email"
-              value={formData.emails[0]?.emailAddress || ""}
+              value={formData.emails[0]?.EmailAddress || ""}
               onChange={(e) =>
                 handleChange("emails", [
-                  { ...formData.emails[0], emailAddress: e.target.value },
+                  { ...formData.emails[0], EmailAddress: e.target.value },
                 ])
               }
               className={errors.email ? "border-red-500" : ""}
@@ -233,10 +233,10 @@ export default function VendedorModal({
             <Input
               id="phone"
               name="phone"
-              value={formData.phones[0]?.numberPhone || ""}
+              value={formData.phones[0]?.NumberPhone || ""}
               onChange={(e) =>
                 handleChange("phones", [
-                  { ...formData.phones[0], numberPhone: e.target.value },
+                  { ...formData.phones[0], NumberPhone: e.target.value },
                 ])
               }
               className={errors.phone ? "border-red-500" : ""}
