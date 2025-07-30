@@ -23,6 +23,10 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
   console.log("Clientes cargados para el vendedor:", clientes);
 }, [clientes]);
 
+useEffect(() => {
+  console.log("🟢 currentSellerId recibido:", currentSellerId);
+}, [currentSellerId]);
+
     // Cargar clientes del vendedor al montar el componente o cuando cambie el ID
   useEffect(() => {
     const loadClientes = async () => {

@@ -25,12 +25,16 @@ import UserManagement from "@/pages/admin/UserManagement";
 import { OrderConfirmationPage } from '@/pages/orders/[orderId]';
 import { PrivateRoute } from "./PrivateRoute";
 import UserSalesPerson from '@/pages/salesPerson/UserSalesPerson';
+import { useAuthStore } from "@/store/auth-store";
+
 
 
 
 //CheckoutPage
 
 export const AppRouter = () => {
+  const { user } = useAuthStore();
+  console.log("🧪 user en AppRoutes:", user);
   return (
     <BrowserRouter>
       <Routes>
@@ -55,7 +59,7 @@ export const AppRouter = () => {
         <Route path="/orders" element={<PrivateRoute><ShopLayout><OrdersPage /></ShopLayout></PrivateRoute>} />
 
         <Route path="/admin/user-management" element={<PrivateRoute><ShopLayout><UserManagement /></ShopLayout></PrivateRoute>} />
-        <Route path="/salesPerson/user-salesPerson" element={<PrivateRoute><ShopLayout><UserSalesPerson/></ShopLayout></PrivateRoute>} />
+        <Route path="/salesPerson/user-salesPerson" element={<PrivateRoute><ShopLayout><UserSalesPerson currentSellerId={user?._id ?? ""}/></ShopLayout></PrivateRoute>} />
         
         <Route path="/orders/:id" element={<PrivateRoute><ShopLayout><OrdersByIdPage /></ShopLayout></PrivateRoute>} />
         <Route path="/promociones" element={<PrivateRoute><ShopLayout><PromotionsPage /></ShopLayout></PrivateRoute>} />

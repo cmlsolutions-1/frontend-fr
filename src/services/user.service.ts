@@ -3,39 +3,34 @@ import type { Cliente, Vendedor } from "@/interfaces";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const mockedUsers = [
-  {
-    id: "1",
-    email: "admin@example.com",
-    password: "admin123",
-    name: "Admin User",
-    role: "admin",
-  },
-  {
-    id: "2",
-    email: "cliente@example.com",
-    password: "cliente123",
-    name: "Cliente Usuario",
-    role: "cliente",
-  },
-  {
-    id: "3",
-    email: "vendedor@example.com",
-    password: "vendedor123",
-    name: "Vendedor Usuario",
-    role: "vendedor",
-  },
-];
 
 
 // esta es la interfaz de autenticación
-interface LoginResponse {
+export interface LoginResponse {
   token: string;
   user: {
+    _id: string;
     id: string;
-    email: string;
     name: string;
+    lastName: string;
     role: string;
+    email: {
+      EmailAddres: string;
+      IsPrincipal: boolean;
+    }[];
+    phone: {
+      NumberPhone: string;
+      IsPrincipal: boolean;
+      Indicative: string;
+    }[];
+    addres: string[];
+    city: string;
+    password: string;
+    emailVerified: boolean;
+    emailValidated: boolean;
+    clients: string[];
+    priceCategory: string;
+    state: string;
   };
 }
 
@@ -44,10 +39,7 @@ export const loginRequest = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  try {
-
-    console.log("Variable: " + API_URL)
-    const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -57,34 +49,12 @@ export const loginRequest = async (
 
   if (!response.ok) throw new Error("Credenciales incorrectas");
 
-  return await response.json();
-
-} catch (error) {
-    console.warn("⚠️ Backend no disponible. Usando login simulado.");
-
-    const foundUser = mockedUsers.find(
-    (u) => u.email === email && u.password === password
-  );
-
-  if (!foundUser) {
-    throw new Error("Credenciales inválidas (simuladas)");
-  }
-
-    // Datos quemados para realizar pruebas
-    return {
-      token: "mocked-token-dev",
-      user: {
-      id: foundUser.id,
-      email: foundUser.email,
-      name: foundUser.name,
-      role: foundUser.role,
-    },
-  };
-  }
+  const data = await response.json();
+  console.log("✅ Login response:", data);
+  return data;
 };
-  
 
-// (opcional) Servicio para obtener el usuario autenticado usando el token
+// Servicio para obtener el usuario autenticado usando el token
 export const fetchMe = async (token: string) => {
   const response = await fetch(`${API_URL}/me`, {
     headers: {
@@ -96,8 +66,6 @@ export const fetchMe = async (token: string) => {
 
   return await response.json();
 };
-
-// hasta aca va la autenticación
 
 
 
