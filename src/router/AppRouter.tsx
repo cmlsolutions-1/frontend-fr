@@ -21,8 +21,10 @@ import OrdersByIdPage from "@/pages/OrdersByIdPage";
 import { SearchPage } from "@/pages/SearchPage";
 import CheckoutPage from "@/pages/checkout/page";
 import UserManagement from "@/pages/admin/UserManagement";
+
 import { OrderConfirmationPage } from '@/pages/orders/[orderId]';
 import { PrivateRoute } from "./PrivateRoute";
+import UserSalesPerson from '@/pages/salesPerson/UserSalesPerson';
 
 
 
@@ -53,6 +55,7 @@ export const AppRouter = () => {
         <Route path="/orders" element={<PrivateRoute><ShopLayout><OrdersPage /></ShopLayout></PrivateRoute>} />
 
         <Route path="/admin/user-management" element={<PrivateRoute><ShopLayout><UserManagement /></ShopLayout></PrivateRoute>} />
+        <Route path="/salesPerson/user-salesPerson" element={<PrivateRoute><ShopLayout><UserSalesPerson/></ShopLayout></PrivateRoute>} />
         
         <Route path="/orders/:id" element={<PrivateRoute><ShopLayout><OrdersByIdPage /></ShopLayout></PrivateRoute>} />
         <Route path="/promociones" element={<PrivateRoute><ShopLayout><PromotionsPage /></ShopLayout></PrivateRoute>} />

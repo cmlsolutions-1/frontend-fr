@@ -2,6 +2,7 @@
 export interface LoginResponse {
   token: string;
   user: {
+    _id: string;
     id: string;
     email: string;
     name: string;
