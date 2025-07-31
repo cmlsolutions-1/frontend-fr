@@ -23,36 +23,38 @@ export const TopMenu = () => {
   return (
     <nav className="flex px-5 justify-between items-center w-full bg-white">
       {/* Logo */}
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
         <div className="flex items-center">
           <Link to="/homePage">
             <FrLogo />
           </Link>
         </div>
-        <div className="flex-1 mx-8 flex justify-center">
-          <div className="relative w-full max-w-[600px]">
+        {/* Search - Oculta en pantallas pequeñas */}
+        <div className="w-full order-3 md:order-1 md:flex-1 md:mx-8 md:block hidden">
+          <div className="relative w-full max-w-[600px] mx-auto">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <IoSearchOutline />
             </div>
             <ProductSearchDropdown />
           </div>
         </div>
-        <div className="flex items-center space-x-10">
+        {/* User Info - Oculta o colapsa en móviles, anterior flex items-center space-x-10 */}
+        <div className="hidden md:flex items-center space-x-4 order-2">
           <UserInfo />
           {/* Barra separadora */}
-          <div className="h-6 border-l border-gray-400 mx-4"></div>
+          <div className="h-6 border-l border-gray-400 mx-2"></div>
         </div>
       </div>
 
-      {/* Search, Cart, Menu */}
-      <div className="flex items-center">
+      {/* Search, Cart, Menu - Compacto para móviles */}
+      <div className="flex items-center space-x-2 order-4 md:order-3 mt-2 md:mt-0">
         <Link
           to={totalItemsInCart === 0 && loaded ? "/empty" : "/cart"} // Cambia href a to
-          className="mx-2"
+          className="relative"
         >
           <div className="relative">
             {loaded && totalItemsInCart > 0 && (
-              <span className="fade-in absolute text-xs px-1 rounded-full font-bold -top-2 -right-2 bg-blue-700 text-white">
+              <span className="absolute text-xs px-1 rounded-full font-bold -top-2 -right-2 bg-blue-700 text-white">
                 {totalItemsInCart}
               </span>
             )}
@@ -62,7 +64,7 @@ export const TopMenu = () => {
 
         <button
           onClick={openSideMenu}
-          className="m-2 p-2 rounded-md transition-all hover:bg-gray-100"
+          className="p-2 rounded-md transition-all hover:bg-gray-100"
         >
           Menú
         </button>

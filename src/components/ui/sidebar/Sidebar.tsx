@@ -47,78 +47,81 @@ export const Sidebar = () => {
       {isSideMenuOpen && (
         <div
           onClick={closeMenu}
-          className="fade-in fixed top-0 left-0 w-screen h-screen z-10 backdrop-filter backdrop-blur-sm"
+          className="fixed top-0 left-0 w-screen h-screen z-10 bg-black bg-opacity-30 backdrop-blur-sm"
         />
       )}
 
       {/* Sidemenu */}
       <nav
         className={clsx(
-          "fixed p-5 right-0 top-0 w-[500px] h-screen bg-white z-20 shadow-2xl transform transition-all duration-300",
+          "fixed right-0 top-0 h-screen bg-white z-20 shadow-2xl transform transition-transform duration-300 overflow-y-auto",
+          "w-full max-w-xs sm:max-w-sm md:max-w-md", // Responsivo
           {
             "translate-x-full": !isSideMenuOpen,
+            "translate-x-0": isSideMenuOpen,
           }
         )}
       >
         <IoCloseOutline
           size={50}
-          className="absolute top-5 right-5 cursor-pointer"
+          className="absolute top-4 right-4 cursor-pointer text-gray-700"
           onClick={() => closeMenu()}
         />
 
         {/* Menú */}
-
+        <div className="pt-16 px-6 pb-10 flex flex-col space-y-6">
         {isAuthenticated && (
           <>
             <Link
               to="/profile"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoPersonOutline size={30} />
-              <span className="ml-3 text-xl">Perfil</span>
+              <span className="ml-3 text-lg">Perfil</span>
             </Link>
 
             <Link
               to="/orders"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoTicketOutline size={30} />
-              <span className="ml-3 text-xl">Ordenes</span>
+              <span className="ml-3 text-lg">Órdenes</span>
             </Link>
           </>
         )}
 
         {isAuthenticated && (
           <button
-            className="flex w-full items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+            className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             //onClick={() => logout()}
             onClick={handleLogout}
           >
             <IoLogOutOutline size={30} />
-            <span className="ml-3 text-xl">Salir</span>
+            <span className="ml-3 text-lg">Salir</span>
           </button>
         )}
 
         {!isAuthenticated && (
           <Link
             to="/"
-            className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+            className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             onClick={() => closeMenu()}
           >
             <IoLogInOutline size={30} />
-            <span className="ml-3 text-xl">Ingresar</span>
+            <span className="ml-3 text-lg">Ingresar</span>
           </Link>
         )}
         {isSalesPerson && (
           <>
             {/* Line Separator */}
             <div className="w-full h-px bg-gray-200 my-10" />
+            <hr className="my-4 border-gray-300" />
 
-            <Link to="/salesPerson/user-salesPerson" onClick={() => closeMenu()} className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
+            <Link to="/salesPerson/user-salesPerson" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />
-              <span className="ml-3 text-xl">Gestión de Clientes</span>
+              <span className="ml-3 text-lg">Gestión de Clientes</span>
             </Link>
 
           </>
@@ -128,50 +131,52 @@ export const Sidebar = () => {
           <>
             {/* Line Separator */}
             <div className="w-full h-px bg-gray-200 my-10" />
+            <hr className="my-4 border-gray-300" />
 
             <Link
               to="/admin/products"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoShirtOutline size={30} />
-              <span className="ml-3 text-xl">Productos</span>
+              <span className="ml-3 text-lg">Productos</span>
             </Link>
 
             <Link
               to="/admin/containers"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoLogoBuffer size={30} />
-              <span className="ml-3 text-xl">Contenedores</span>
+              <span className="ml-3 text-lg">Contenedores</span>
             </Link>
 
             <Link
               to="/admin/orders"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoTicketOutline size={30} />
-              <span className="ml-3 text-xl">Ordenes</span>
+              <span className="ml-3 text-lg">Órdenes</span>
             </Link>
 
             <Link
               to="/promociones"
               onClick={() => closeMenu()}
-              className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <BiSolidOffer size={30} />
-              <span className="ml-3 text-xl">Gestion Promociones</span>
+              <span className="ml-3 text-lg">Gestion Promociones</span>
             </Link>
 
-            <Link to="/admin/user-management" onClick={() => closeMenu()} className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all">
+            <Link to="/admin/user-management" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />
-              <span className="ml-3 text-xl">Gestión de Usuarios</span>
+              <span className="ml-3 text-lg">Gestión de Usuarios</span>
             </Link>
 
           </>
         )}
+        </div>
       </nav>
     </div>
   );
