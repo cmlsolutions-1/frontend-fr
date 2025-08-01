@@ -70,24 +70,26 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p>Cargando clientes...</p>
+      <div className="p-6 bg-gray-50 min-h-screen flex justify-center items-center">
+        <p className="text-gray-600 text-lg">Cargando clientes...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="p-6 bg-gray-50 min-h-screen flex justify-center items-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
         {error}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
+    <div className="min-h-screen py-8 px-6">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-semibold text-gray-800">
           Mis Clientes
         </h1>
         {/* Puedes agregar acciones aquí si es necesario */}
@@ -95,11 +97,11 @@ useEffect(() => {
 
       {/* Lista de Clientes */}
       {clientes.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">
+        <p className="text-gray-500 text-center py-20 text-lg">
           No tienes clientes asignados.
         </p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {clientes.map((cliente) => {
             const email = getPrimaryEmail(cliente);
             const phoneNumber = getPrimaryPhone(cliente);
@@ -107,28 +109,31 @@ useEffect(() => {
             const priceCategory = cliente.priceCategory || "Sin categoría";
 
             return (
-              <Card key={cliente.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
+              <Card key={cliente.id} className="rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">
+                      <CardTitle className="text-xl font-medium text-gray-800">
                         {cliente.name} {cliente.lastName}
                       </CardTitle>
-                      <div className="text-sm font-mono text-gray-500 mt-1">
+                      <div className="text-xs font-mono text-gray-400 mt-1">
                         ID: {cliente.id?.slice(0, 8) + "..."}
                       </div>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
                       <Badge
                         variant={cliente.state === "activo" ? "default" : "secondary"}
-                        className="mt-1"
+                        
                       >
                         {cliente.state || "Sin estado"}
                       </Badge>
                       <Badge
                         variant={priceCategory === "VIP" ? "default" : "secondary"}
-                        className="mt-1 ml-1"
+                        
                       >
                         {priceCategory}
                       </Badge>
+                      </div>
                     </div>
                     {/* Puedes agregar acciones específicas por cliente si es necesario */}
                     {/* <div className="flex gap-1">
@@ -136,16 +141,16 @@ useEffect(() => {
                     </div> */}
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CardContent className="space-y-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-sm">
                     <Mail className="w-4 h-4" />
                     <span className="truncate">{email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm">
                     <Phone className="w-4 h-4" />
                     <span className="truncate">{phoneNumber}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm">
                     <MapPin className="w-4 h-4" />
                     <span className="truncate">{address}</span>
                   </div>
