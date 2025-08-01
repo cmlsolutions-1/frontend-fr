@@ -52,26 +52,26 @@ export default function OrdersPage() {
   //TERMINA BACKEND
 
   return (
-    <>
-      <Title title="Historial Pedidos" />
+    <div className="px-4 sm:px-8 py-4">
+      <h2 className="text-xl font-bold mb-4">Historial Pedidos</h2>
 
-      <div className="mb-10">
-        <table className="min-w-full">
-          <thead className="bg-gray-200 border-b">
+      <div className="overflow-x-auto">
+        <table className="min-w-full border">
+          <thead className="bg-gray-100">
             <tr>
-              <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                Numero de pedido
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                Nro. Pedido
               </th>
-              <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Nombre Cliente
               </th>
-              <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Estado
               </th>
-              <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Opciones
               </th>
-              <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Acciones
               </th>
             </tr>
@@ -80,44 +80,46 @@ export default function OrdersPage() {
             {orders.map((order) => (
               <tr
                 key={order.id}
-                className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100"
+                className="border-b hover:bg-gray-100 transition-colors duration-200"
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                   {order.id.split("-").at(-1)}
                 </td>
-                <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   Carlos Pérez
                 </td>
-                <td className="flex items-center text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  {order.isPaid ? (
-                    <>
-                      <IoCardOutline className="text-green-800" />
-                      <span className="mx-2 text-green-800">Gestionada</span>
-                    </>
-                  ) : (
-                    <>
-                      <IoCardOutline className="text-red-800" />
-                      <span className="mx-2 text-red-800">No Gestionada</span>
-                    </>
-                  )}
-                </td>
-                <td className="text-sm font-light px-6 mx-2 text-blue-600 hover:text-blue-800 underline">
-                  <Link to={`/orders/${order.id}`} className="hover:underline">
-                    Ver orden
-                  </Link>
-                </td>
-                
-                <td className="flex items-center text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                  <IoDownloadOutline />
-                  <OrderPDFButton order={order} />
-                    
-              
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              <div className="flex items-center">
+                <IoCardOutline
+                  className={order.isPaid ? "text-green-700" : "text-red-700"}
+                />
+                <span
+                  className={`ml-2 font-medium ${
+                    order.isPaid ? "text-green-700" : "text-red-700"
+                  }`}
+                >
+                  {order.isPaid ? "Gestionada" : "No Gestionada"}
+                </span>
+              </div>
+            </td>
+
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
+              <Link to={`/orders/${order.id}`} className="hover:underline">
+                Ver orden
+              </Link>
+            </td>
+
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              <div className="flex items-center gap-2">
+                <IoDownloadOutline />
+                <OrderPDFButton order={order} />
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
   );
 }

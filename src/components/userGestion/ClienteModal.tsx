@@ -176,18 +176,20 @@ export default function ClienteModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white">
+      <DialogContent className="max-h-[90vh] overflow-y-auto w-full sm:max-w-[600px] bg-white px-4 py-6 sm:px-8 sm:py-8 rounded-xl">
         <DialogHeader>
-          <DialogTitle>{cliente ? "Editar" : "Nuevo"} Cliente</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            {cliente ? "Editar" : "Nuevo"} Cliente
+            </DialogTitle>
         </DialogHeader>
 
         {apiError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm">
             {apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* ID */}
           <div className="space-y-2">
             <Label>ID *</Label>
@@ -201,7 +203,7 @@ export default function ClienteModal({
           </div>
 
           {/* Nombre y Apellido */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Nombre *</Label>
               <Input
@@ -333,7 +335,7 @@ export default function ClienteModal({
           </div>
 
           {/* Asignar Vendedor */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative z-50">
             <Label>Vendedor Asignado *</Label>
             <Select
               value={formData.salesPerson || ""}
@@ -343,7 +345,8 @@ export default function ClienteModal({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar vendedor" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-40 overflow-y-auto bg-white shadow-lg border border-gray-200 z-50"
+                position="popper">
               {vendedores.map((v, i) => {
                   const key = v._id ?? v.id;
                   if (!key) {
@@ -364,7 +367,7 @@ export default function ClienteModal({
           </div>
 
           {/* Estado */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative z-50">
             <Label>Estado</Label>
             <Select
               value={formData.state || "activo"}
@@ -375,7 +378,8 @@ export default function ClienteModal({
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-52 overflow-y-auto"
+                position="popper">
                 <SelectItem value="activo">Activo</SelectItem>
                 <SelectItem value="inactivo">Inactivo</SelectItem>
               </SelectContent>
@@ -388,7 +392,7 @@ export default function ClienteModal({
             </Button>
             <Button
               type="submit"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-[#F2B318] hover:bg-[#F4C048]"
               disabled={loading}
             >
               {loading ? "Guardando..." : cliente ? "Actualizar" : "Crear"}{" "}

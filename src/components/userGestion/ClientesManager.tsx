@@ -280,8 +280,10 @@ export default function ClientesManager({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Encabezado */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Gestión de Clientes
@@ -294,19 +296,19 @@ export default function ClientesManager({
         </div>
         <Button
           onClick={handleCreateCliente}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-[#F2B318] hover:bg-[#F4C048]"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Nuevo Cliente
+          + Nuevo Cliente
         </Button>
       </div>
 
+      {/* Lista de clientes */}
       {filteredClientes.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">No se encontraron clientes</p>
+          <p className="text-gray-500 text-lg">No se encontraron clientes</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredClientes.map((cliente) => {
             // Datos seguros con valores por defecto
             const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddress || "Sin email";
@@ -319,22 +321,23 @@ export default function ClientesManager({
             return (
               <Card
                 key={cliente.id}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-md transition-shadow border border-gray-200"
               >
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">
+                      <CardTitle className="text-lg font-semibold text-gray-900">
                         {cliente.name} {cliente.lastName}
                       </CardTitle>
-                      <div className="text-sm font-mono text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 font-mono mt-1">
                         ID: {cliente.id}
-                      </div>
+                        </p>
+                        <div className="flex flex-wrap mt-2 gap-1">
                       <Badge
                         variant={
                           cliente.state === "activo" ? "default" : "secondary"
                         }
-                        className="mt-1"
+                        
                       >
                         {cliente.state || "Sin estado"}
                       </Badge>
@@ -342,10 +345,11 @@ export default function ClientesManager({
                         variant={
                           priceCategory === "VIP" ? "default" : "secondary"
                         }
-                        className="mt-1 ml-1"
+                        
                       >
                         {priceCategory}
                       </Badge>
+                    </div>
                     </div>
                     <div className="flex gap-1">
                       <Button
@@ -366,21 +370,21 @@ export default function ClientesManager({
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail className="w-4 h-4" />
+                <CardContent className="space-y-2 text-sm text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-gray-500" />
                     <span className="truncate">{email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <PhoneOutgoing className="w-4 h-4" />
+                  <div className="flex items-center gap-2">
+                    <PhoneOutgoing className="w-4 h-4 text-gray-500" />
                     <span>
                       {phoneNumber === "Sin teléfono"
                         ? "Sin teléfono"
                         : `${phoneIndicative} ${phoneNumber}`}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4" />
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
                     <span className="truncate">{address}</span>
                   </div>
                 </CardContent>
@@ -397,6 +401,7 @@ export default function ClientesManager({
         cliente={editingCliente}
         vendedores={vendedores}
       />
+    </div>
     </div>
   );
 }

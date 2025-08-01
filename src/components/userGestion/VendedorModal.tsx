@@ -157,7 +157,7 @@ export default function VendedorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white">
+      <DialogContent className="max-h-[90vh] overflow-y-auto w-full sm:max-w-[600px] bg-white px-4 py-6 sm:px-8 sm:py-8 rounded-xl">
         <DialogHeader>
           <DialogTitle>{vendedor ? "Editar" : "Nuevo"} Vendedor</DialogTitle>
         </DialogHeader>
@@ -179,7 +179,7 @@ export default function VendedorModal({
           </div>
 
           {/* Nombre y Apellido */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Nombre *</Label>
               <Input
@@ -328,7 +328,7 @@ export default function VendedorModal({
             </Button>
             <Button
               type="submit"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-[#F2B318] hover:bg-[#F4C048]"
               disabled={loading}
             >
               {loading ? "Guardando..." : vendedor ? "Actualizar" : "Crear"}{" "}

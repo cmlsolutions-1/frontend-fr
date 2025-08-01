@@ -43,10 +43,11 @@ export const Agregar = ({ product }: Props) => {
       {/* Button */}
       <button
         onClick={agregar}
-        className="w-full flex items-center justify-center rounded-md border border-transparent 
-        bg-[#F2B318] px-6 py-2 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]"
+        className="w-full flex items-center justify-center rounded-md 
+        bg-[#F2B318] px-6 py-2 text-base font-medium text-white 
+        shadow-sm transition-colors duration-200 hover:bg-[#F4C048]"
       >
-        Agregar a mi pedido
+        Añadir
       </button>
     </>
   );

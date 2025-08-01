@@ -32,12 +32,12 @@ export const ProductGridItem = ({ product }: Props) => {
   };
 
   return (
-    <div className="rounded-md overflow-hidden fade-in bg-white shadow-md h-full flex flex-col">
-      <Link to={`/product/${product.slug}`}>
+    <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
+      <Link to={`/product/${product.slug}`} className="block w-full aspect-[4/3]">
         <img
           src={`/products/${displayImage}`}
           alt={product.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onMouseEnter={() =>
             setDisplayImage(product.ProductImage?.[1]?.url || displayImage)
           }
@@ -46,20 +46,20 @@ export const ProductGridItem = ({ product }: Props) => {
           }
         />
       </Link>
-
-      <div className="p-4 flex flex-col justify-between flex-1 w-full">
+{/* Contenido */}
+      <div className="p-4 flex flex-col justify-between flex-1">
         <Link
-          className="hhover:text-blue-600 text-sm font-medium h-[1.75rem] overflow-hidden text-ellipsis whitespace-nowrap"
+          className="text-sm font-medium text-gray-800 hover:text-blue-600 truncate"
           to={`/product/${product.slug}`}
         >
           {cleanTitle(product.title)}
         </Link>
-        <span className="font-bold">${product.price}</span>
-        <span>
+        <span className="mt-1 text-base font-bold text-gray-900">${product.price}</span>
+        <span className="text-sm text-gray-600">
           <span className="font-bold">Master:</span> {product.master}
         </span>
-        {/* agregar aca el contador para poner la cantidad */}
-        <div className="mt-auto w-full">
+        {/* Agregar al carrito */}
+        <div className="mt-auto pt-4">
           <Agregar product={product} />
         </div>
       </div>
