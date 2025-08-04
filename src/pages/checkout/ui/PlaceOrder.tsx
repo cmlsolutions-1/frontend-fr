@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import { placeOrder } from "@/mocks/placeOrder";
 import { useAddressStore, useCartStore } from "@/store";
 import { currencyFormat } from "@/utils";
-import { createOrder } from "@/services/checkout.service";
+import { createOrder, CreateOrderPayload, OrderProductItem } from "@/services/checkout.service";
+import { useAuthStore } from "@/store/auth-store";
+
 
 export const PlaceOrder = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export const PlaceOrder = () => {
   const cart = useCartStore((state) => state.cart);
   const clearCart = useCartStore((state) => state.clearCart);
 
+  const user = useAuthStore((state) => state.user);  // --- Obtener el usuario logueado desde el store de Zustand ---
+
   useEffect(() => {
     setLoaded(true);
   }, []);
@@ -28,6 +31,30 @@ export const PlaceOrder = () => {
   const onPlaceOrder = async () => {
     setIsPlacingOrder(true);
     setErrorMessage("");
+
+    // --- Validación inicial ---
+    if (!user) {
+      setErrorMessage("Debes iniciar sesión para realizar un pedido.");
+      setIsPlacingOrder(false);
+      return;
+    }
+
+    const clientId = user._id;
+    console.log("Usuario logueado (desde store):", user); // Para depuración
+
+
+    if (!clientId) {
+      setErrorMessage("No se pudo identificar al cliente.");
+      setIsPlacingOrder(false);
+      return;
+    }
+
+    if (cart.length === 0) {
+      setErrorMessage("El carrito está vacío.");
+      setIsPlacingOrder(false);
+      return;
+    }
+
     console.log("Cart:", cart); // ✅ Verifica que los productos existan
     console.log("Address:", address); // ✅ Verifica que haya dirección
     //console.log("productsToOrder:", productsToOrder); // ✅ Verifica estructura antes de enviar
@@ -38,31 +65,90 @@ export const PlaceOrder = () => {
       return;
     }
 
-    const productsToOrder = cart.map((product) => ({
-      id: product.id,
-      productId: product.id,
-      quantity: product.quantity,
-      price: product.price,
-      slug: product.slug,
-      title: product.title,
-      image: product.image,
-    }));
+    // --- 1. Obtener priceCategory del cliente logueado ---
+    
+    const clientPriceCategory = user?.priceCategory; 
+
+    if (!clientPriceCategory) {
+      setErrorMessage("No se pudo obtener la categoría de precio del cliente.");
+      setIsPlacingOrder(false);
+      return; // Detener el proceso si no hay priceCategory
+    }
+
+      console.log("Cart:", cart);
+      console.log("Address:", address);
+      console.log("Client ID (usado para la orden):", clientId);
+      console.log("Client Price Category (usada para todos los items):", clientPriceCategory);
+
+    const productsToOrder: OrderProductItem[] = cart.map(item => {
+      const reference = item.reference; // Ajusta según tu estructura
+      const quantity = item.quantity;
+
+      // Validaciones básicas por item (opcional pero recomendado)
+      if (!reference || quantity == null || quantity <= 0) {
+         console.error("Item del carrito inválido (faltan datos):", item);
+         
+      }
+      return {
+        // productId: item.id, // Si el backend lo requiere
+        reference: item.reference, // Asegúrate de que 'item' tenga 'reference'
+        priceCategory: clientPriceCategory,  // Asegúrate de que 'item' tenga 'priceCategory'
+        quantity: item.quantity, // Asegúrate de que 'item' tenga 'quantity'
+        // ...otros campos si OrderProductItem los requiere
+      };
+    // Filtrar items inválidos si es necesario
+    }).filter(item => item.reference && item.priceCategory && item.quantity > 0); 
+
+    // --- 3. Validar que todos los items sean válidos después del mapeo ---
+    const hasInvalidItems = productsToOrder.some(
+      item => !item.reference || !item.priceCategory || item.quantity <= 0
+    );
+  if (hasInvalidItems) {
+    setErrorMessage("Algunos productos en el carrito tienen datos incompletos. Por favor, revísalos.");
+    setIsPlacingOrder(false);
+    return;
+}
+    // Validar que se haya creado al menos un item válido
+    if (productsToOrder.length === 0 || productsToOrder.length !== cart.length) {
+        setErrorMessage("No hay productos válidos en el carrito para procesar.");
+        setIsPlacingOrder(false);
+        return;
+    }
+    console.log("productsToOrder:", productsToOrder);
+
+    // --- Crear el payload ---
+    const orderPayload: CreateOrderPayload = {
+      clientId: clientId,
+      productsToOrder: productsToOrder,
+      // address: address // Si decides incluirlo aquí, descomenta
+    };
 
     try {
-      const resp = await createOrder(productsToOrder, address);
+      const resp = await createOrder(orderPayload);
       console.log("Respuesta de placeOrder:", resp);
+
       if (!resp.ok) {
         setIsPlacingOrder(false);
-        setErrorMessage(resp.message ?? "Error al procesar la orden");
+        setErrorMessage(resp.message ?? "Error al procesar la orden en el servidor.");
         return;
       }
 
+// --- Éxito: Limpiar carrito y redirigir ---
       clearCart();
-      navigate(`/orders/${resp.order.id}`);
+      // Asegúrate de que resp.order.id exista. Ajusta según la respuesta real.
+      if (resp.order && resp.order.id) {
+         navigate(`/orders/${resp.order.id}`);
+      } else {
+         // Si no hay ID, podrías redirigir a una página de éxito genérica
+         console.warn("Respuesta de orden no incluye ID:", resp.order);
+         navigate(`/orders/success`); // Ejemplo de ruta genérica
+      }
+
     } catch (error) {
-      console.error("Error en PlaceOrder:", error);
+      console.error("Error en PlaceOrder al llamar al servicio:", error);
       setIsPlacingOrder(false);
-      setErrorMessage("Ocurrió un error al procesar la orden.");
+      // Mensaje de error genérico o específico si el error tiene uno
+      setErrorMessage(error instanceof Error ? error.message : "Ocurrió un error inesperado al procesar la orden.");
     }
   };
 
@@ -114,6 +200,9 @@ export const PlaceOrder = () => {
         </p>
 
         <p className="text-red-500">{errorMessage}</p>
+
+        {/* Mostrar mensaje de error */}
+        {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
         
         <button
           onClick={onPlaceOrder}
