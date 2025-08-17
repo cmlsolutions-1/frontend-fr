@@ -37,7 +37,7 @@ export default function VendedorModal({
     name: "",
     lastName: "",
     password: "",
-    emails: [{ EmailAddress: "", IsPrincipal: true }],
+    emails: [{ EmailAddres: "", IsPrincipal: true }],
     phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
     city: "",
@@ -70,8 +70,8 @@ export default function VendedorModal({
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.emails[0]?.EmailAddress;
-    if (!formData.emails?.[0]?.EmailAddress?.trim()) {
+    const email = formData.emails[0]?.EmailAddres;
+    if (!formData.emails?.[0]?.EmailAddres?.trim()) {
       setErrors({ ...errors, email: "El email es obligatorio" });
       return;
     }
@@ -109,7 +109,7 @@ export default function VendedorModal({
     if (
       !formData.emails ||
       formData.emails.length === 0 ||
-      !formData.emails[0].EmailAddress
+      !formData.emails[0].EmailAddres
     ) {
       setErrors((prev) => ({ ...prev, email: "El email es requerido" }));
       return;
@@ -117,7 +117,7 @@ export default function VendedorModal({
 
     // Asegurar que el email esté en minúsculas y sin espacios
     const cleanedEmails = formData.emails.map((email) => ({
-      EmailAddress: email.EmailAddress.trim().toLowerCase(),
+      EmailAddres: email.EmailAddres.trim().toLowerCase(),
       IsPrincipal: email.IsPrincipal,
     }));
 
@@ -127,7 +127,7 @@ export default function VendedorModal({
       id: formData.id || crypto.randomUUID(),
       emails: [
         {
-          EmailAddress: formData.emails[0].EmailAddress.trim(),
+          EmailAddres: formData.emails[0].EmailAddres.trim(),
           IsPrincipal: true,
         },
       ],
@@ -214,10 +214,10 @@ export default function VendedorModal({
             <Input
               id="email"
               name="email"
-              value={formData.emails[0]?.EmailAddress || ""}
+              value={formData.emails[0]?.EmailAddres || ""}
               onChange={(e) =>
                 handleChange("emails", [
-                  { ...formData.emails[0], EmailAddress: e.target.value },
+                  { ...formData.emails[0], EmailAddres: e.target.value },
                 ])
               }
               className={errors.email ? "border-red-500" : ""}

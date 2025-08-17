@@ -47,7 +47,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     !vendedor.emails ||
     !Array.isArray(vendedor.emails) ||
     vendedor.emails.length === 0 ||
-    !vendedor.emails[0]?.EmailAddress?.trim()
+    !vendedor.emails[0]?.EmailAddres?.trim()
   ) {
     console.error("Datos de email inválidos:", vendedor.emails);
     throw new Error("Debe proporcionar al menos un email válido");
@@ -60,7 +60,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     lastName: vendedor.lastName.trim(),
     email: [
       {
-        EmailAddres: vendedor.emails[0].EmailAddress.trim(),
+        EmailAddres: vendedor.emails[0].EmailAddres.trim(),
         IsPrincipal: true,
       },
     ],
@@ -100,7 +100,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
       ...responseData,
       emails:
         responseData.email?.map((e: any) => ({
-          EmailAddress: e.EmailAddres,
+          EmailAddres: e.EmailAddres,
           IsPrincipal: e.IsPrincipal,
         })) || [],
       phones:
@@ -147,7 +147,7 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     // Ajusta según si los vendedores tienen emails y la estructura exacta
     email: vendedor.emails && vendedor.emails.length > 0 ?
       vendedor.emails.map(e => ({
-        EmailAddress: e.EmailAddress?.trim(), // Mayúscula
+        EmailAddres: e.EmailAddres?.trim(), // Mayúscula
         IsPrincipal: e.IsPrincipal
       })) : undefined,
 

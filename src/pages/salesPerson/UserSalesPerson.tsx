@@ -57,7 +57,7 @@ useEffect(() => {
   function getPrimaryEmail(cliente: Cliente): string {
     if (!cliente.emails || !Array.isArray(cliente.emails) || cliente.emails.length === 0) return "Sin correo";
     const email = cliente.emails.find(e => e?.IsPrincipal) ?? cliente.emails[0];
-    return email?.EmailAddress?.trim() || "Sin correo";
+    return email?.EmailAddres?.trim() || "Sin correo";
   }
 
   function getPrimaryPhone(cliente: Cliente): string {

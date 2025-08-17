@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { Cliente, Vendedor, Role } from "@/interfaces/user.interface";
+import { getPriceCategories } from "@/services/priceCategory.service";
 import { saveClient } from "@/services/client.service";
 
 interface ClienteModalProps {
@@ -40,7 +41,7 @@ export default function ClienteModal({
     name: "",
     lastName: "",
     password: "",
-    emails: [{ EmailAddress: "", IsPrincipal: true }],
+    emails: [{ EmailAddres: "", IsPrincipal: true }],
     phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
     city: "",
@@ -55,6 +56,21 @@ export default function ClienteModal({
   );
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // es de la lista de precios de categoria
+  const [priceCategories, setPriceCategories] = useState<{id: string; name: string}[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getPriceCategories();
+        setPriceCategories(data);
+      } catch (err) {
+        console.error("No se pudieron cargar categorías de precios", err);
+      }
+    };
+    fetchData();
+  }, []);
   
 
 
@@ -75,7 +91,7 @@ export default function ClienteModal({
       emails:
         cliente.emails && cliente.emails.length > 0
           ? cliente.emails
-          : [{ EmailAddress: "", IsPrincipal: true }],
+          : [{ EmailAddres: "", IsPrincipal: true }],
       phones:
         cliente.phones && cliente.phones.length > 0
           ? cliente.phones
@@ -89,7 +105,7 @@ export default function ClienteModal({
       name: "",
       lastName: "",
       password: "",
-      emails: [{ EmailAddress: "", IsPrincipal: true }],
+      emails: [{ EmailAddres: "", IsPrincipal: true }],
       phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
       address: [""],
       city: "",
@@ -113,7 +129,7 @@ export default function ClienteModal({
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.emails[0]?.EmailAddress;
+    const email = formData.emails[0]?.EmailAddres;
     if (!email) newErrors.emails = "El email es requerido";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.emails = "Email inválido";
@@ -233,10 +249,10 @@ export default function ClienteModal({
             <Label>Email *</Label>
             <Input
               type="email"
-              value={formData.emails[0]?.EmailAddress || ""}
+              value={formData.emails[0]?.EmailAddres || ""}
               onChange={(e) =>
                 handleChange("emails", [
-                  { ...formData.emails[0], EmailAddress: e.target.value },
+                  { ...formData.emails[0], EmailAddres: e.target.value },
                 ])
               }
               className={errors.emails ? "border-red-500" : ""}
@@ -322,17 +338,28 @@ export default function ClienteModal({
           </div>
 
           {/* Categoría de Precio */}
-          <div className="space-y-2">
-            <Label>Categoría de Precio *</Label>
-            <Input
-              value={formData.priceCategory}
-              onChange={(e) => handleChange("priceCategory", e.target.value)}
-              className={errors.priceCategory ? "border-red-500" : ""}
-            />
-            {errors.priceCategory && (
-              <p className="text-red-500 text-sm">{errors.priceCategory}</p>
-            )}
-          </div>
+        <div className="space-y-2 relative z-50">
+          <Label>Categoría de Precio *</Label>
+          <Select
+            value={formData.priceCategory || ""}
+            onValueChange={(value) => handleChange("priceCategory", value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Seleccionar categoría de precio" />
+            </SelectTrigger>
+            <SelectContent className="max-h-40 overflow-y-auto bg-white shadow-lg border border-gray-200 z-50">
+              {priceCategories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.priceCategory && (
+            <p className="text-red-500 text-sm">{errors.priceCategory}</p>
+          )}
+        </div>
+
 
           {/* Asignar Vendedor */}
           <div className="space-y-2 relative z-50">
