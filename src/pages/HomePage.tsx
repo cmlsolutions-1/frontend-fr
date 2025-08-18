@@ -11,19 +11,6 @@ const HomePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  //1- ESTE ES DE DATOS QUEMADOS
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const response = await getPaginatedMockProductsWithImages({
-        page: currentPage,
-      });
-      setProducts(response.products);
-      setTotalPages(response.totalPages);
-    };
-
-    fetchProducts();
-  }, [currentPage]);
 
   //ESTE ES DEL BACKEND----------------------------------------
 
@@ -31,16 +18,17 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts(currentPage); // Llama al servicio
-        setProducts(data.items || []);
-        setTotalPages(data.totalPages || 1);
+        const data = await getProducts();
+        setProducts(data);
+        setTotalPages(1); // No hay paginación en el backend aún
       } catch (error) {
         console.error("Error al traer productos:", error);
       }
     };
-
+  
     fetchProducts();
   }, [currentPage]);
+
 
   //HASTA ACA----------------------------------------
 

@@ -13,7 +13,7 @@ import { AddToCart } from './ui/AddToCart';
 import { Product } from '@/interfaces';
 
 export const ProductPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { _id  } = useParams<{ _id : string }>();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -22,54 +22,62 @@ export const ProductPage = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!slug) return;
+      if (!_id) return;
 
-      const fetchedProduct = await getMockProductBySlug(slug);
-
-      if (!fetchedProduct) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/products/${_id}`);
+        if (!response.ok) {
+          navigate('/404');
+          return;
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
+        console.error("Error al cargar producto:", error);
         navigate('/404');
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      setProduct(fetchedProduct);
-      setLoading(false);
     };
 
     fetchProduct();
-  }, [slug, navigate]);
+  }, [_id, navigate]);
 
-  if (!product) return <p className="p-4">Cargando...</p>;
+  if (loading) return <p className="p-4">Cargando...</p>;
+  if (!product) return <p className="p-4">Producto no encontrado</p>;
 
   return (
     <div className="mt-5 mb-20 grid grid-cols-1 md:grid-cols-3 gap-3">
       {/* Slideshow */}
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow
-          title={product.title}
-          images={product.ProductImage.map((img) => img.url)}
+          title={product.detalle}
+          images={[product.image]}
           className="block md:hidden"
         />
         <ProductSlideshow
-          title={product.title}
-          images={product.ProductImage.map((img) => img.url)}
+          title={product.detalle}
+          images={[product.image]}
           className="hidden md:block"
         />
       </div>
 
       {/* Detalles */}
       <div className="col-span-1 px-5">
-        <StockLabel slug={product.slug} />
+        <StockLabel slug={product._id} />
 
         <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
-          {product.title}
+          {product.detalle}
         </h1>
 
-        <p className="text-lg mb-5">${product.price}</p>
+        <p className="text-lg mb-5">
+          {product.precios?.length > 0 ? `$${product.precios[0].precio}` : "Sin precio"}
+        </p>
 
         <AddToCart product={product} />
 
         <h3 className="font-bold text-sm mt-4">Descripción</h3>
-        <p className="font-light">{product.description}</p>
+        <p className="font-light">{product.detalle}</p>
       </div>
     </div>
   );

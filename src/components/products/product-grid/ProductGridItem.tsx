@@ -11,7 +11,7 @@ interface Props {
 
 export const ProductGridItem = ({ product }: Props) => {
   const [displayImage, setDisplayImage] = useState(
-    product.ProductImage?.[0]?.url || "/products/no-image.jpg"
+    product.image? `/products/${product.image}` : "/products/placeholder.jpg"
   );
 
   const capitalizeWords = (text: string) => {
@@ -33,16 +33,17 @@ export const ProductGridItem = ({ product }: Props) => {
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
-      <Link to={`/product/${product.slug}`} className="block w-full aspect-[4/3]">
+      {/* Imagen */}
+      <Link to={`/product/${product._id}`} className="block w-full aspect-[4/3]">
         <img
           src={`/products/${displayImage}`}
-          alt={product.title}
+          alt={product.detalle}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onMouseEnter={() =>
-            setDisplayImage(product.ProductImage?.[1]?.url || displayImage)
+            setDisplayImage(product.image ? `/products/${product.image}` : displayImage)
           }
           onMouseLeave={() =>
-            setDisplayImage(product.ProductImage?.[0]?.url || displayImage)
+            setDisplayImage(product.image ? `/products/${product.image}` : displayImage)
           }
         />
       </Link>
@@ -50,13 +51,18 @@ export const ProductGridItem = ({ product }: Props) => {
       <div className="p-4 flex flex-col justify-between flex-1">
         <Link
           className="text-sm font-medium text-gray-800 hover:text-blue-600 truncate"
-          to={`/product/${product.slug}`}
+          to={`/product/${product._id}`}
         >
-          {cleanTitle(product.title)}
+          {cleanTitle(product.detalle)}
         </Link>
-        <span className="mt-1 text-base font-bold text-gray-900">${product.price}</span>
+        <span className="mt-1 text-base font-bold text-gray-900">
+          {product.precios?.length > 0
+            ? `$${product.precios[0].valor}`
+            : "Sin precio"}
+        </span>
+
         <span className="text-sm text-gray-600">
-          <span className="font-bold">Master:</span> {product.master}
+          <span className="font-bold">Master:</span> {product.referencia}
         </span>
         {/* Agregar al carrito */}
         <div className="mt-auto pt-4">

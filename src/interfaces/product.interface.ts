@@ -6,37 +6,25 @@ export interface ProductImage {
   productId: string;
 }
 
-export type Product ={
-  id: string;
-  description: string;
-  ProductImage?: ProductImage[];
-  inStock: number;
-  price: number;
-  //sizes: Size[];
-  slug: string;
-  tags: string[];
-  title: string;
-  reference: string;
-  code: string;
-  master: number;
-  inner: number;
-  categoryId: string,
-  //todo: type: Type;
-  //gender: Category;
+export interface Product {
+  _id: string;
+  referencia: string;
+  codigo: string;
+  detalle: string;
+  subgategoryId: string;
+  image: string;
+  precios: any[]; // si quieres luego definimos bien la estructura de precios
 }
 
 export interface CartProduct {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  quantity: number;
-  //size: Size;
-  reference: string;
-  code: string;
-  master: number;
-  inner: number;
+  _id: string;
+  referencia: string;
+  codigo: string;
+  detalle: string;
+  subgategoryId: string;
   image: string;
+  precios: any[];
+  quantity: number;
 }
 
 
