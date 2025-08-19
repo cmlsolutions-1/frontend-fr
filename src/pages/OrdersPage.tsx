@@ -11,25 +11,13 @@ import { OrderStatusButton } from '@/components/orders/OrderStatusButton';
 import { getOrdersByUser } from "@/services/orders.service";
 
 export default function OrdersPage() {
-  //QUITAR CUANDO SE HABILITE EL BACKEND
-  // const [orders, setOrders] = useState<Order[]>([]);
-  // const navigate = useNavigate();
+
 
   // ACTIVAR BAKEND 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
 
-  //ESTO ES MOCKS QUITAR CUANDO SE HABILITE EL BACKEND
-  // useEffect(() => {
-  //   getMockOrdersByUser().then(({ ok, orders }) => {
-  //     if (!ok) {
-  //       navigate("/auth/login");
-  //       return;
-  //     }
-  //     setOrders(orders || []);
-  //   });
-  // }, [navigate]);
 
   //BACKEND
   useEffect(() => {
@@ -83,10 +71,10 @@ export default function OrdersPage() {
                 className="border-b hover:bg-gray-100 transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
-                  {order.id.split("-").at(-1)}
+                  {order._id.slice(-6)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  Carlos Pérez
+                  {order.idClient || "Cliente N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               <div className="flex items-center">
@@ -104,7 +92,7 @@ export default function OrdersPage() {
             </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
-              <Link to={`/orders/${order.id}`} className="hover:underline">
+              <Link to={`/orders/${order._id}`} className="hover:underline">
                 Ver orden
               </Link>
             </td>

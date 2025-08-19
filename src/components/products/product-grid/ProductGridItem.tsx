@@ -10,6 +10,7 @@ interface Props {
 }
 
 export const ProductGridItem = ({ product }: Props) => {
+  const masterPackage = product.packages?.find(p => p.typePackage === "Master");
   const [displayImage, setDisplayImage] = useState(
     product.image? `/products/${product.image}` : "/products/placeholder.jpg"
   );
@@ -62,7 +63,7 @@ export const ProductGridItem = ({ product }: Props) => {
         </span>
 
         <span className="text-sm text-gray-600">
-          <span className="font-bold">Master:</span> {product.referencia}
+          <span className="font-bold">Master:</span> {masterPackage ? masterPackage.mount : "N/A"}
         </span>
         {/* Agregar al carrito */}
         <div className="mt-auto pt-4">

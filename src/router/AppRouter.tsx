@@ -66,7 +66,7 @@ export const AppRouter = () => {
           }
         />
         <Route
-          path="/orders/:id"
+          path="/orders/:_id"
           element={
             <PrivateRoute>
               <OrdersByIdPage />

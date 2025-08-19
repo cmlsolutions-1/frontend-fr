@@ -81,7 +81,7 @@ export const PlaceOrder = () => {
       console.log("Client Price Category (usada para todos los items):", clientPriceCategory);
 
     const productsToOrder: OrderProductItem[] = cart.map(item => {
-      const reference = item.reference; // Ajusta según tu estructura
+      const reference = item._id; // Ajusta según tu estructura
       const quantity = item.quantity;
 
       // Validaciones básicas por item (opcional pero recomendado)
@@ -91,7 +91,7 @@ export const PlaceOrder = () => {
       }
       return {
         // productId: item.id, // Si el backend lo requiere
-        reference: item.reference, // Asegúrate de que 'item' tenga 'reference'
+        reference: item._id, // Asegúrate de que 'item' tenga 'reference'
         priceCategory: clientPriceCategory,  // Asegúrate de que 'item' tenga 'priceCategory'
         quantity: item.quantity, // Asegúrate de que 'item' tenga 'quantity'
         // ...otros campos si OrderProductItem los requiere

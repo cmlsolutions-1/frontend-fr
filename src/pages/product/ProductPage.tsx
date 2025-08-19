@@ -19,6 +19,7 @@ export const ProductPage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   //const images = product.ProductImage.map(img => img.url);
   const [loading, setLoading] = useState(true);
+  const placeholder = "/img/placeholder.jpg"; // imagen por defecto
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,18 +47,28 @@ export const ProductPage = () => {
   if (loading) return <p className="p-4">Cargando...</p>;
   if (!product) return <p className="p-4">Producto no encontrado</p>;
 
+  // Precio según tipo de cliente (ejemplo: usamos "valor")
+  const priceType: "valor" | "valorpos" = "valor";
+  const getClientPrice = () => {
+    if (!product.precios || product.precios.length === 0) return "Sin precio";
+    const precio = product.precios[0][priceType];
+    return precio && precio > 0 ? `$${precio}` : "Sin precio";
+  };
+  // Package Master
+  const masterPackage = product.packages?.find((p) => p.typePackage === "Master");
+
   return (
     <div className="mt-5 mb-20 grid grid-cols-1 md:grid-cols-3 gap-3">
       {/* Slideshow */}
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow
           title={product.detalle}
-          images={[product.image]}
+          images={[product.image ? `/products/${product.image}` : placeholder]}
           className="block md:hidden"
         />
         <ProductSlideshow
           title={product.detalle}
-          images={[product.image]}
+          images={[product.image ? `/products/${product.image}` : placeholder]}
           className="hidden md:block"
         />
       </div>
@@ -70,12 +81,18 @@ export const ProductPage = () => {
           {product.detalle}
         </h1>
 
-        <p className="text-lg mb-5">
-          {product.precios?.length > 0 ? `$${product.precios[0].precio}` : "Sin precio"}
-        </p>
+        {/* Precio */}
+        <p className="text-lg mb-5">{getClientPrice()}</p>
 
         <AddToCart product={product} />
-
+        {/* Master package */}
+        <div className="mt-4">
+          <h3 className="font-bold text-sm">Master</h3>
+          <p className="font-light">
+            {masterPackage ? masterPackage.mount : "N/A"} unidades
+          </p>
+        </div>
+{/* Descripción */}
         <h3 className="font-bold text-sm mt-4">Descripción</h3>
         <p className="font-light">{product.detalle}</p>
       </div>

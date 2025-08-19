@@ -1,67 +1,47 @@
 // src/services/orders.service.ts
 import type { Order } from "@/interfaces/order.interface";
 
-const API_URL = "http://localhost:3000/api/orders";
-
+const API_URL = `${import.meta.env.VITE_API_URL}/order`;
 
 export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] }> => {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar las órdenes");
-      }
-  
-      const data = await response.json();
-      
-      return {
-        ok: true,
-        orders: data.items || [],
-      };
-    } catch (error) {
-      console.error("Error al obtener órdenes:", error);
-      return {
-        ok: false,
-        orders: [],
-      };
-    }
-  };
+  try {
+    const response = await fetch(`${API_URL}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-export const createOrder = async (productsToOrder: any[], address: any) => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      productsToOrder,
-      address,
-    }),
-  });
+    if (!response.ok) throw new Error("No se pudieron cargar las órdenes");
 
-  if (!response.ok) {
-    throw new Error("No se pudo crear la orden");
+    const data = await response.json();
+
+    return {
+      ok: true,
+      orders: Array.isArray(data) ? data : [], // ✅ tu API devuelve directamente un array
+    };
+  } catch (error) {
+    console.error("Error al obtener órdenes:", error);
+    return { ok: false, orders: [] };
   }
-
-  return await response.json();
 };
 
 export const getOrderById = async (id: string) => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Orden no encontrada");
+    if (!response.ok) throw new Error("Orden no encontrada");
+
+    const data = await response.json();
+
+    return { ok: true, order: data };
+  } catch (error) {
+    console.error("Error al traer orden:", error);
+    return { ok: false, order: null };
   }
-
-  return await response.json();
 };

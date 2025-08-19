@@ -1,9 +1,12 @@
-//src/interfaces/product.interface.ts
+export interface Precio {
+  precio: string;   // parece venir vacío, pero lo dejo como string
+  valor: number;
+  valorpos: number;
+}
 
-export interface ProductImage {
-  id: number;
-  url: string;
-  productId: string;
+export interface Package {
+  typePackage: string; // "Inner" | "Master"
+  mount: number;
 }
 
 export interface Product {
@@ -12,30 +15,12 @@ export interface Product {
   codigo: string;
   detalle: string;
   subgategoryId: string;
-  image: string;
-  precios: any[]; // si quieres luego definimos bien la estructura de precios
+  image: string;           // por ahora parece ser un id de imagen
+  precios: Precio[];       // array de precios
+  packages: Package[];     // array de presentaciones
+  stock: number;
 }
 
-export interface CartProduct {
-  _id: string;
-  referencia: string;
-  codigo: string;
-  detalle: string;
-  subgategoryId: string;
-  image: string;
-  precios: any[];
+export interface CartProduct extends Product {
   quantity: number;
 }
-
-
-export interface ProductImage {
-  id: number;
-  url: string;
-  productId: string;
-}
-
-
-type Category = 'men'|'women'|'kid'|'unisex';
-//export type Size = 'XS'|'S'|'M'|'L'|'XL'|'XXL'|'XXXL';
-export type Type = 'bioseguridad'|'cadenas guayas y tensores'|'cerrajeria chapas y candados' | 'electronica' | 'escaleras' | 'herrajes' | 'herramienta electrica' | 'herramienta manual' |
-    'iluminacion' | 'pinturas solventes' | 'seguridad industrial' | 'siliconas y adhesivos cintas' | 'tornilleria'
