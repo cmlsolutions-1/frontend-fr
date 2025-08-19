@@ -1,7 +1,7 @@
 //src/utils/normalizeClientPayload
 
 export function normalizeCliente(cliente: any) {
-  const principalEmail = cliente.emails?.find((e: any) => e.IsPrincipal)?.EmailAddress || '';
+  const principalEmail = cliente.emails?.find((e: any) => e.IsPrincipal)?.EmailAddres || '';
   const principalPhone = cliente.phones?.find((p: any) => p.IsPrincipal)?.NumberPhone || '';
 
   return {

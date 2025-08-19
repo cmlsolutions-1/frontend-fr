@@ -41,7 +41,7 @@ export default function VendedoresManager() {
 
     // Busca el email principal o toma el primero
     const email = user.emails.find((e) => e?.IsPrincipal) ?? user.emails[0];
-    return email?.EmailAddress?.trim() || "Sin correo";
+    return email?.EmailAddres?.trim() || "Sin correo";
   }
 
   function getPrimaryPhone(user: User): string {

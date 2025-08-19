@@ -31,17 +31,17 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
     // Asegurarse de que cada objeto tenga la estructura de Cliente
     const normalizedData: Cliente[] = parsedData.map((item: any) => {
       // --- Normalizar emails ---
-      let normalizedEmails: Email[] = [{ EmailAddress: '', IsPrincipal: true }]; // Valor por defecto
+      let normalizedEmails: Email[] = [{ EmailAddres: '', IsPrincipal: true }]; // Valor por defecto
 
       if (Array.isArray(item.emails) && item.emails.length > 0) {
         const rawEmail = item.emails[0]; // Tomar el primer email
         let emailValue = '';
 
         // Probar diferentes formas en que el email podría haberse guardado
-        if (typeof rawEmail.EmailAddress === 'string') {
-          emailValue = rawEmail.EmailAddress;
-        } else if (typeof rawEmail.emailAddress === 'string') {
-          emailValue = rawEmail.emailAddress;
+        if (typeof rawEmail.EmailAddres === 'string') {
+          emailValue = rawEmail.EmailAddres;
+        } else if (typeof rawEmail.emailAddres === 'string') {
+          emailValue = rawEmail.emailAddres;
         } else if (typeof rawEmail.EmailAddres === 'string') { // Typo que viste
           emailValue = rawEmail.EmailAddres;
         } else if (typeof item.email === 'string') { // Formato simple del DTO de lista
@@ -49,12 +49,12 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
         }
 
         normalizedEmails = [{
-          EmailAddress: emailValue,
+          EmailAddres: emailValue,
           IsPrincipal: rawEmail.IsPrincipal ?? rawEmail.isPrincipal ?? true
         }];
       } else if (typeof item.email === 'string') {
         // Si viene un email simple (como en GetClientsBySalesPersonDto)
-        normalizedEmails = [{ EmailAddress: item.email, IsPrincipal: true }];
+        normalizedEmails = [{ EmailAddres: item.email, IsPrincipal: true }];
       }
 
       // --- Normalizar phones ---
@@ -169,7 +169,7 @@ export default function ClientesManager({
       (c) =>
         c.name.toLowerCase().includes(term) ||
         c.lastName.toLowerCase().includes(term) ||
-        c.emails?.[0]?.EmailAddress?.toLowerCase().includes(term) ||
+        c.emails?.[0]?.EmailAddres?.toLowerCase().includes(term) ||
         c.phones?.[0]?.NumberPhone?.includes(searchTerm)
     );
 
@@ -311,7 +311,7 @@ export default function ClientesManager({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredClientes.map((cliente) => {
             // Datos seguros con valores por defecto
-            const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddress || "Sin email";
+            const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddres || "Sin email";
             const phoneNumber =
               cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
             const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";
