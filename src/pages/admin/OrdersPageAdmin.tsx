@@ -1,17 +1,17 @@
-//src/pages/OrdersPage.tsx
+//src/pages/admin/OrdersPageAdmin.tsx
 
 import { useEffect, useState } from "react";
+import { getMockOrdersByUser } from "@/mocks/getMockOrdersByUser";
 import { Title } from "@/components";
 import { useNavigate, Link } from "react-router-dom";
 import { IoCardOutline, IoDownload, IoDownloadOutline } from "react-icons/io5";
 import type { Order } from "@/interfaces/order.interface";
 import { OrderPDFButton } from '@/components/orders/OrderPDFButton';
 import { OrderStatusButton } from '@/components/orders/OrderStatusButton';
-import { getOrdersByClient } from "@/services/orders.service";
+import { getOrdersByUser } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
-import type { Cliente } from "@/interfaces/user.interface";
 
-export default function OrdersPage() {
+export default function OrdersPageAdmin() {
 
 
   // ACTIVAR BAKEND 
@@ -20,40 +20,21 @@ export default function OrdersPage() {
   const { user } = useAuthStore();
 
 
-
   //BACKEND
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        console.log("👤 Usuario actual:", user); // Debug
-
-        if (!user || user.role !== 'Client') {
-          console.error('Usuario no válido o rol incorrecto');
-          setOrders([]);
-          return;
-        }
-        // ✅ Asegúrate de pasar solo el _id como string
-        console.log("🆔 ID del cliente:", user._id); // Debug
-
-        const result = await getOrdersByClient(user._id);
-        
-        if (result.ok) {
-          console.log("📋 Órdenes cargadas:", result.orders); // Debug
-          setOrders(result.orders);
-        } else {
-          console.error('No se pudieron cargar las órdenes del cliente');
-          setOrders([]);
-        }
+        const data = await getOrdersByUser();
+        setOrders(data.orders || []);
       } catch (error) {
         console.error("Error al traer órdenes:", error);
-        setOrders([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadOrders();
-  }, [user]);
+  }, []);
 
   if (loading) return <p>Cargando órdenes...</p>;
 
@@ -61,7 +42,7 @@ export default function OrdersPage() {
 
   return (
     <div className="px-4 sm:px-8 py-4">
-      <h2 className="text-xl font-bold mb-4">Historial Pedidos</h2>
+      <h2 className="text-xl font-bold mb-4">Lista de Pedidos Clientes</h2>
 
       <div className="overflow-x-auto">
         <table className="min-w-full border">
@@ -87,11 +68,11 @@ export default function OrdersPage() {
           <tbody>
             {orders.map((order) => (
               <tr
-                key={order._id}
+                key={order.id}
                 className="border-b hover:bg-gray-100 transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
-                  {order._id.slice(-6) || 'N/A'}
+                  {order._id.slice(-6)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {user?.name && user?.lastName 
@@ -114,17 +95,10 @@ export default function OrdersPage() {
             </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
-              {order?._id ? (
-              <Link 
-                to={`/orders/${order._id}`} 
-                className="hover:underline"
-              >
+              <Link to={`/orders/${order._id}`} className="hover:underline">
                 Ver orden
               </Link>
-            ) : (
-              <span className="text-gray-400 cursor-not-allowed">ID no disponible</span>
-            )}
-          </td>
+            </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               <div className="flex items-center gap-2">

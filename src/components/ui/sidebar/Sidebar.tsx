@@ -28,6 +28,7 @@ export const Sidebar = () => {
   const isAuthenticated = !!user;
   const isAdmin = user?.role === "Admin";
   const isSalesPerson = user?.role === "SalesPerson";
+  const isClient = user?.role === "Client";
   //const role = user?.role;
 
   const handleLogout = () => {
@@ -81,14 +82,7 @@ export const Sidebar = () => {
               <span className="ml-3 text-lg">Perfil</span>
             </Link>
 
-            <Link
-              to="/orders"
-              onClick={() => closeMenu()}
-              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
-            >
-              <IoTicketOutline size={30} />
-              <span className="ml-3 text-lg">Órdenes</span>
-            </Link>
+            
           </>
         )}
 
@@ -113,6 +107,23 @@ export const Sidebar = () => {
             <span className="ml-3 text-lg">Ingresar</span>
           </Link>
         )}
+        {isClient&& (
+          <>
+            {/* Line Separator */}
+            <div className="w-full h-px bg-gray-200 my-10" />
+            <hr className="my-4 border-gray-300" />
+
+            <Link
+              to="/orders"
+              onClick={() => closeMenu()}
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
+            >
+              <IoTicketOutline size={30} />
+              <span className="ml-3 text-lg">Órdenes</span>
+            </Link>
+
+          </>
+        )}
         {isSalesPerson && (
           <>
             {/* Line Separator */}
@@ -122,6 +133,14 @@ export const Sidebar = () => {
             <Link to="/salesPerson/user-salesPerson" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />
               <span className="ml-3 text-lg">Gestión de Clientes</span>
+            </Link>
+            <Link
+              to="/salesPerson/orders"
+              onClick={() => closeMenu()}
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
+            >
+              <IoTicketOutline size={30} />
+              <span className="ml-3 text-lg">Mis Pedidos</span>
             </Link>
 
           </>
@@ -157,7 +176,7 @@ export const Sidebar = () => {
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoTicketOutline size={30} />
-              <span className="ml-3 text-lg">Órdenes</span>
+              <span className="ml-3 text-lg">Lista Pedidos</span>
             </Link>
 
             <Link

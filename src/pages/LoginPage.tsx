@@ -1,7 +1,5 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react';
-import { IoInformationOutline } from 'react-icons/io5';
-import { useAuthStore } from '@/store/auth-mock-store';
 import { Link } from 'react-router-dom';
 import { LoginForm } from '@/components/ui/LoginForm'; // ✅ Importamos el formulario
 

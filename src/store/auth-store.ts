@@ -2,9 +2,6 @@
 import { create } from "zustand";
 import { loginRequest, fetchMe } from "@/services/user.service";
 
-// Este store maneja la autenticación del usuario, incluyendo login, logout y restauración de sesión.
-// Utiliza `zustand` para manejar el estado global de autenticación.
-// se puedes usar `useAuthStore` en los componentes para acceder al estado de autenticación y las funciones de login/logout.
 
 interface AuthState {
   user: any | null;

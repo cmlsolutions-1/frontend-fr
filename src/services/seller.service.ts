@@ -28,7 +28,7 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
         address: Array.isArray(item.address) ? item.address : [],
         city: item.cityId,
         role: item.role,
-        priceCategory: "", // No viene en el backend
+        priceCategory: "", 
         state: item.state === "Active" ? "activo" : "inactivo",
         salesPerson: "", // Asumiendo que no aplica aquí
         clients: item.extra?.clients || [],

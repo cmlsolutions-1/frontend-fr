@@ -17,6 +17,7 @@ import ProximosContenedoresPage from "@/pages/ProximosContenedoresPage";
 import PromotionsPage from "@/pages/PromotionsPage";
 
 import OrdersPage from "@/pages/OrdersPage";
+import OrdersPageAdmin from "@/pages/admin/OrdersPageAdmin";
 import OrdersByIdPage from "@/pages/OrdersByIdPage";
 import { SearchPage } from "@/pages/SearchPage";
 import CheckoutPage from "@/pages/checkout/page";
@@ -26,6 +27,7 @@ import { OrderConfirmationPage } from "@/pages/orders/[orderId]";
 import { PrivateRoute } from "./PrivateRoute";
 import UserSalesPerson from "@/pages/salesPerson/UserSalesPerson";
 import { useAuthStore } from "@/store/auth-store";
+import OrdersPageSalesPerson from "@/pages/salesPerson/OrdersPageSalesPerson";
 
 //CheckoutPage
 
@@ -158,6 +160,26 @@ export const AppRouter = () => {
             <PrivateRoute>
               <ShopLayout>
                 <OrdersPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersPageAdmin />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/salesPerson/orders"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersPageSalesPerson />
               </ShopLayout>
             </PrivateRoute>
           }
