@@ -4,16 +4,41 @@ import { Product } from "@/interfaces";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Agregar } from "./Agregar";
+import { useAuthStore } from '@/store/auth-store';
 
 interface Props {
   product: Product;
 }
 
 export const ProductGridItem = ({ product }: Props) => {
+  const { user } = useAuthStore(); 
   const masterPackage = product.packages?.find(p => p.typePackage === "Master");
   const [displayImage, setDisplayImage] = useState(
     product.image? `/products/${product.image}` : "/products/placeholder.jpg"
   );
+  // ✅ Función para obtener el precio correcto según la categoría del cliente
+  const getClientProductPrice = (product: Product): number => {
+    if (!product.precios || product.precios.length === 0) return 0;
+
+    // Si no hay usuario autenticado, mostrar el primer precio disponible
+    if (!user || !user.priceCategory) {
+      return product.precios[0]?.valorpos || product.precios[0]?.valor || 0;
+    }
+
+    // Buscar la categoría de precio del cliente
+    const clientPriceCategory = user.priceCategory;
+    
+    // Buscar el precio que corresponde a la categoría del cliente
+    const precioCliente = product.precios.find(p => p.precio === clientPriceCategory);
+    
+    // Si no se encuentra el precio específico, usar el primero disponible
+    if (!precioCliente) {
+      return product.precios[0]?.valorpos || product.precios[0]?.valor || 0;
+    }
+
+    // Retornar el precio específico del cliente (priorizar valorpos)
+    return precioCliente.valorpos || precioCliente.valor || 0;
+  };
 
   const capitalizeWords = (text: string) => {
     return text
@@ -31,6 +56,9 @@ export const ProductGridItem = ({ product }: Props) => {
         .trim()
     );
   };
+
+  // ✅ Obtener el precio correcto
+  const productPrice = getClientProductPrice(product);
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
@@ -57,9 +85,7 @@ export const ProductGridItem = ({ product }: Props) => {
           {cleanTitle(product.detalle)}
         </Link>
         <span className="mt-1 text-base font-bold text-gray-900">
-          {product.precios?.length > 0
-            ? `$${product.precios[0].valor}`
-            : "Sin precio"}
+          {productPrice > 0 ? `$${productPrice.toLocaleString()}` : "Sin precio"}
         </span>
 
         <span className="text-sm text-gray-600">

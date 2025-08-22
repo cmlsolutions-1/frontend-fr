@@ -49,17 +49,34 @@ export const ProductPage = () => {
   if (loading) return <p className="p-4">Cargando...</p>;
   if (!product) return <p className="p-4">Producto no encontrado</p>;
 
-  const clientPrice = User && priceCategories.length > 0
-    ? getClientProductPrice(product, user, priceCategories, "valorpos")
-    : null;
+  // ✅ Función para obtener el precio correcto del cliente
+  const getClientProductPrice = (): number | null => {
+    if (!product.precios || product.precios.length === 0) return null;
 
-  // Precio según tipo de cliente (ejemplo: usamos "valor")
-  const priceType: "valor" | "valorpos" = "valor";
-  const getClientPrice = () => {
-    if (!product.precios || product.precios.length === 0) return "Sin precio";
-    const precio = product.precios[0][priceType];
-    return precio && precio > 0 ? `$${precio}` : "Sin precio";
+    // Si no hay usuario autenticado, usar el primer precio disponible
+    if (!user || !user.priceCategory) {
+      return product.precios[0]?.valorpos || product.precios[0]?.valor || null;
+    }
+
+    // Buscar el precio que corresponde a la categoría del cliente
+    const precioCliente = product.precios.find(p => p.precio === user.priceCategory);
+    
+    // Si no se encuentra el precio específico, usar el primero disponible
+    if (!precioCliente) {
+      return product.precios[0]?.valorpos || product.precios[0]?.valor || null;
+    }
+
+    // Retornar el precio específico del cliente (priorizar valorpos)
+    return precioCliente.valorpos || precioCliente.valor || null;
   };
+
+  // ✅ Función para formatear el precio
+  const formatPrice = (): string => {
+    const price = getClientProductPrice();
+    if (price === null) return "Sin precio";
+    return `$${price.toLocaleString()}`;
+  };
+
   // Package Master
   const masterPackage = product.packages?.find((p) => p.typePackage === "Master");
 
@@ -88,7 +105,7 @@ export const ProductPage = () => {
         </h1>
 
         {/* Precio */}
-        <p className="text-lg mb-5">{getClientPrice()}</p>
+        <p className="text-lg mb-5 font-bold text-gray-900">{formatPrice()}</p>
 
         <AddToCart product={product} />
         {/* Master package */}

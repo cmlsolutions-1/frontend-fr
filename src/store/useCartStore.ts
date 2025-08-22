@@ -9,47 +9,6 @@ import {
 import type { CartItem } from "@/interfaces/cart.interface";
 import { persist } from "zustand/middleware";
 
-//esto es sin el backend
-
-// interface CartItem {
-//   id: string;
-//   title: string;
-//   price: number;
-//   quantity: number;
-//   image: string;
-//   slug: string;
-// }
-
-// interface CartState {
-//   cart: CartItem[];
-//   getSummaryInformation: () => {
-//     itemsInCart: number;
-//     subTotal: number;
-//     tax: number;
-//     total: number;
-//   };
-//   clearCart: () => void;
-// }
-
-// export const useCartStore = create<CartState>((set, get) => ({
-//   cart: [],
-//   getSummaryInformation: () => {
-//     const state = get();
-//     const subtotal = state.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-//     const tax = subtotal * 0.15; // 15% impuestos
-//     const total = subtotal + tax;
-
-//     return {
-//       itemsInCart: state.cart.length,
-//       subTotal: subtotal,
-//       tax,
-//       total,
-//     };
-//   },
-//   clearCart: () => set({ cart: [] }),
-// }));
-
-//-------------se usa con el backend---------------------
 
 
 interface CartState {
@@ -73,60 +32,6 @@ interface CartState {
   };
 }
 
-/* export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      cart: [],
-      loadCart: async () => {
-        const items = await getCartItems();
-        set({ cart: items });
-      },
-      addToCart: (product) =>
-        set((state) => {
-          const productInCart = state.cart.find((p) => p.id === product.id);
-
-          if (productInCart) {
-            const updatedCart = state.cart.map((p) =>
-              p.id === product.id
-                ? { ...p, quantity: productInCart.quantity + 1 }
-                : p
-            );
-            return { cart: updatedCart };
-          }
-
-          return { cart: [...state.cart, { ...product, quantity: 1 }] };
-        }),
-      updateProductQuantity: (product, quantity) =>
-        set((state) => {
-          const updatedCart = state.cart.map((p) =>
-            p.id === product.id ? { ...p, quantity } : p
-          );
-
-          return { cart: updatedCart };
-        }),
-      removeProduct: (product) =>
-        set((state) => ({
-          cart: state.cart.filter((p) => p.id !== product.id),
-        })),
-      clearCart: () => set({ cart: [] }),
-      getSummaryInformation: () => {
-        const cart = get().cart;
-        const itemsInCart = cart.reduce((acc, item) => acc + item.quantity, 0);
-        const subTotal = cart.reduce(
-          (acc, item) => acc + item.price * item.quantity,
-          0
-        );
-        const tax = subTotal * 0.15;
-        const total = subTotal + tax;
-
-        return { itemsInCart, subTotal, tax, total };
-      },
-    }),
-    {
-      name: "cart-storage",
-    }
-  )
-); */
 
 //inicia backend
 export const useCartStore = create<CartState>()(
@@ -135,11 +40,7 @@ export const useCartStore = create<CartState>()(
       cart: [],
       loading: false,
 
-      // loadCart: async () => {
-      //   set({ loading: true });
-      //   const items = await getCartItems();
-      //   set({ cart: items, loading: false });
-      // },
+
 
       loadCart: async () => {
         set({ loading: true });

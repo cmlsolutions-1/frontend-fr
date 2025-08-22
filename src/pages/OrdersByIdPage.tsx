@@ -7,13 +7,35 @@ import { getOrderById } from "@/services/orders.service";
 import { currencyFormat } from "@/utils";
 import { OrderStatus, Title } from "@/components";
 import { OrderStatusButton } from "@/components/orders/OrderStatusButton";
+import { useAuthStore } from '@/store/auth-store';
 
 export default function OrdersByIdPage() {
   const { _id } = useParams<{ _id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+
+  // ✅ Función para determinar la ruta de vuelta según el rol
+  const getBackRoute = () => {
+    if (!user) return '/orders';
+    
+    switch (user.role) {
+      case 'Client':
+        return '/orders';
+      case 'SalesPerson':
+        return '/salesPerson/orders'; // ✅ Ajusta esta ruta según tu configuración
+      case 'Admin':
+        return '/admin/orders'; // ✅ Ajusta esta ruta según tu configuración
+      default:
+        return '/orders';
+    }
+  };
+
+  const backRoute = getBackRoute();
+  console.log("🔙 Ruta de vuelta:", backRoute);
 
   // ✅ Debug para ver qué ID se está recibiendo
   console.log("🔍 useParams id:", _id);
@@ -59,6 +81,7 @@ export default function OrdersByIdPage() {
     return (
       <div className="container mx-auto p-6 text-center">
         <p className="text-lg">Cargando detalles de la orden...</p>
+        <p className="text-sm text-gray-500">ID: {_id || 'undefined'}</p>
       </div>
     );
   }
@@ -67,8 +90,9 @@ export default function OrdersByIdPage() {
     return (
       <div className="container mx-auto p-6 text-center">
         <p className="text-red-500 text-lg">{error}</p>
+        <p className="text-sm text-gray-500">ID recibido: {_id || 'undefined'}</p>
         <Link 
-          to="/orders" 
+          to={backRoute} 
           className="mt-4 inline-block text-blue-600 hover:text-blue-800 underline"
         >
           Volver a órdenes
@@ -81,8 +105,9 @@ export default function OrdersByIdPage() {
     return (
       <div className="container mx-auto p-6 text-center">
         <p className="text-gray-500">No se encontró la orden solicitada.</p>
+        <p className="text-sm text-gray-500">ID: {_id || 'undefined'}</p>
         <Link 
-          to="/orders" 
+          to={backRoute} 
           className="mt-4 inline-block text-blue-600 hover:text-blue-800 underline"
         >
           Volver a órdenes
@@ -172,7 +197,7 @@ export default function OrdersByIdPage() {
             </div>
 
             <Link
-              to="/orders"
+              to={backRoute}
               className="mt-6 btn-primary w-full block text-center text-sm font-light px-6 py-3 text-blue-600 hover:text-blue-800 underline border border-blue-600 rounded hover:bg-blue-50 transition-colors"
             >
               ← Volver a órdenes

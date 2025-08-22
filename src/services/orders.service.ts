@@ -112,7 +112,7 @@ export const getOrdersBySalesPerson = async (
 
 export const getOrderById = async (id: string) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}/getOrdersById/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -127,5 +127,82 @@ export const getOrderById = async (id: string) => {
   } catch (error) {
     console.error("Error al traer orden:", error);
     return { ok: false, order: null };
+  }
+};
+
+// 🔹 Actualizar estado de orden a pagada/gestionada
+export const updateOrderStatusToPaid = async (
+  orderId: string
+): Promise<{ ok: boolean; message?: string }> => {
+  try {
+    if (!orderId) {
+      throw new Error("ID de orden no válido");
+    }
+
+    const response = await fetch(`${API_URL}/paid`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ _id: orderId }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Orden actualizada:", data);
+    
+    return { ok: true, message: "Orden actualizada correctamente" };
+  } catch (error) {
+    console.error("Error al actualizar estado de orden:", error);
+    return { ok: false, message: "Error al actualizar la orden" };
+  }
+};
+
+
+// 🔹 Crear una nueva orden
+interface OrderItem {
+  quantity: number;
+  idProduct: string;
+  priceCategory?: string;
+}
+
+interface CreateOrderPayload {
+  idClient: string;
+  orderItems: OrderItem[];
+}
+
+export const createOrder = async (
+  payload: CreateOrderPayload
+): Promise<{ ok: boolean; order?: any; message?: string }> => {
+  try {
+    console.log("🚀 Enviando orden:", payload);
+
+    const response = await fetch(`${API_URL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("📥 Response status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error del servidor:", errorText);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Orden creada:", data);
+    
+    return { ok: true, order: data, message: "Orden creada correctamente" };
+  } catch (error) {
+    console.error("Error al crear orden:", error);
+    return { ok: false, message: error instanceof Error ? error.message : "Error al crear la orden" };
   }
 };

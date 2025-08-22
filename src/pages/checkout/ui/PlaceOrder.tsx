@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import { useAddressStore, useCartStore } from "@/store";
+import { useCartStore } from "@/store";
 import { currencyFormat } from "@/utils";
-import { createOrder, CreateOrderPayload, OrderProductItem } from "@/services/checkout.service";
+import { createOrder } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
+import { CartProduct } from "@/interfaces";
 
 
 export const PlaceOrder = () => {
@@ -14,15 +15,13 @@ export const PlaceOrder = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const address = useAddressStore((state) => state.address);
-  const getSummaryInformation = useCartStore(
-    (state) => state.getSummaryInformation
-  );
+  const getSummaryInformation = useCartStore((state) => state.getSummaryInformation);
   const { itemsInCart, subTotal, tax, total } = getSummaryInformation();
   const cart = useCartStore((state) => state.cart);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const user = useAuthStore((state) => state.user);  // --- Obtener el usuario logueado desde el store de Zustand ---
+  const user = useAuthStore((state) => state.user);
+
 
   useEffect(() => {
     setLoaded(true);
@@ -39,15 +38,7 @@ export const PlaceOrder = () => {
       return;
     }
 
-    const clientId = user._id;
-    console.log("Usuario logueado (desde store):", user); // Para depuración
-
-
-    if (!clientId) {
-      setErrorMessage("No se pudo identificar al cliente.");
-      setIsPlacingOrder(false);
-      return;
-    }
+    console.log("👤 Usuario completoooo:", user);
 
     if (cart.length === 0) {
       setErrorMessage("El carrito está vacío.");
@@ -55,106 +46,76 @@ export const PlaceOrder = () => {
       return;
     }
 
-    console.log("Cart:", cart); // ✅ Verifica que los productos existan
-    console.log("Address:", address); // ✅ Verifica que haya dirección
-    //console.log("productsToOrder:", productsToOrder); // ✅ Verifica estructura antes de enviar
-
-    if (!address || cart.length === 0) {
-      setErrorMessage("El carrito está vacío o falta información de dirección");
+ // ✅ Obtener la categoría de precio del cliente (estructura correcta)
+    const clientPriceCategory = user.priceCategory; // ✅ Aquí está la categoría de precio
+    console.log("🏷️ Categoría de precio encontrada:", clientPriceCategory);
+    
+    if (!clientPriceCategory) {
+      setErrorMessage("No se pudo obtener la categoría de precio del cliente.");
       setIsPlacingOrder(false);
       return;
     }
 
-    // --- 1. Obtener priceCategory del cliente logueado ---
-    
-    const clientPriceCategory = user?.priceCategory; 
-
-    if (!clientPriceCategory) {
-      setErrorMessage("No se pudo obtener la categoría de precio del cliente.");
-      setIsPlacingOrder(false);
-      return; // Detener el proceso si no hay priceCategory
-    }
-
-      console.log("Cart:", cart);
-      console.log("Address:", address);
-      console.log("Client ID (usado para la orden):", clientId);
-      console.log("Client Price Category (usada para todos los items):", clientPriceCategory);
-
-    const productsToOrder: OrderProductItem[] = cart.map(item => {
-      const reference = item._id; // Ajusta según tu estructura
-      const quantity = item.quantity;
-
-      // Validaciones básicas por item (opcional pero recomendado)
-      if (!reference || quantity == null || quantity <= 0) {
-         console.error("Item del carrito inválido (faltan datos):", item);
-         
-      }
-      return {
-        // productId: item.id, // Si el backend lo requiere
-        reference: item._id, // Asegúrate de que 'item' tenga 'reference'
-        priceCategory: clientPriceCategory,  // Asegúrate de que 'item' tenga 'priceCategory'
-        quantity: item.quantity, // Asegúrate de que 'item' tenga 'quantity'
-        // ...otros campos si OrderProductItem los requiere
-      };
-    // Filtrar items inválidos si es necesario
-    }).filter(item => item.reference && item.priceCategory && item.quantity > 0); 
-
-    // --- 3. Validar que todos los items sean válidos después del mapeo ---
-    const hasInvalidItems = productsToOrder.some(
-      item => !item.reference || !item.priceCategory || item.quantity <= 0
-    );
-  if (hasInvalidItems) {
-    setErrorMessage("Algunos productos en el carrito tienen datos incompletos. Por favor, revísalos.");
-    setIsPlacingOrder(false);
-    return;
-}
-    // Validar que se haya creado al menos un item válido
-    if (productsToOrder.length === 0 || productsToOrder.length !== cart.length) {
-        setErrorMessage("No hay productos válidos en el carrito para procesar.");
-        setIsPlacingOrder(false);
-        return;
-    }
-    console.log("productsToOrder:", productsToOrder);
-
-    // --- Crear el payload ---
-    const orderPayload: CreateOrderPayload = {
-      clientId: clientId,
-      productsToOrder: productsToOrder,
-      // address: address // Si decides incluirlo aquí, descomenta
-    };
 
     try {
-      const resp = await createOrder(orderPayload);
-      console.log("Respuesta de placeOrder:", resp);
+      // ✅ Preparar los items de la orden con la estructura correcta
+      const orderItems = cart.map(item => ({
+        quantity: item.quantity,
+        idProduct: item._id,
+        priceCategory: clientPriceCategory
+      }));
 
-      if (!resp.ok) {
+      // Crear el payload
+      const payload = {
+        idClient: user._id,
+        orderItems: orderItems
+      };
+
+      console.log("📦 Payload a enviar:", payload);
+
+      // Crear la orden
+      const result = await createOrder(payload);
+
+      if (!result.ok) {
+        setErrorMessage(result.message || "Error al crear la orden");
         setIsPlacingOrder(false);
-        setErrorMessage(resp.message ?? "Error al procesar la orden en el servidor.");
         return;
       }
 
-// --- Éxito: Limpiar carrito y redirigir ---
+      // Éxito: Limpiar carrito y redirigir
       clearCart();
-      // Asegúrate de que resp.order.id exista. Ajusta según la respuesta real.
-      if (resp.order && resp.order.id) {
-         navigate(`/orders/${resp.order.id}`);
+      
+      if (result.order && result.order._id) {
+        // Redirigir según el rol del usuario
+        const redirectPath = user.role === 'Client' 
+          ? `/orders/${result.order._id}`
+          : user.role === 'SalesPerson'
+          ? `/salesperson/orders/${result.order._id}`
+          : `/admin/orders/${result.order._id}`;
+        
+        navigate(redirectPath);
       } else {
-         // Si no hay ID, podrías redirigir a una página de éxito genérica
-         console.warn("Respuesta de orden no incluye ID:", resp.order);
-         navigate(`/orders/success`); // Ejemplo de ruta genérica
+        // Redirigir a la lista de órdenes si no hay ID específico
+        const ordersPath = user.role === 'Client' 
+          ? '/orders'
+          : user.role === 'SalesPerson'
+          ? '/salesperson/orders'
+          : '/admin/orders';
+        
+        navigate(ordersPath);
       }
 
     } catch (error) {
-      console.error("Error en PlaceOrder al llamar al servicio:", error);
+      console.error("Error al crear orden:", error);
+      setErrorMessage(error instanceof Error ? error.message : "Ocurrió un error inesperado");
       setIsPlacingOrder(false);
-      // Mensaje de error genérico o específico si el error tiene uno
-      setErrorMessage(error instanceof Error ? error.message : "Ocurrió un error inesperado al procesar la orden.");
     }
   };
 
   if (!loaded) {
     return <p>Cargando...</p>;
   }
+
 
   return (
     <div className="bg-white rounded-xl shadow-xl p-7">
@@ -199,17 +160,15 @@ export const PlaceOrder = () => {
           </span>
         </p>
 
-        <p className="text-red-500">{errorMessage}</p>
-
-        {/* Mostrar mensaje de error */}
         {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
-        
+
+
         <button
           onClick={onPlaceOrder}
-          disabled={isPlacingOrder}
+          disabled={isPlacingOrder || cart.length === 0}
           className={clsx("w-full py-3 px-4 rounded-md", {
-            "bg-[#F2B318] text-white hover:bg-[#F4C048]": !isPlacingOrder,
-            "bg-gray-300 text-gray-600 cursor-not-allowed": isPlacingOrder,
+            "bg-[#F2B318] text-white hover:bg-[#F4C048]": !isPlacingOrder && cart.length > 0,
+            "bg-gray-300 text-gray-600 cursor-not-allowed": isPlacingOrder || cart.length === 0,
           })}
         >
           {isPlacingOrder ? "Procesando..." : "Colocar orden"}
