@@ -33,6 +33,7 @@ export default function VendedoresManager() {
   }, []);
 
   function getPrimaryEmail(user: User): string {
+    
     // Verifica si existe emails directamente
     if (!user.emails || !Array.isArray(user.emails)) return "Sin correo";
 
@@ -41,7 +42,8 @@ export default function VendedoresManager() {
 
     // Busca el email principal o toma el primero
     const email = user.emails.find((e) => e?.IsPrincipal) ?? user.emails[0];
-    return email?.EmailAddres?.trim() || "Sin correo";
+    const emailValue = email?.EmailAddress || email?.EmailAddres || "";
+  return emailValue.trim() || "Sin correo";
   }
 
   function getPrimaryPhone(user: User): string {
@@ -128,7 +130,7 @@ export default function VendedoresManager() {
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 min-h-screen">
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">
@@ -177,6 +179,7 @@ export default function VendedoresManager() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {vendedores.map((vendedor) => (
+                
                 <tr key={vendedor.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-700">
                     {typeof vendedor.id === "string"

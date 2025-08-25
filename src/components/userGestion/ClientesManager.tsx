@@ -280,7 +280,7 @@ export default function ClientesManager({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Encabezado */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -321,7 +321,7 @@ export default function ClientesManager({
             return (
               <Card
                 key={cliente.id}
-                className="hover:shadow-md transition-shadow border border-gray-200"
+                className="bg-white hover:shadow-md transition-shadow border border-gray-200"
               >
                 <CardHeader className="pb-4">
                   <div className="flex justify-between items-start">

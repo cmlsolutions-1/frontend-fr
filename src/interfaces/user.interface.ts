@@ -4,7 +4,8 @@ export type Role = "Admin" | "SalesPerson" | "Client";
 
 // === EMAIL ===
 export interface Email {
-  EmailAddres: string;     
+  EmailAddres: string;
+  EmailAddress?: string;     
   IsPrincipal: boolean;
 }
 

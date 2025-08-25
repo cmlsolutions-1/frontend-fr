@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Users, UserCheck, Plus, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import ClientesManager from "@/components/userGestion/ClientesManager";
 import VendedoresManager from "@/components/userGestion/VendedoresManager";
 import { Cliente, Vendedor } from "@/components/userGestion/types";
@@ -89,14 +87,14 @@ const UserManagement: React.FC = () => {
 
   const renderHomeView = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
+      <div className="mb-8 ">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Usuarioss</h1>
         <p className="text-gray-600">Aquí podrás administrar los usuarios del sistema.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
         <Card
-          className="hover:shadow-lg transition-shadow cursor-pointer"
+          className="bg-white hover:shadow-lg transition-shadow cursor-pointer"
           onClick={() => setCurrentView("clientes")}
         >
           <CardHeader className="text-center">
@@ -117,7 +115,7 @@ const UserManagement: React.FC = () => {
         </Card>
 
         <Card
-          className="hover:shadow-lg transition-shadow cursor-pointer"
+          className="bg-white hover:shadow-lg transition-shadow cursor-pointer"
           onClick={() => setCurrentView("vendedores")}
         >
           <CardHeader className="text-center">
@@ -157,7 +155,7 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* {renderHeader()} */}
       {renderNavigation()}
       {renderContent()}

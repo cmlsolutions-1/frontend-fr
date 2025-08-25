@@ -214,7 +214,7 @@ export default function VendedorModal({
             <Input
               id="email"
               name="email"
-              value={formData.emails[0]?.EmailAddres || ""}
+              value={formData.emails[0]?.EmailAddres || formData.emails?.[0]?.EmailAddress || ""}
               onChange={(e) =>
                 handleChange("emails", [
                   { ...formData.emails[0], EmailAddres: e.target.value },
@@ -289,7 +289,7 @@ export default function VendedorModal({
           </div>
 
           {/* Categoría de precio */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Categoría de precio *</Label>
             <Input
               id="priceCategory"
@@ -301,7 +301,7 @@ export default function VendedorModal({
             {errors.priceCategory && (
               <p className="text-red-500 text-sm">{errors.priceCategory}</p>
             )}
-          </div>
+          </div> */}
 
           {/* Estado */}
           <div className="space-y-2">
