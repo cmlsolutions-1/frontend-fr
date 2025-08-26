@@ -29,5 +29,5 @@ export interface Order {
       ProductImage: Array<{ url: string }>;
     };
   }>;
-  itemsInOrder?: number; // Opcional si lo usas para mostrar cantidad de artículos
+  itemsInOrder?: number;
 }

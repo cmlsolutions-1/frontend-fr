@@ -101,6 +101,10 @@ export const ProductPage = () => {
         <StockLabel slug={product._id} />
 
         <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
+          {product.referencia}
+        </h1>
+
+        <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
           {product.detalle}
         </h1>
 
@@ -115,7 +119,10 @@ export const ProductPage = () => {
             {masterPackage ? masterPackage.mount : "N/A"} unidades
           </p>
         </div>
-{/* Descripción */}
+        {/*Referencia */}
+        <h3 className="font-bold text-sm mt-4">Referencia</h3>
+        <p className="font-light">{product.referencia}</p>
+        {/* Descripción */}
         <h3 className="font-bold text-sm mt-4">Descripción</h3>
         <p className="font-light">{product.detalle}</p>
       </div>

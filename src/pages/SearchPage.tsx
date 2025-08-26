@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 
-import { ProductGridItem } from '@/components/products/product-grid/ProductGridItem';
-import { mockProducts } from '@/mocks/mock-products';
+import { searchProducts } from '@/services/products.service';
 import { Product } from '@/interfaces/product.interface';
 import { ProductGrid, Title } from '@/components';
 import { CategoryFilterSidebar } from '@/components/filters/CategoryFilterSidebar';
@@ -13,17 +12,54 @@ export const SearchPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get('query') || '';
   const [results, setResults] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!query) return;
+    const loadSearchResults = async () => {
+      if (!query) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
 
-    const filtered = mockProducts.filter((product) =>
-      product.title.toLowerCase().includes(query.toLowerCase()) ||
-      product.id.toLowerCase().includes(query.toLowerCase())
-    );
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const products = await searchProducts(query);
+        setResults(products);
+      } catch (error) {
+        console.error("Error al buscar productos:", error);
+        setError("Error al cargar los resultados de búsqueda");
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setResults(filtered);
+    loadSearchResults();
   }, [query]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center py-10">
+          <p className="text-gray-500">Buscando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <div className="bg-red-50 text-red-700 p-4 rounded-md">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

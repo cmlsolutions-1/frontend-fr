@@ -26,9 +26,9 @@ export default function OrdersByIdPage() {
       case 'Client':
         return '/orders';
       case 'SalesPerson':
-        return '/salesPerson/orders'; // ✅ Ajusta esta ruta según tu configuración
+        return '/salesPerson/orders'; 
       case 'Admin':
-        return '/admin/orders'; // ✅ Ajusta esta ruta según tu configuración
+        return '/admin/orders';
       default:
         return '/orders';
     }

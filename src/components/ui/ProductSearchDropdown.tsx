@@ -1,7 +1,7 @@
 // src/components/ui/ProductSearchDropdown.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // 🔁 Agrega useNavigate
-import { mockProducts } from '@/mocks/mock-products';
+import { searchProducts } from '@/services/products.service';
 import type { Product } from '@/interfaces/product.interface';
 import { IoSearchOutline } from 'react-icons/io5';
 
@@ -13,26 +13,41 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // ✅ Para navegar al presionar Enter
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setResults([]);
-      return;
-    }
+    const searchProductsDebounced = async () => {
+      if (!searchTerm.trim()) {
+        setResults([]);
+        return;
+      }
 
-    const filtered = mockProducts.filter((product) =>
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+      setLoading(true);
+      try {
+        // Debounce - esperar un poco antes de buscar
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const products = await searchProducts(searchTerm);
+        // Limitar resultados para mejor UX
+        setResults(products.slice(0, 8));
+      } catch (error) {
+        console.error("Error en búsqueda:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setResults(filtered);
+    searchProductsDebounced();
   }, [searchTerm]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (searchTerm.trim()) {
         navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+        setShowResults(false);
+        if (onClose) onClose();
       }
     }
   };
@@ -40,6 +55,17 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
   const handleClickOutside = () => {
     setShowResults(false);
     if (onClose) onClose();
+  };
+
+  // ✅ Función para formatear el texto de búsqueda
+  const formatProductText = (product: Product): string => {
+    const reference = product.referencia || '';
+    const detail = product.detalle || '';
+    
+    // Limitar longitud para mejor visualización
+    const shortDetail = detail.length > 50 ? detail.substring(0, 50) + '...' : detail;
+    
+    return reference ? `${reference} - ${shortDetail}` : shortDetail;
   };
 
   return (
@@ -65,14 +91,14 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
         <div className="absolute z-50 mt-2 w-full bg-white shadow-lg rounded-md border border-gray-200">
           <ul>
             {results.map((product) => (
-              <li key={product.id}>
+              <li key={product._id}>
                 <Link
-                  to={`/product/${product.slug}`}
+                  to={`/product/${product._id}`}
                   onClick={handleClickOutside}
                   className="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
                 >
-                  <span className="font-medium">{product.title}</span>
-                  <span className="ml-auto text-xs text-gray-500">ID: {product.id}</span>
+                  <span className="font-medium">{product.detalle}</span>
+                  <span className="ml-auto text-xs text-gray-500">ID: {product._id}</span>
                 </Link>
               </li>
             ))}

@@ -43,3 +43,30 @@ export const getProductById = async (_id: string): Promise<Product> => {
     throw error;
   }
 };
+
+
+// Función para buscar productos
+export const searchProducts = async (query: string): Promise<Product[]> => {
+  try {
+    // Si no hay query, retornar todos los productos
+    if (!query.trim()) {
+      return await getProducts();
+    }
+
+    // Obtener todos los productos
+    const allProducts = await getProducts();
+    
+    // Filtrar localmente por referencia, detalle o código
+    const filteredProducts = allProducts.filter((product) =>
+      product.referencia?.toLowerCase().includes(query.toLowerCase()) ||
+      product.detalle?.toLowerCase().includes(query.toLowerCase()) ||
+      product.codigo?.toLowerCase().includes(query.toLowerCase()) ||
+      product._id?.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return filteredProducts;
+  } catch (error) {
+    console.error("Error al buscar productos:", error);
+    throw error;
+  }
+};

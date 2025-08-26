@@ -1,15 +1,13 @@
 //src/pages/admin/OrdersPageAdmin.tsx
 
 import { useEffect, useState } from "react";
-import { getMockOrdersByUser } from "@/mocks/getMockOrdersByUser";
 import { Title } from "@/components";
 import { useNavigate, Link } from "react-router-dom";
 import { IoCardOutline, IoDownload, IoDownloadOutline } from "react-icons/io5";
-import type { Order } from "@/interfaces/order.interface";
 import { OrderPDFButton } from '@/components/orders/OrderPDFButton';
-import { OrderStatusButton } from '@/components/orders/OrderStatusButton';
 import { getOrdersByUser } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
+import type { Order } from "@/interfaces/order.interface";
 
 export default function OrdersPageAdmin() {
 

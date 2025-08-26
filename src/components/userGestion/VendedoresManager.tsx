@@ -138,7 +138,7 @@ export default function VendedoresManager() {
         </h1>
         <Button
           onClick={handleCreate}
-          className="bg-[#F2B318] hover:bg-[#F4C048]"
+          className="bg-[#555554] hover:bg-[#F4C048]"
         >
           + Nuevo Vendedor
         </Button>
