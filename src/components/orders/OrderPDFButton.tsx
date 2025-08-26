@@ -1,11 +1,38 @@
 // src/components/orders/OrderPDFButton.tsx
 import React, { useState } from "react";
 import html2pdf from "html2pdf.js";
-import { getOrderById } from "@/services/orders.service";
-import type { Order } from "@/interfaces/order.interface";
+
+// ✅ Interfaz que coincide con tus datos reales
+interface OrderFromBackend {
+  _id: string;
+  isPaid: boolean;
+  subTotal: number;
+  tax: number;
+  total: number;
+  createdDate: string;
+  paymendDate?: string;
+  idClient: string;
+  items: Array<{
+    quantity: number;
+    price: number;
+    Product: {
+      _id: string;
+      reference: string;
+      description: string;
+    };
+  }>;
+  OrderAddress?: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    postalCode: string;
+    city: string;
+    phone: string;
+  };
+}
 
 interface Props {
-  order: Order; // Usar la interfaz real
+  order: OrderFromBackend;
 }
 
 export const OrderPDFButton = ({ order }: Props) => {
@@ -15,24 +42,17 @@ export const OrderPDFButton = ({ order }: Props) => {
     setLoading(true);
     
     try {
-      // Obtener los datos completos de la orden
-      const { ok, order: fullOrder } = await getOrderById(order.id);
-      
-      if (!ok || !fullOrder) {
-        alert("No se pudo obtener la información completa de la orden");
-        return;
-      }
-
-      generatePDF(fullOrder);
+      // ✅ Usar directamente los datos que ya tienes
+      generatePDF(order);
     } catch (error) {
-      console.error("Error al obtener orden:", error);
+      console.error("Error al generar PDF:", error);
       alert("Error al generar el PDF");
     } finally {
       setLoading(false);
     }
   };
 
-  const generatePDF = (orderData: Order) => {
+  const generatePDF = (orderData: OrderFromBackend) => {
     const element = document.createElement("div");
     element.style.maxWidth = "800px";
     element.style.margin = "auto";
@@ -41,17 +61,19 @@ export const OrderPDFButton = ({ order }: Props) => {
     element.style.fontFamily = "Arial, sans-serif";
     element.style.fontSize = "14px";
 
-    // Usar los datos reales de la orden
-    const itemsInOrder = orderData.itemsInOrder || orderData.OrderItem.reduce((acc, item) => acc + item.quantity, 0);
-    const subTotal = orderData.subTotal;
-    const tax = orderData.tax;
-    const total = orderData.total;
-    const clientName = `${orderData.OrderAddress.firstName} ${orderData.OrderAddress.lastName}`;
+    // ✅ Calcular totales (como haces en tu código)
+    const itemsInOrder = orderData.items?.length || 0;
+    const subTotal = orderData.subTotal || 0;
+    const tax = orderData.tax || 0;
+    const total = orderData.total || 0;
+    const clientName = orderData.OrderAddress 
+      ? `${orderData.OrderAddress.firstName || ''} ${orderData.OrderAddress.lastName || ''}`
+      : 'Cliente N/A';
 
     element.innerHTML = `
       <div style="text-align: center; margin-bottom: 20px;">
         <h2 style="color: #333; margin: 0;">ORDEN DE PEDIDO</h2>
-        <h3 style="color: #666; margin: 5px 0;">#${orderData.id?.slice(-6) || 'N/A'}</h3>
+        <h3 style="color: #666; margin: 5px 0;">#${orderData._id?.slice(-6) || 'N/A'}</h3>
         <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
       </div>
 
@@ -59,18 +81,19 @@ export const OrderPDFButton = ({ order }: Props) => {
         <h4 style="color: #333; margin: 0 0 10px 0;">Información del Pedido</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div>
-            <p><strong>Fecha de Creación:</strong> ${orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString('es-CO') : 'N/A'}</p>
+            <p><strong>Fecha de Creación:</strong> ${orderData.createdDate ? new Date(orderData.createdDate).toLocaleDateString('es-CO') : 'N/A'}</p>
             <p><strong>Estado:</strong> <span style="color: ${orderData.isPaid ? '#22c55e' : '#ef4444'}; font-weight: bold;">
-              ${orderData.isPaid ? 'Pagada' : 'Pendiente'}
+              ${orderData.isPaid ? 'Gestionada' : 'No Gestionada'}
             </span></p>
           </div>
           <div>
             <p><strong>Cliente:</strong> ${clientName}</p>
-            <p><strong>ID Cliente:</strong> ${orderData.clientId?.slice(-6) || 'N/A'}</p>
+            <p><strong>ID Cliente:</strong> ${orderData.idClient?.slice(-6) || 'N/A'}</p>
           </div>
         </div>
       </div>
 
+      ${orderData.OrderAddress ? `
       <div style="margin-bottom: 20px;">
         <h4 style="color: #333; margin: 0 0 10px 0;">Dirección de Envío</h4>
         <div style="background: #f8f9fa; padding: 10px; border-radius: 4px;">
@@ -81,6 +104,7 @@ export const OrderPDFButton = ({ order }: Props) => {
           <p style="margin: 2px 0;"><strong>Teléfono:</strong> ${orderData.OrderAddress.phone || 'N/A'}</p>
         </div>
       </div>
+      ` : ''}
 
       <div style="margin: 20px 0;">
         <h4 style="color: #333; margin: 0 0 10px 0;">Productos</h4>
@@ -88,27 +112,27 @@ export const OrderPDFButton = ({ order }: Props) => {
           <thead>
             <tr style="background:#f8f9fa;">
               <th style="border:1px solid #ddd; padding: 10px; text-align:left;">Producto</th>
-              <th style="border:1px solid #ddd; padding: 10px; text-align:center;">Slug</th>
+              <th style="border:1px solid #ddd; padding: 10px; text-align:center;">Referencia</th>
               <th style="border:1px solid #ddd; padding: 10px; text-align:center;">Cantidad</th>
               <th style="border:1px solid #ddd; padding: 10px; text-align:right;">Precio Unit.</th>
               <th style="border:1px solid #ddd; padding: 10px; text-align:right;">Subtotal</th>
             </tr>
           </thead>
           <tbody>
-            ${orderData.OrderItem?.map((item: any) => {
-              const productName = item.product?.title || 'Producto sin nombre';
-              const slug = item.product?.slug || 'N/A';
-              const unitPrice = item.price / item.quantity; // Calcular precio unitario
+            ${orderData.items?.map((item: any) => {
+              const productName = item.Product?.description || 'Producto sin nombre';
+              const reference = item.Product?.reference || 'N/A';
+              const unitPrice = item.price / item.quantity; // ✅ Calcular precio unitario
               const quantity = item.quantity || 0;
-              const subtotal = item.price; // El precio ya es el subtotal
+              const subtotal = item.price; // ✅ El precio ya es el subtotal
               
               return `
                 <tr>
                   <td style="border:1px solid #ddd; padding: 8px;">
                     <div><strong>${productName}</strong></div>
-                    <div style="font-size: 12px; color: #666;">ID: ${item.productId?.slice(-6) || 'N/A'}</div>
+                    <div style="font-size: 12px; color: #666;">ID: ${item.Product?._id?.slice(-6) || 'N/A'}</div>
                   </td>
-                  <td style="border:1px solid #ddd; padding: 8px; text-align:center;">${slug}</td>
+                  <td style="border:1px solid #ddd; padding: 8px; text-align:center;">${reference}</td>
                   <td style="border:1px solid #ddd; padding: 8px; text-align:center;">${quantity}</td>
                   <td style="border:1px solid #ddd; padding: 8px; text-align:right;">$${unitPrice.toLocaleString('es-CO')}</td>
                   <td style="border:1px solid #ddd; padding: 8px; text-align:right;">$${subtotal.toLocaleString('es-CO')}</td>
@@ -157,7 +181,7 @@ export const OrderPDFButton = ({ order }: Props) => {
     
     const opt = {
       margin: 0.5,
-      filename: `orden-${orderData.id?.slice(-6) || 'N/A'}.pdf`,
+      filename: `orden-${orderData._id?.slice(-6) || 'N/A'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2,
