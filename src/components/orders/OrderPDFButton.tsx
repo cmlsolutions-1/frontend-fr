@@ -1,6 +1,7 @@
 // src/components/orders/OrderPDFButton.tsx
 import React, { useState } from "react";
 import html2pdf from "html2pdf.js";
+import { getClientById, getSalesPersonById } from "@/services/client.service";
 
 // ✅ Interfaz que coincide con tus datos reales
 interface OrderFromBackend {
@@ -12,13 +13,15 @@ interface OrderFromBackend {
   createdDate: string;
   paymendDate?: string;
   idClient: string;
+  idSalesPerson?: string;
   items: Array<{
     quantity: number;
     price: number;
-    Product: {
+    idProduct: {
       _id: string;
-      reference: string;
-      description: string;
+      reference?: string;
+      description?: string;
+      detalle?: string;
     };
   }>;
   OrderAddress?: {
@@ -42,8 +45,55 @@ export const OrderPDFButton = ({ order }: Props) => {
     setLoading(true);
     
     try {
-      // ✅ Usar directamente los datos que ya tienes
-      generatePDF(order);
+      console.log("🔍 Orden recibida:", order);
+      console.log("🆔 ID del cliente:", order.idClient);
+      console.log("👥 ID del vendedor:", order.idSalesPerson);
+
+      // ✅ Obtener el nombre del vendedor
+      let salesPersonName = 'Vendedor N/A';
+      if (order.idSalesPerson) {
+        console.log("🚀 Solicitando vendedor con ID:", order.idSalesPerson);
+        const salesPerson = await getSalesPersonById(order.idSalesPerson);
+        console.log("📥 Vendedor recibido:", salesPerson);
+        if (salesPerson) {
+          const name = salesPerson.name || '';
+          const lastName = salesPerson.lastName || '';
+          salesPersonName = `${name} ${lastName}`.trim() || 'Vendedor N/A';
+          console.log("👤 Nombre del vendedor:", salesPersonName);
+        }
+      }
+
+      // ✅ Obtener el nombre del cliente
+      let clientName = 'Cliente N/A';
+      let clientIdToShow = 'N/A';
+      if (order.idClient) {
+        console.log("🚀 Solicitando cliente con ID:", order.idClient);
+        const client = await getClientById(order.idClient);
+        console.log("📥 Cliente recibido:", client);
+        
+        if (client) {
+          const name = client.name || '';
+          const lastName = client.lastName || '';
+          clientName = `${name} ${lastName}`.trim() || 'Cliente N/A';
+          clientIdToShow = client.id || client._id?.slice(-6) || 'N/A';
+          console.log("👤 Nombre del cliente:", clientName);
+          console.log("🆔 ID del cliente a mostrar:", clientIdToShow);
+        } else {
+          console.log("❌ No se encontró el cliente");
+          if (order.OrderAddress) {
+            clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
+          }
+          clientIdToShow = order.idClient.slice(-6) || 'N/A';
+        }
+      } else {
+        console.log("❌ No hay ID de cliente");
+        if (order.OrderAddress) {
+          clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
+        }
+        clientIdToShow = 'N/A';
+      }
+      
+      generatePDF(order, clientName, clientIdToShow, salesPersonName);
     } catch (error) {
       console.error("Error al generar PDF:", error);
       alert("Error al generar el PDF");
@@ -52,7 +102,7 @@ export const OrderPDFButton = ({ order }: Props) => {
     }
   };
 
-  const generatePDF = (orderData: OrderFromBackend) => {
+  const generatePDF = (orderData: OrderFromBackend, clientName: string, clientIdToShow: string, salesPersonName: string) => {
     const element = document.createElement("div");
     element.style.maxWidth = "800px";
     element.style.margin = "auto";
@@ -61,14 +111,11 @@ export const OrderPDFButton = ({ order }: Props) => {
     element.style.fontFamily = "Arial, sans-serif";
     element.style.fontSize = "14px";
 
-    // ✅ Calcular totales (como haces en tu código)
+    // ✅ Calcular totales
     const itemsInOrder = orderData.items?.length || 0;
     const subTotal = orderData.subTotal || 0;
     const tax = orderData.tax || 0;
     const total = orderData.total || 0;
-    const clientName = orderData.OrderAddress 
-      ? `${orderData.OrderAddress.firstName || ''} ${orderData.OrderAddress.lastName || ''}`
-      : 'Cliente N/A';
 
     element.innerHTML = `
       <div style="text-align: center; margin-bottom: 20px;">
@@ -85,10 +132,11 @@ export const OrderPDFButton = ({ order }: Props) => {
             <p><strong>Estado:</strong> <span style="color: ${orderData.isPaid ? '#22c55e' : '#ef4444'}; font-weight: bold;">
               ${orderData.isPaid ? 'Gestionada' : 'No Gestionada'}
             </span></p>
+            <p><strong>Vendedor:</strong> ${salesPersonName}</p>
           </div>
           <div>
             <p><strong>Cliente:</strong> ${clientName}</p>
-            <p><strong>ID Cliente:</strong> ${orderData.idClient?.slice(-6) || 'N/A'}</p>
+            <p><strong>ID Cliente:</strong> ${clientIdToShow}</p>
           </div>
         </div>
       </div>
@@ -120,17 +168,21 @@ export const OrderPDFButton = ({ order }: Props) => {
           </thead>
           <tbody>
             ${orderData.items?.map((item: any) => {
-              const productName = item.Product?.description || 'Producto sin nombre';
-              const reference = item.Product?.reference || 'N/A';
-              const unitPrice = item.price / item.quantity; // ✅ Calcular precio unitario
+              // ✅ Usar idProduct en lugar de Product
+              const productName = item.idProduct?.description || 
+                                item.idProduct?.detalle || 
+                                item.idProduct?.title || 
+                                'Producto sin nombre';
+              const reference = item.idProduct?.reference || 'N/A';
+              const unitPrice = item.price / item.quantity;
               const quantity = item.quantity || 0;
-              const subtotal = item.price; // ✅ El precio ya es el subtotal
+              const subtotal = item.price;
               
               return `
                 <tr>
                   <td style="border:1px solid #ddd; padding: 8px;">
                     <div><strong>${productName}</strong></div>
-                    <div style="font-size: 12px; color: #666;">ID: ${item.Product?._id?.slice(-6) || 'N/A'}</div>
+                    <div style="font-size: 12px; color: #666;">ID: ${item.idProduct?._id?.slice(-6) || 'N/A'}</div>
                   </td>
                   <td style="border:1px solid #ddd; padding: 8px; text-align:center;">${reference}</td>
                   <td style="border:1px solid #ddd; padding: 8px; text-align:center;">${quantity}</td>
@@ -176,7 +228,6 @@ export const OrderPDFButton = ({ order }: Props) => {
       </div>
     `;
 
-    // Agrega temporalmente al DOM y genera el PDF
     document.body.appendChild(element);
     
     const opt = {
@@ -200,7 +251,6 @@ export const OrderPDFButton = ({ order }: Props) => {
       .from(element)
       .save()
       .finally(() => {
-        // Limpia después de generar el PDF
         setTimeout(() => {
           document.body.removeChild(element);
         }, 1000);

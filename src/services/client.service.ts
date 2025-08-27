@@ -353,3 +353,58 @@ export const getClientsBySeller = async (
     // return [];
   }
 };
+
+
+//traer un cliente por id
+export const getClientById = async (clientId: string): Promise<Cliente | null> => {
+  try {
+    console.log("🔍 Buscando cliente con ID:", clientId);
+
+    if (!clientId) {
+      throw new Error("ID de cliente no válido");
+    }
+
+    const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Cliente recibido:", data);
+    return data;
+  } catch (error) {
+    console.error("Error al obtener cliente:", error);
+    return null;
+  }
+};
+
+//obtener vendedor por id
+export const getSalesPersonById = async (salesPersonId: string): Promise<any | null> => {
+  try {
+    if (!salesPersonId) {
+      throw new Error("ID de vendedor no válido");
+    }
+
+    const response = await fetch(`${API_URL}/users/getById/${salesPersonId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al obtener vendedor:", error);
+    return null;
+  }
+};
