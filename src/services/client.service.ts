@@ -4,6 +4,34 @@ import { UpdateUserDto } from "@/interfaces/update-user";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const getToken = () => {
+  try {
+    const authData = localStorage.getItem('auth-storage');
+    if (!authData) return null;
+    
+    const parsed = JSON.parse(authData);
+    return parsed.state?.token || parsed.token || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// ✅ Función para obtener headers con token
+const getAuthHeaders = (includeContentType: boolean = true) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
 export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
   // Validaciones obligatorias
   // Validar email primero
@@ -60,10 +88,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // Agrega aquí otros headers necesarios como Authorization
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -366,7 +391,7 @@ export const getClientById = async (clientId: string): Promise<Cliente | null> =
 
     const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
     
 
@@ -393,7 +418,7 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
 
     const response = await fetch(`${API_URL}/users/getById/${salesPersonId}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

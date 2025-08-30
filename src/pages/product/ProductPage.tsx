@@ -11,10 +11,8 @@ import {
   ProductSlideshow,
   StockLabel
 } from '@/components';
-import { getMockProductBySlug } from '@/mocks/getMockProductBySlug';
 import { AddToCart } from './ui/AddToCart';
 import { Product } from '@/interfaces';
-import { User } from 'lucide-react';
 import { getProductById } from '@/services/products.service';
 
 export const ProductPage = () => {
@@ -24,20 +22,37 @@ export const ProductPage = () => {
 
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [priceCategories, setPriceCategories] = useState<PriceCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const placeholder = "/img/placeholder.jpg"; // imagen por defecto
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!_id) return;
+      if (!_id) {
+        setError("ID de producto no válido");
+        setLoading(false);
+        return;
+      }
 
       try {
+        console.log("🚀 Solicitando producto con ID:", _id);
       const fetchedProduct = await getProductById(_id);
+
+      // ✅ Validación adicional del producto recibido
+        if (!fetchedProduct || !fetchedProduct._id) {
+          throw new Error("Producto inválido recibido del servidor");
+        }
+
       setProduct(fetchedProduct);
+      setError(null);
+
     } catch (error) {
       console.error("Error al cargar producto:", error);
-      navigate('/404');
+      const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Error desconocido al cargar el producto";
+        setError(errorMessage);
+      // navigate('/404');
     } finally {
       setLoading(false);
     }
@@ -47,6 +62,30 @@ export const ProductPage = () => {
 }, [_id, navigate]);
 
   if (loading) return <p className="p-4">Cargando...</p>;
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
+          <p className="text-red-700 mb-4">{error}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            >
+              Volver atrás
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!product) return <p className="p-4">Producto no encontrado</p>;
 
   // ✅ Función para obtener el precio correcto del cliente

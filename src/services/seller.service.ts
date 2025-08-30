@@ -3,12 +3,41 @@ import type { Vendedor } from "@/interfaces/user.interface";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// ✅ Obtener el token
+const getToken = () => {
+  try {
+    const authData = localStorage.getItem('auth-storage');
+    if (!authData) return null;
+    
+    const parsed = JSON.parse(authData);
+    return parsed.state?.token || parsed.token || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// ✅ Función para obtener headers con token
+const getAuthHeaders = (includeContentType: boolean = true) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
 //obtener todos los vendedores
 export const getVendedores = async (): Promise<Vendedor[]> => {
   try {
     const res = await fetch(`${API_URL}/users/salesPerson`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
 
     if (!res.ok) throw new Error("Error al obtener vendedores");
@@ -84,7 +113,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   try {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -183,10 +212,7 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     // Usar la misma URL base que updateClient
     const response = await fetch(`${API_URL}/users/`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        // Agrega aquí otros headers necesarios como Authorization si los hay
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(cleanPayload),
     });
 
@@ -269,7 +295,7 @@ export const deleteVendedor = async (id: string): Promise<boolean> => {
   try {
     const res = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
     return res.ok;
   } catch (error) {

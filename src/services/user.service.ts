@@ -3,6 +3,47 @@ import type { Cliente, Vendedor } from "@/interfaces";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const getToken = () => {
+  try {
+    const authData = localStorage.getItem('auth-storage');
+    if (!authData) {
+      console.log("❌ No hay auth-storage en localStorage");
+      return null;
+    }
+    
+    const parsed = JSON.parse(authData);
+    const token = parsed.state?.token || null;
+    
+    if (token) {
+      console.log("✅ Token encontrado:", `${token.substring(0, 20)}...`);
+    } else {
+      console.log("❌ Token no encontrado en la estructura");
+    }
+    
+    return token;
+  } catch (error) {
+    console.error("❌ Error al obtener token:", error);
+    return null;
+  }
+};
+
+// ✅ Función para obtener headers con token
+const getAuthHeaders = (includeContentType: boolean = true) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  } else {
+    console.warn("⚠️ No se encontró token para ruta protegida");
+  }
+  
+  return headers;
+};
 
 
 // esta es la interfaz de autenticación
@@ -34,91 +75,54 @@ export interface LoginResponse {
   };
 }
 
-// Servicio de login
+// ✅ Servicio de login (SIN TOKEN - ruta pública)
 export const loginRequest = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
+  console.log("🚀 Iniciando login request:", { email });
+  
+  // ✅ NO USAR getAuthHeaders() - el login es ruta pública
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json", // ✅ Solo Content-Type, sin Authorization
     },
     body: JSON.stringify({ email, password }),
   });
 
-  if (!response.ok) throw new Error("Credenciales incorrectas");
+  console.log("📥 Login response status:", response.status);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("❌ Login error:", errorText);
+    throw new Error("Credenciales incorrectas");
+  }
 
   const data = await response.json();
   console.log("✅ Login response:", data);
   return data;
 };
 
-// Servicio para obtener el usuario autenticado usando el token
+// ✅ Servicio para obtener el usuario autenticado usando el token
 export const fetchMe = async (token: string) => {
+  console.log("👤 Solicitando información de usuario con token");
+  
   const response = await fetch(`${API_URL}/me`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json", // ✅ Agregar Content-Type
+      "Authorization": `Bearer ${token}`,   // ✅ Usar token proporcionado
     },
   });
 
-  if (!response.ok) throw new Error("No se pudo obtener el usuario");
-
-  return await response.json();
-};
-
-
-
-// Traer todos los vendedores desde el backend
-export const getVendedores = async (): Promise<Vendedor[]> => {
-  try {
-    const response = await fetch(`${API_URL}/vendedores`);
-    
-    if (!response.ok) {
-      console.warn("Usando vendedores locales");
-      return JSON.parse(localStorage.getItem("vendedores") || "[]");
-    }
-
-    return await response.json(); // Debe devolver array de Vendedor[]
-  } catch (error) {
-    console.error("No se pudieron cargar los vendedores:", error);
-    return [];
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`No se pudo obtener el usuario: ${errorText}`);
   }
+
+  const data = await response.json();
+  console.log("✅ Usuario obtenido:", data.name);
+  return data;
 };
 
-// Guarda o actualiza un vendedor
-export const saveVendedor = async (vendedor: Partial<Vendedor>): Promise<Vendedor> => {
-  try {
-    const response = await fetch(`${API_URL}/vendedores`, {
-      method: vendedor.id ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(vendedor),
-    });
 
-    if (!response.ok) throw new Error("No se pudo guardar");
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error al guardar vendedor", error);
-    return { ...vendedor, id: Date.now().toString() } as Vendedor;
-  }
-};
-
-// Elimina un vendedor
-export const deleteVendedor = async (id: string): Promise<boolean> => {
-  try {
-    const response = await fetch(`${API_URL}/vendedores/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error("Error al eliminar vendedor", error);
-    return false;
-  }
-};

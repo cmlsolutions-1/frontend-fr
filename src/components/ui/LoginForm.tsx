@@ -1,6 +1,6 @@
 //src/components/ui/LoginForm.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { IoInformationOutline } from "react-icons/io5";
 import { useAuthStore } from "@/store/auth-store";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,7 +9,8 @@ import { User, Lock } from "lucide-react";
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate(); // Inicializa useNavigate
 
@@ -17,13 +18,27 @@ export const LoginForm = () => {
 
   const handleSubmit = async  (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
+    setLoading(true);
+    setError("");
 
-    if (!success) {
-      setError(true);
-    } else {
-      console.log("Login exitoso, redirigiendo...");
-      navigate("/homePage"); // Redirige a la página de inicio
+    try {
+      console.log("🚀 Iniciando login para:", email);
+      const success = await login(email, password);
+
+      if (!success) {
+        setError("Credenciales incorrectas");
+      } else {
+        console.log("✅ Login exitoso, redirigiendo...");
+        // Pequeño delay para que se procese el almacenamiento
+        setTimeout(() => {
+          navigate("/homePage");
+        }, 100);
+      }
+    } catch (err) {
+      console.error("Error en login:", err);
+      setError("Error al iniciar sesión. Intente nuevamente.");
+    } finally {
+      setLoading(false);
     }
   };
 

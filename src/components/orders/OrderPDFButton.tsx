@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import html2pdf from "html2pdf.js";
 import { getClientById, getSalesPersonById } from "@/services/client.service";
 
-// ✅ Interfaz que coincide con tus datos reales
+
 interface OrderFromBackend {
   _id: string;
   isPaid: boolean;
@@ -49,7 +49,7 @@ export const OrderPDFButton = ({ order }: Props) => {
       console.log("🆔 ID del cliente:", order.idClient);
       console.log("👥 ID del vendedor:", order.idSalesPerson);
 
-      // ✅ Obtener el nombre del vendedor
+      // Obtener el nombre del vendedor
       let salesPersonName = 'Vendedor N/A';
       if (order.idSalesPerson) {
         console.log("🚀 Solicitando vendedor con ID:", order.idSalesPerson);
@@ -63,7 +63,7 @@ export const OrderPDFButton = ({ order }: Props) => {
         }
       }
 
-      // ✅ Obtener el nombre del cliente
+      // Obtener el nombre del cliente
       let clientName = 'Cliente N/A';
       let clientIdToShow = 'N/A';
       if (order.idClient) {
@@ -111,7 +111,7 @@ export const OrderPDFButton = ({ order }: Props) => {
     element.style.fontFamily = "Arial, sans-serif";
     element.style.fontSize = "14px";
 
-    // ✅ Calcular totales
+    // Calcular totales
     const itemsInOrder = orderData.items?.length || 0;
     const subTotal = orderData.subTotal || 0;
     const tax = orderData.tax || 0;
@@ -168,7 +168,7 @@ export const OrderPDFButton = ({ order }: Props) => {
           </thead>
           <tbody>
             ${orderData.items?.map((item: any) => {
-              // ✅ Usar idProduct en lugar de Product
+              // Usar idProduct en lugar de Product
               const productName = item.idProduct?.description || 
                                 item.idProduct?.detalle || 
                                 item.idProduct?.title || 

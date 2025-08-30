@@ -4,15 +4,39 @@ import type { Order } from "@/interfaces/order.interface";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/order`;
 
+// ✅ Obtener el token
+const getToken = () => {
+  const authData = localStorage.getItem('auth-storage');
+  if (authData) {
+    try {
+      const parsed = JSON.parse(authData);
+      return parsed.state?.token || null;
+    } catch (error) {
+      return null;
+    }
+  }
+  return null;
+};
+
+// ✅ Función para obtener headers con token
+const getAuthHeaders = () => {
+  const token = getToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
 //Admin obtiene todas las órdenes
 
 export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] }> => {
   try {
     const response = await fetch(`${API_URL}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(), // ✅ Usar headers con token
     });
 
     if (!response.ok) throw new Error("No se pudieron cargar las órdenes");
@@ -21,7 +45,7 @@ export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] 
 
     return {
       ok: true,
-      orders: Array.isArray(data) ? data : [], // ✅ tu API devuelve directamente un array
+      orders: Array.isArray(data) ? data : [],
     };
   } catch (error) {
     console.error("Error al obtener órdenes:", error);
@@ -42,7 +66,7 @@ export const getOrdersByClient = async (
 
     const response = await fetch(`${API_URL}/getOrdersByClient/${clientId}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
     console.log("📥 Response status:", response.status); // Debug
 
@@ -83,7 +107,7 @@ export const getOrdersBySalesPerson = async (
 
     const response = await fetch(`${API_URL}/getOrdersBySalesPerson/${salesPersonId}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -114,9 +138,7 @@ export const getOrderById = async (id: string) => {
   try {
     const response = await fetch(`${API_URL}/getOrdersById/${id}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) throw new Error("Orden no encontrada");
@@ -141,9 +163,7 @@ export const updateOrderStatusToPaid = async (
 
     const response = await fetch(`${API_URL}/paid`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ _id: orderId }),
     });
 
@@ -183,9 +203,7 @@ export const createOrder = async (
 
     const response = await fetch(`${API_URL}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 

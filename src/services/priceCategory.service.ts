@@ -1,17 +1,63 @@
 
 
 const API_URL = import.meta.env.VITE_API_URL;
+const getToken = () => {
+  try {
+    const authData = localStorage.getItem('auth-storage');
+    if (!authData) {
+      console.log("❌ No hay auth-storage en localStorage");
+      return null;
+    }
+    
+    const parsed = JSON.parse(authData);
+    const token = parsed.state?.token || null;
+    
+    if (token) {
+      console.log("✅ Token encontrado:", `${token.substring(0, 20)}...`);
+    } else {
+      console.log("❌ Token no encontrado en la estructura");
+    }
+    
+    return token;
+  } catch (error) {
+    console.error("❌ Error al obtener token:", error);
+    return null;
+  }
+};
+
+// ✅ Función para obtener headers con token
+const getAuthHeaders = (includeContentType: boolean = true) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  } else {
+    console.warn("⚠️ No se encontró token para ruta protegida");
+  }
+  
+  return headers;
+};
 
 // Traer todas las categorías de precios
 export const getPriceCategories = async () => {
   try {
-    const res = await fetch(`${API_URL}/price-category`);
+    const token = localStorage.getItem("token"); // o donde lo guardes
+    const res = await fetch(`${API_URL}/price-category`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
     if (!res.ok) {
-      throw new Error("Error al obtener categorías de precios");
+      throw new Error(`Error al obtener categorías de precios: ${res.status}`);
     }
+
     const data = await res.json();
 
-    // Aseguramos que venga con id y name
     return data.map((p: any) => ({
       id: p._id || p.id,
       name: p.name,
