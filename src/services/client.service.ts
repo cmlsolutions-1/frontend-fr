@@ -383,29 +383,36 @@ export const getClientsBySeller = async (
 //traer un cliente por id
 export const getClientById = async (clientId: string): Promise<Cliente | null> => {
   try {
-    console.log("🔍 Buscando cliente con ID:", clientId);
+      console.log("🔍 Buscando cliente con ID:", clientId);
+      const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
+          method: "GET",
+          headers: getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+          throw new Error(`Error ${response.status}`);
+      }
 
-    if (!clientId) {
-      throw new Error("ID de cliente no válido");
-    }
+      const data = await response.json();
+      console.log("✅ Respuesta RAW del backend:", data);
 
-    const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-    
+      // ✅ NORMALIZAR la respuesta del endpoint individual
+      // para que coincida con el formato del endpoint de lista
+      const normalizedData = {
+          ...data,
+          // Si viene salesPersonId y priceCategoryId en la raíz,
+          // moverlos a extra para consistencia
+          extra: {
+              salesPerson: data.salesPersonId ? { id: data.salesPersonId } : null,
+              priceCategoryId: data.priceCategoryId || null
+          }
+      };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log("✅ Cliente recibido:", data);
-    return data;
+      console.log("✅ Respuesta NORMALIZADA:", normalizedData);
+      return normalizedData;
   } catch (error) {
-    console.error("Error al obtener cliente:", error);
-    return null;
+      console.error("Error al obtener cliente:", error);
+      return null;
   }
 };
 

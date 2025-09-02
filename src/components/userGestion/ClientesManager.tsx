@@ -373,7 +373,7 @@ export default function ClientesManager({
                         {cliente.name} {cliente.lastName}
                       </CardTitle>
                       <p className="text-xs text-gray-500 font-mono mt-1">
-                        ID: {cliente.id}
+                        Nit: {cliente.id}
                         </p>
                         <div className="flex flex-wrap mt-2 gap-1">
                       <Badge

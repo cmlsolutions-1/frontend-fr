@@ -32,6 +32,13 @@ export interface User {
   salesPerson?: string; 
   clients?: string[];
   state?: "activo" | "inactivo";
+  extra?: {
+    priceCategoryId?: string;
+    salesPerson?: {
+      id: string;
+      name?: string;
+    };
+  };
 }
 
 // === VENDEDOR ===

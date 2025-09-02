@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/Dialog";
 import { Cliente, Vendedor, Role } from "@/interfaces/user.interface";
 import { getPriceCategories } from "@/services/priceCategory.service";
-import { saveClient } from "@/services/client.service";
+
 
 interface ClienteModalProps {
   isOpen: boolean;
@@ -49,6 +49,7 @@ export default function ClienteModal({
     priceCategory: "",
     salesPerson: "",
     state: "activo",
+    extra: { priceCategoryId: "", salesPerson: { id: "" } },
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>(
@@ -72,38 +73,126 @@ export default function ClienteModal({
     fetchData();
   }, []);
   
+  // ✅ Función para normalizar los datos del cliente del backend
+  const normalizeClientData = (clientData: any): Cliente => {
+    console.log("🔄 Normalizando cliente:", clientData);
+
+    // ✅ DEBUG ESPECÍFICO para todos los campos posibles
+    console.log("🔍 salesPersonId:", clientData.salesPersonId);
+    console.log("🔍 priceCategoryId:", clientData.priceCategoryId);
+    console.log("🔍 extra.salesPerson:", clientData.extra?.salesPerson);
+    console.log("🔍 extra.priceCategoryId:", clientData.extra?.priceCategoryId);
+    console.log("🔍 extra object:", clientData.extra);
+
+    // ✅ Función helper para extraer IDs de diferentes formatos
+    const extractId = (value: any): string => {
+        if (!value) return "";
+        if (typeof value === 'string') return value;
+        if (value._id) return value._id.toString();
+        if (value.id) return value.id.toString();
+        return value.toString();
+    };
+
+    // ✅ Extraer priceCategory - MANEJAR AMBOS FORMATOS
+    let priceCategory = "";
+    if (clientData.priceCategoryId) {
+        priceCategory = extractId(clientData.priceCategoryId);
+    } else if (clientData.extra?.priceCategoryId) {
+        priceCategory = extractId(clientData.extra.priceCategoryId);
+    } else if (clientData.priceCategory) {
+        priceCategory = extractId(clientData.priceCategory);
+    }
+
+    // ✅ Extraer salesPerson - MANEJAR AMBOS FORMATOS  
+    let salesPerson = "";
+    if (clientData.salesPersonId) {
+        salesPerson = extractId(clientData.salesPersonId);
+    } else if (clientData.extra?.salesPerson?.id) {
+        salesPerson = extractId(clientData.extra.salesPerson.id);
+    } else if (clientData.extra?.salesPerson) {
+        salesPerson = extractId(clientData.extra.salesPerson);
+    } else if (clientData.salesPerson) {
+        salesPerson = extractId(clientData.salesPerson);
+    }
+
+    console.log("✅ PriceCategory extraído:", priceCategory);
+    console.log("✅ SalesPerson extraído:", salesPerson);
+
+    // ✅ Extraer email correctamente (manejar diferentes formatos)
+    let emails: Cliente['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
+    if (clientData.emails && Array.isArray(clientData.emails) && clientData.emails.length > 0) {
+        const firstEmail = clientData.emails[0];
+        emails = [{
+            EmailAddres: firstEmail.EmailAddress || firstEmail.EmailAddres || "",
+            IsPrincipal: firstEmail.IsPrincipal ?? firstEmail.isPrincipal ?? true
+        }];
+    } else if (clientData.email) {
+        emails = [{ EmailAddres: clientData.email, IsPrincipal: true }];
+    }
+
+    // ✅ Extraer teléfono correctamente
+    let phones: Cliente['phones'] = [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }];
+    if (clientData.phones && Array.isArray(clientData.phones) && clientData.phones.length > 0) {
+        const firstPhone = clientData.phones[0];
+        phones = [{
+            NumberPhone: firstPhone.NumberPhone || "",
+            Indicative: firstPhone.Indicative || "+57",
+            IsPrincipal: firstPhone.IsPrincipal ?? firstPhone.isPrincipal ?? true
+        }];
+    } else if (clientData.phone) {
+        phones = [{ NumberPhone: clientData.phone, Indicative: "+57", IsPrincipal: true }];
+    }
+
+    // ✅ Extraer dirección correctamente
+    let address: string[] = [""];
+    if (Array.isArray(clientData.address)) {
+        address = clientData.address;
+    } else if (clientData.address) {
+        address = [clientData.address];
+    }
+
+    // ✅ Normalizar estado
+    const state = clientData.state === "Active" ? "activo" : 
+                  clientData.state === "Inactive" ? "inactivo" : 
+                  clientData.state || "activo";
+
+    const normalizedClient: Cliente = {
+        _id: clientData._id || "",
+        id: clientData.id || "",
+        name: clientData.name || "",
+        lastName: clientData.lastName || "",
+        password: "",
+        emails,
+        phones,
+        address,
+        city: clientData.cityId || clientData.city || "",
+        role: clientData.role || "Client",
+        priceCategory, // ✅ Usar el valor extraído
+        salesPerson,   // ✅ Usar el valor extraído
+        state,
+    };
+
+    console.log("✅ Cliente normalizado COMPLETO:", normalizedClient);
+    console.log("📧 Email:", normalizedClient.emails[0]?.EmailAddres);
+    console.log("👤 Vendedor:", normalizedClient.salesPerson);
+    console.log("💰 Categoría:", normalizedClient.priceCategory);
+    
+    return normalizedClient;
+};
 
 
   useEffect(() => {
-    console.log("🔄 useEffect - cliente:", cliente);
+    console.log("🔄 useEffect - cliente recibido:", cliente);
     console.log("🔄 useEffect - isOpen:", isOpen);
-    console.log("🔄 useEffect - vendedores:", vendedores);
+
 
   if (cliente && isOpen) {
-    // Normalizar identificadores
-    const vendedoresNormalizados = vendedores.map((v) => ({
-      ...v,
-      _id: v._id || v.id, // Asegura que _id esté presente
-    }));
+    // ✅ Normalizar los datos del cliente
+    const normalizedClient = normalizeClientData(cliente);
+    setFormData(normalizedClient);
 
-    const vendedorAsignado = vendedoresNormalizados.find(
-      (v) => v._id === cliente.salesPerson
-    );
-
-    setFormData({
-      ...cliente,
-      emails:
-        cliente.emails && cliente.emails.length > 0
-          ? cliente.emails
-          : [{ EmailAddres: "", IsPrincipal: true }],
-      phones:
-        cliente.phones && cliente.phones.length > 0
-          ? cliente.phones
-          : [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
-      address: cliente.address && cliente.address.length > 0 ? cliente.address : [""],
-      salesPerson: vendedorAsignado?._id || "",
-    });
   } else {
+    // ✅ Resetear formulario para nuevo cliente
     setFormData({
       id: "",
       name: "",
@@ -122,13 +211,13 @@ export default function ClienteModal({
 
   setErrors({});
   setApiError(null);
-}, [cliente, isOpen, vendedores]);
+}, [cliente, isOpen]);
 
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof Cliente, string>> = {};
 
-    if (!formData.id.trim()) newErrors.id = "El ID es requerido";
+    if (!formData.id.trim()) newErrors.id = "la cedula es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
@@ -163,7 +252,9 @@ export default function ClienteModal({
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-    // Corrección para el error de tipo
+    
+
+    // Limpiar error del campo
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -181,10 +272,14 @@ export default function ClienteModal({
     setApiError(null);
 
     try {
-      await onSave({
+      // ✅ Preparar datos para enviar al backend con nombres correctos
+      const clientToSave: Cliente = {
         ...formData,
         state: formData.state || "activo",
-      });
+      };
+
+      console.log("📤 Guardando cliente:", clientToSave);
+      await onSave(clientToSave);
       onClose();
     } catch (error) {
       console.error("Error al guardar cliente:", error);
@@ -377,17 +472,14 @@ export default function ClienteModal({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar vendedor" />
               </SelectTrigger>
-              <SelectContent className="max-h-40 overflow-y-auto bg-white shadow-lg border border-gray-200 z-50"
-                position="popper">
-              {vendedores.map((v, i) => {
-                  const key = v._id ?? v.id;
-                  if (!key) {
-                    console.warn(`Vendedor sin identificador válido en índice ${i}:`, v);
-                    return null;
-                  }
+              <SelectContent className="max-h-40 overflow-y-auto">
+                {vendedores.map((vendedor) => {
+                  const vendedorId = vendedor._id || vendedor.id;
+                  if (!vendedorId) return null;
+                  
                   return (
-                    <SelectItem key={String(key)} value={String(key)}>
-                      {v.name} {v.lastName}
+                    <SelectItem key={vendedorId} value={vendedorId}>
+                      {vendedor.name} {vendedor.lastName}
                     </SelectItem>
                   );
                 })}
