@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/Dialog";
 import { Cliente, Vendedor, Role } from "@/interfaces/user.interface";
 import { getPriceCategories } from "@/services/priceCategory.service";
+import { ChevronDown, UserRound } from "lucide-react";
 
 
 interface ClienteModalProps {
@@ -444,12 +445,19 @@ export default function ClienteModal({
             value={formData.priceCategory || ""}
             onValueChange={(value) => handleChange("priceCategory", value)}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Seleccionar categoría de precio" />
+            <SelectTrigger 
+                className="mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 
+                        outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center' }}>
+                  <div className="flex items-center gap-3 pr-6">
+                <SelectValue placeholder="Seleccionar categoría de precio" />
+              </div>
             </SelectTrigger>
-            <SelectContent className="max-h-40 overflow-y-auto bg-white shadow-lg border border-gray-200 z-50">
+            <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
+                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
               {priceCategories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
+                <SelectItem key={cat.id} value={cat.id}className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >
                   {cat.name}
                 </SelectItem>
               ))}
@@ -469,17 +477,34 @@ export default function ClienteModal({
               onValueChange={(value) => handleChange("salesPerson", value)
             }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger 
+                className="mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 
+                        outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center' }}>
+                
+                <div className="flex items-center gap-3 pr-6">
+
                 <SelectValue placeholder="Seleccionar vendedor" />
+              </div>
+    
               </SelectTrigger>
-              <SelectContent className="max-h-40 overflow-y-auto">
+              <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
+                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
                 {vendedores.map((vendedor) => {
                   const vendedorId = vendedor._id || vendedor.id;
                   if (!vendedorId) return null;
                   
                   return (
-                    <SelectItem key={vendedorId} value={vendedorId}>
-                      {vendedor.name} {vendedor.lastName}
+                    <SelectItem key={vendedorId} value={vendedorId}
+                    className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >
+                      <div className="flex items-center">
+              <UserRound className="h-5 w-5 shrink-0 rounded-full text-gray-700" />
+              <span className="ml-3 block truncate font-normal group-aria-selected:font-semibold">
+                {vendedor.name} {vendedor.lastName}
+              </span>
+            </div>
+            
                     </SelectItem>
                   );
                 })}
@@ -499,13 +524,19 @@ export default function ClienteModal({
                 handleChange("state", value)
               }
             >
-              <SelectTrigger>
+              <SelectTrigger 
+                className="mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 
+                        outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center' }}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="max-h-52 overflow-y-auto"
-                position="popper">
-                <SelectItem value="activo">Activo</SelectItem>
-                <SelectItem value="inactivo">Inactivo</SelectItem>
+              <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
+                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
+                <SelectItem value="activo"
+                className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >Activo</SelectItem>
+                <SelectItem value="inactivo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >Inactivo</SelectItem>
               </SelectContent>
             </Select>
           </div>

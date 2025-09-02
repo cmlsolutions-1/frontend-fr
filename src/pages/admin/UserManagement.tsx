@@ -56,9 +56,8 @@ const UserManagement: React.FC = () => {
   }, [vendedores]);
 
   const renderNavigation = () => (
-    <div className="bg-gray-50 border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-1 py-2">
+    <div className="bg-white border-b w-full">
+      <div className="flex gap-1 py-2 justify-center w-full">
           <Button
             variant={currentView === "home" ? "default" : "ghost"}
             onClick={() => setCurrentView("home")}
@@ -81,14 +80,14 @@ const UserManagement: React.FC = () => {
             Vendedores
           </Button>
         </div>
-      </div>
+      
     </div>
   );
 
   const renderHomeView = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 ">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Usuarioss</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Usuarios</h1>
         <p className="text-gray-600">Aquí podrás administrar los usuarios del sistema.</p>
       </div>
 

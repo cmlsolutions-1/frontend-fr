@@ -44,30 +44,31 @@ export default function OrdersPageAdmin() {
 
       <div className="overflow-x-auto">
         <table className="min-w-full border">
+          {/*Esta el la cabecera */}
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Nro. Pedido
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Nombre Cliente
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Estado
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Opciones
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white">
             {orders.map((order) => (
               <tr
                 key={order.id}
-                className="border-b hover:bg-gray-100 transition-colors duration-200"
+                className="border-b hover:bg-[#f4c04827] transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                   {order._id.slice(-6)}

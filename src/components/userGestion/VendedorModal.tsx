@@ -312,12 +312,18 @@ export default function VendedorModal({
                 handleChange("state", value as "activo" | "inactivo")
               }
             >
-              <SelectTrigger>
+              <SelectTrigger 
+                className="mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 
+                        outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center' }}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="activo">Activo</SelectItem>
-                <SelectItem value="inactivo">Inactivo</SelectItem>
+              <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
+                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
+                <SelectItem value="activo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >Activo</SelectItem>
+                <SelectItem value="inactivo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      >Inactivo</SelectItem>
               </SelectContent>
             </Select>
           </div>
