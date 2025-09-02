@@ -75,6 +75,10 @@ export default function ClienteModal({
 
 
   useEffect(() => {
+    console.log("🔄 useEffect - cliente:", cliente);
+    console.log("🔄 useEffect - isOpen:", isOpen);
+    console.log("🔄 useEffect - vendedores:", vendedores);
+
   if (cliente && isOpen) {
     // Normalizar identificadores
     const vendedoresNormalizados = vendedores.map((v) => ({
@@ -208,7 +212,7 @@ export default function ClienteModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ID */}
           <div className="space-y-2">
-            <Label>ID *</Label>
+            <Label>Cedula *</Label>
             <Input
               value={formData.id}
               onChange={(e) => handleChange("id", e.target.value)}
@@ -249,10 +253,11 @@ export default function ClienteModal({
             <Label>Email *</Label>
             <Input
               type="email"
-              value={formData.emails[0]?.EmailAddres || ""}
+              value={formData.emails[0]?.EmailAddres || formData.emails?.[0]?.EmailAddress || ""}
               onChange={(e) =>
                 handleChange("emails", [
-                  { ...formData.emails[0], EmailAddres: e.target.value },
+                  { ...formData.emails[0], EmailAddres: e.target.value,
+                    IsPrincipal: true },
                 ])
               }
               className={errors.emails ? "border-red-500" : ""}

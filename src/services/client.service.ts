@@ -433,3 +433,66 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
     return null;
   }
 };
+
+// ✅ Obtener TODOS los clientes (solo para Admin)
+export const getAllClients = async (): Promise<Cliente[]> => {
+  try {
+    console.log("👥 Solicitando todos los clientes (modo Admin)");
+    
+    const response = await fetch(`${API_URL}/users/client`, {
+      method: "GET",
+      headers: getAuthHeaders(), // ✅ Enviar token
+    });
+
+    console.log("📥 Response status (getAllClients):", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error al obtener todos los clientes:", errorText);
+      
+      if (response.status === 401) {
+        throw new Error("No autorizado. Solo administradores pueden acceder a esta función.");
+      }
+      
+      if (response.status === 403) {
+        throw new Error("Acceso denegado. No tiene permisos para ver todos los clientes.");
+      }
+      
+      throw new Error(`Error al obtener clientes (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Todos los clientes recibidos:", data.length);
+
+    // ✅ Mapear los datos al formato del frontend
+    return Array.isArray(data) 
+      ? data.map((item: any) => ({
+          _id: item._id || item.id,
+          id: item.id || item._id,
+          name: item.name || "",
+          lastName: item.lastName || "",
+          emails: item.email || item.emails || [],
+          phones: item.phone || item.phones || [],
+          address: Array.isArray(item.address) ? item.address : [item.address || ""],
+          city: item.cityId || item.city || "",
+          password: "", // ✅ Nunca devolver la contraseña
+          role: item.role || "Client",
+          priceCategory: item.priceCategory || "",
+          salesPerson: item.salesPerson || "",
+          state: item.state === "Active" ? "activo" : 
+                 item.state === "Inactive" ? "inactivo" : 
+                 item.state || "activo",
+          clients: item.clients || [],
+        }))
+      : [];
+
+  } catch (error) {
+    console.error("Error al obtener todos los clientes:", error);
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error("Error de conexión. Verifique su red e intente nuevamente.");
+    }
+    
+    throw error instanceof Error ? error : new Error("Error desconocido al obtener clientes.");
+  }
+};

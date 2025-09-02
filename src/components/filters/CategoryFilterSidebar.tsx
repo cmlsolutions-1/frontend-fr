@@ -68,7 +68,7 @@ export const CategoryFilterSidebar = () => {
       {/* Line Separator */}
       <div className="w-full h-px bg-gray-200 my-4" />
 
-      <div>
+     {/*  <div>
         <Link
           to="/proximosContenedores"
           className="font-medium flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
@@ -76,7 +76,7 @@ export const CategoryFilterSidebar = () => {
           <RiDiceLine className="text-primary" />
           Proximos contenedores
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 };

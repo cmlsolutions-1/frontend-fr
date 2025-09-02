@@ -7,9 +7,10 @@ import ClienteModal from "@/components/userGestion/ClienteModal";
 import { Cliente, Email, Phone, Vendedor } from "@/interfaces/user.interface";
 import {
   saveClient,
-  updateClient,
-  getClientsBySeller,
+  updateClient,getAllClients
 } from "@/services/client.service";
+import { useAuthStore } from "@/store/auth-store";
+import { getClientsBySalesPerson } from "@/services/client.salesPerson";
 
 interface ClientesManagerProps {
   searchTerm: string;
@@ -132,49 +133,91 @@ export default function ClientesManager({
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuthStore();
   
 
-  // Cargar clientes desde localStorage (ya que getClientsBySeller no está disponible)
-  useEffect(() => {
-    setLoading(true);
-    try {
-      const data = loadClientesFromLocalStorage();
-      console.log("Clientes RAW desde localStorage:", data);
+ 
+    // ✅ Cargar clientes según el rol del usuario
+    useEffect(() => {
+      const loadClients = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+          let clientsData: Cliente[] = [];
+          
+          // ✅ Verificar rol del usuario
+          if (user?.role === "Admin") {
+            // ✅ Administrador: cargar todos los clientes
+            console.log("👑 Usuario Admin: cargando todos los clientes");
+            clientsData = await getAllClients();
+          } else if (user?.role === "SalesPerson" && user._id) {
+            // ✅ Vendedor: cargar solo sus clientes
+            console.log("👤 Usuario Vendedor: cargando clientes asignados");
+            clientsData = await getClientsBySalesPerson(user._id);
+          } else {
+            // ✅ Cliente regular o sin rol: cargar desde localStorage
+            console.log("👥 Usuario regular: cargando desde localStorage");
+            clientsData = loadClientesFromLocalStorage();
+          }
+  
+          console.log("📥 Clientes cargados:", clientsData.length);
+          setClientes(clientsData);
+        } catch (err) {
+          console.error("❌ Error al cargar clientes:", err);
+          setError(err instanceof Error ? err.message : "No se pudieron cargar los clientes");
+          
+          // ✅ Fallback a localStorage
+          try {
+            const localClients = loadClientesFromLocalStorage();
+            setClientes(localClients);
+          } catch (fallbackError) {
+            console.error("❌ Error en fallback:", fallbackError);
+            setClientes([]);
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      loadClients();
+    }, [user, selectedVendedorId]); // ✅ Recargar cuando cambie el usuario o vendedor seleccionado
+  
+    // ✅ Filtrar clientes según vendedor seleccionado (para Admin)
+    useEffect(() => {
+      if (!selectedVendedorId) {
+        setFilteredClientes(clientes);
+        return;
+      }
+  
+      // ✅ Solo aplicar filtro para Admin
+      if (user?.role === "Admin") {
+        const filtered = clientes.filter((c) => c.salesPerson === selectedVendedorId);
+        setFilteredClientes(filtered);
+      } else {
+        setFilteredClientes(clientes);
+      }
+    }, [clientes, selectedVendedorId, user?.role]);
+  
+    // ✅ Filtrar por búsqueda
+    useEffect(() => {
+      if (!searchTerm) {
+        setFilteredClientes(clientes);
+        return;
+      }
+  
+      const term = searchTerm.toLowerCase();
+      const result = clientes.filter(
+        (c) =>
+          c.name.toLowerCase().includes(term) ||
+          c.lastName.toLowerCase().includes(term) ||
+          c.emails?.[0]?.EmailAddres?.toLowerCase().includes(term) ||
+          c.phones?.[0]?.NumberPhone?.includes(searchTerm)
+      );
+  
+      setFilteredClientes(result);
+    }, [clientes, searchTerm]);
 
-      // Filtrar por vendedor si está seleccionado
-      const filtered = selectedVendedorId
-        ? data.filter((c) => c.salesPerson === selectedVendedorId)
-        : data;
-
-      setClientes(filtered);
-      setError(null);
-    } catch (err) {
-      console.error("Error al cargar clientes:", err);
-      setError("No se pudieron cargar los clientes");
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedVendedorId]);
-
-  // Filtrar por búsqueda
-  useEffect(() => {
-    if (!searchTerm) {
-      setFilteredClientes(clientes);
-      return;
-    }
-
-    const term = searchTerm.toLowerCase();
-    const result = clientes.filter(
-      (c) =>
-        c.name.toLowerCase().includes(term) ||
-        c.lastName.toLowerCase().includes(term) ||
-        c.emails?.[0]?.EmailAddres?.toLowerCase().includes(term) ||
-        c.phones?.[0]?.NumberPhone?.includes(searchTerm)
-    );
-
-    setFilteredClientes(result);
-  }, [clientes, searchTerm]);
 
   const handleCreateCliente = () => {
     setEditingCliente(null);
@@ -311,7 +354,7 @@ export default function ClientesManager({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredClientes.map((cliente) => {
             // Datos seguros con valores por defecto
-            const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddres || "Sin email";
+            const email = cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddress || "Sin email";
             const phoneNumber =
               cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
             const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";

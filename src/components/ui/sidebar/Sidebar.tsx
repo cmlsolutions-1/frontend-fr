@@ -152,23 +152,23 @@ export const Sidebar = () => {
             <div className="w-full h-px bg-gray-200 my-10" />
             <hr className="my-4 border-gray-300" />
 
-            <Link
+            {/* <Link
               to="/admin/products"
               onClick={() => closeMenu()}
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoShirtOutline size={30} />
               <span className="ml-3 text-lg">Productos</span>
-            </Link>
+            </Link> */}
 
-            <Link
+            {/* <Link
               to="/admin/containers"
               onClick={() => closeMenu()}
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <IoLogoBuffer size={30} />
               <span className="ml-3 text-lg">Contenedores</span>
-            </Link>
+            </Link> */}
 
             <Link
               to="/admin/orders"

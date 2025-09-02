@@ -167,7 +167,7 @@ export default function VendedorModal({
 
           {/* ID */}
           <div className="space-y-2">
-            <Label>ID *</Label>
+            <Label>Cedula *</Label>
             <Input
               id="id"
               name="id"
