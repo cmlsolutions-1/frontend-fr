@@ -192,7 +192,7 @@ export default function ClientesManager({
   
       // ✅ Solo aplicar filtro para Admin
       if (user?.role === "Admin") {
-        const filtered = clientes.filter((c) => c.salesPerson === selectedVendedorId);
+        const filtered = clientes.filter((c) => c.salesPersonId === selectedVendedorId);
         setFilteredClientes(filtered);
       } else {
         setFilteredClientes(clientes);
@@ -252,18 +252,18 @@ export default function ClientesManager({
       console.log("Lista de vendedores disponibles:", vendedores);
 
       const vendedor = vendedores.find((v) => {
-        const match = v._id === clienteData.salesPerson;
+        const match = v._id === clienteData.salesPersonId;
         console.log(
-          `Comparando v._id (${v._id}) con clienteData.salesPerson (${clienteData.salesPerson}): ${match}`
+          `Comparando v._id (${v._id}) con clienteData.salesPerson (${clienteData.salesPersonId}): ${match}`
         );
         return match;
       });
 
-      console.log("clienteData.salesPerson:", clienteData.salesPerson);
+      console.log("clienteData.salesPerson:", clienteData.salesPersonId);
       console.log("vendedores:", vendedores);
 
       if (!vendedor) {
-        const errorMsg = `Vendedor no encontrado para _id: '${clienteData.salesPerson}'. Verifica la selección o la lista de vendedores.`;
+        const errorMsg = `Vendedor no encontrado para _id: '${clienteData.salesPersonId}'. Verifica la selección o la lista de vendedores.`;
         console.error(errorMsg);
         alert(errorMsg);
         return;
@@ -273,7 +273,7 @@ export default function ClientesManager({
 
       const payloadToSend: Cliente = {
         ...clienteData,
-        salesPerson: clienteData.salesPerson, // lo que espera el backend
+        salesPersonId: clienteData.salesPersonId, // lo que espera el backend
         id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
       };
       console.log(
@@ -359,7 +359,7 @@ export default function ClientesManager({
               cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
             const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";
             const address = cliente.address?.[0] || "Sin dirección";
-            const priceCategory = cliente.priceCategory || "Sin categoría";
+            const priceCategory = cliente.priceCategoryId || "Sin categoría";
 
             return (
               <Card

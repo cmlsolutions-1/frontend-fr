@@ -260,7 +260,7 @@ export const OrderPDFButton = ({ order }: Props) => {
   <!-- Logo centrado -->
   <div style="margin-top: 20px;">
     <img 
-      src="/FR.png" 
+      src="https://res.cloudinary.com/dra2td6jr/image/upload/v1756990004/Logo_c2lvhf.jpg" 
       alt="Ferrelectricos Restrepo" 
       style="width: 180px; height: auto; opacity: 0.9;" 
     />

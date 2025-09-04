@@ -28,17 +28,10 @@ export interface User {
   address: string[];        
   city: string;
   role: Role;
-  priceCategory: string;
-  salesPerson?: string; 
+  priceCategoryId: string;
+  salesPersonId?: string; 
   clients?: string[];
   state?: "activo" | "inactivo";
-  extra?: {
-    priceCategoryId?: string;
-    salesPerson?: {
-      id: string;
-      name?: string;
-    };
-  };
 }
 
 // === VENDEDOR ===

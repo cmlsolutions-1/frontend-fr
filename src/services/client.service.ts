@@ -41,7 +41,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     throw new Error("Debe proporcionar un email válido");
   }
 
-  if (!cliente.salesPerson) {
+  if (!cliente.salesPersonId) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
 
@@ -75,8 +75,8 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     city: cliente.city,
     password: cliente.password,
     role: "Client",
-    priceCategory: cliente.priceCategory,
-    salesPerson: cliente.salesPerson, // ID del vendedor asociado
+    priceCategory: cliente.priceCategoryId,
+    salesPerson: cliente.salesPersonId, // ID del vendedor asociado
     // state: "Active", // Siempre Active al crear
     // emailVerified: false,
     // emailValidated: false,
@@ -192,7 +192,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   if (!emailPrincipal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPrincipal)) {
     throw new Error("Debe proporcionar un email válido");
   }
-  if (!cliente.salesPerson) {
+  if (!cliente.salesPersonId) {
     throw new Error("Debe asignar un vendedor al cliente");
   }
   if (!cliente.phones?.[0]?.NumberPhone) {
@@ -230,12 +230,12 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   }
 
   if (cliente.city) payloadToSend.city = cliente.city;
-  if (cliente.priceCategory)
-    payloadToSend.priceCategory = cliente.priceCategory;
+  if (cliente.priceCategoryId)
+    payloadToSend.priceCategory = cliente.priceCategoryId;
 
   // Campo CRÍTICO para la actualización: idSalesPerson (no salesPerson)
   // Asumimos que cliente.salesPerson ya contiene el _id del vendedor
-  payloadToSend.salesPerson = cliente.salesPerson;
+  payloadToSend.salesPerson = cliente.salesPersonId;
 
   // Si necesitas actualizar el estado, descomenta la siguiente línea
   // payloadToSend.state = cliente.state === "activo" ? "Active" : "Inactive";
@@ -249,10 +249,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
     console.log("Cliente antes del fetch (para actualizar):", cliente);
     const response = await fetch(`${API_URL}/users/`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        // Agrega aquí otros headers necesarios como Authorization si los hay
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payloadToSend),
     });
 
@@ -324,12 +321,12 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       city: updatedClientData.city || cliente.city,
       password: "", // Nunca devolver la contraseña
       role: updatedClientData.role || cliente.role || "Client",
-      priceCategory: updatedClientData.priceCategory || cliente.priceCategory,
+      priceCategoryId: updatedClientData.priceCategory || cliente.priceCategoryId,
       // MUY IMPORTANTE: El backend responde con 'idSalesPerson', mapearlo a 'salesPerson' del frontend
-      salesPerson:
+      salesPersonId:
         updatedClientData.salesPerson ||
         updatedClientData.salesPerson ||
-        cliente.salesPerson,
+        cliente.salesPersonId,
       state: mappedState,
     };
 
@@ -383,38 +380,32 @@ export const getClientsBySeller = async (
 //traer un cliente por id
 export const getClientById = async (clientId: string): Promise<Cliente | null> => {
   try {
-      console.log("🔍 Buscando cliente con ID:", clientId);
-      const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
-          method: "GET",
-          headers: getAuthHeaders(),
-      });
+    const response = await fetch(`${API_URL}/users/getById/${clientId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
       
-      if (!response.ok) {
-          throw new Error(`Error ${response.status}`);
-      }
+     if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    console.log("✅ Respuesta cruda:", data);
 
-      const data = await response.json();
-      console.log("✅ Respuesta RAW del backend:", data);
+ 
 
-      // ✅ NORMALIZAR la respuesta del endpoint individual
-      // para que coincida con el formato del endpoint de lista
-      const normalizedData = {
-          ...data,
-          // Si viene salesPersonId y priceCategoryId en la raíz,
-          // moverlos a extra para consistencia
-          extra: {
-              salesPerson: data.salesPersonId ? { id: data.salesPersonId } : null,
-              priceCategoryId: data.priceCategoryId || null
-          }
-      };
-
-      console.log("✅ Respuesta NORMALIZADA:", normalizedData);
-      return normalizedData;
+      // ✅ Normalización para que coincida con el formato de lista
+    const normalizedData = {
+      ...data,
+      extra: {
+        salesPerson: data.salesPersonId ? { id: data.salesPersonId } : null,
+        priceCategoryId: data.priceCategoryId || null,
+      },
+    };
+    return normalizedData;
   } catch (error) {
-      console.error("Error al obtener cliente:", error);
-      return null;
+    console.error("Error al obtener cliente:", error);
+    return null;
   }
 };
+
 
 //obtener vendedor por id
 export const getSalesPersonById = async (salesPersonId: string): Promise<any | null> => {
@@ -484,8 +475,8 @@ export const getAllClients = async (): Promise<Cliente[]> => {
           city: item.cityId || item.city || "",
           password: "", // ✅ Nunca devolver la contraseña
           role: item.role || "Client",
-          priceCategory: item.priceCategory || "",
-          salesPerson: item.salesPerson || "",
+          priceCategoryId: item.priceCategoryId || "",
+          salesPersonId: item.salesPersonId || "",
           state: item.state === "Active" ? "activo" : 
                  item.state === "Inactive" ? "inactivo" : 
                  item.state || "activo",

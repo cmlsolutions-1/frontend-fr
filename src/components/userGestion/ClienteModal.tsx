@@ -7,6 +7,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/SelectUsers";
@@ -47,10 +49,9 @@ export default function ClienteModal({
     address: [""],
     city: "",
     role: "Client",
-    priceCategory: "",
-    salesPerson: "",
+    priceCategoryId: "",
+    salesPersonId: "",
     state: "activo",
-    extra: { priceCategoryId: "", salesPerson: { id: "" } },
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>(
@@ -87,70 +88,71 @@ export default function ClienteModal({
 
     // ✅ Función helper para extraer IDs de diferentes formatos
     const extractId = (value: any): string => {
-        if (!value) return "";
-        if (typeof value === 'string') return value;
-        if (value._id) return value._id.toString();
-        if (value.id) return value.id.toString();
-        return value.toString();
-    };
+    if (!value) return "";
+    if (typeof value === 'string') return value;
+    if (value._id) return value._id.toString();
+    if (value.id) return value.id.toString();
+    return value.toString();
+  };
 
-    // ✅ Extraer priceCategory - MANEJAR AMBOS FORMATOS
-    let priceCategory = "";
-    if (clientData.priceCategoryId) {
-        priceCategory = extractId(clientData.priceCategoryId);
-    } else if (clientData.extra?.priceCategoryId) {
-        priceCategory = extractId(clientData.extra.priceCategoryId);
-    } else if (clientData.priceCategory) {
-        priceCategory = extractId(clientData.priceCategory);
-    }
+    // ✅ Extraer priceCategory: Priorizar priceCategoryId en raíz, luego extra
+  let priceCategoryId = "";
+  if (clientData.priceCategoryId) {
+    priceCategoryId = extractId(clientData.priceCategoryId);
+  } else if (clientData.extra?.priceCategoryId) {
+    priceCategoryId = extractId(clientData.extra.priceCategoryId);
+  } else if (clientData.priceCategory) {
+    priceCategoryId = extractId(clientData.priceCategory);
+  }
 
     // ✅ Extraer salesPerson - MANEJAR AMBOS FORMATOS  
-    let salesPerson = "";
-    if (clientData.salesPersonId) {
-        salesPerson = extractId(clientData.salesPersonId);
-    } else if (clientData.extra?.salesPerson?.id) {
-        salesPerson = extractId(clientData.extra.salesPerson.id);
-    } else if (clientData.extra?.salesPerson) {
-        salesPerson = extractId(clientData.extra.salesPerson);
-    } else if (clientData.salesPerson) {
-        salesPerson = extractId(clientData.salesPerson);
-    }
+    let salesPersonId = "";
+  if (clientData.salesPersonId) {
+    salesPersonId = extractId(clientData.salesPersonId);
+  } else if (clientData.extra?.salesPerson?.id) {
+    salesPersonId = extractId(clientData.extra.salesPerson.id);
+  } else if (clientData.salesPerson) {
+    salesPersonId = extractId(clientData.salesPerson);
+  }
 
-    console.log("✅ PriceCategory extraído:", priceCategory);
-    console.log("✅ SalesPerson extraído:", salesPerson);
+    console.log("✅ PriceCategory extraído:", priceCategoryId);
+    console.log("✅ SalesPerson extraído:", salesPersonId);
 
     // ✅ Extraer email correctamente (manejar diferentes formatos)
     let emails: Cliente['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
-    if (clientData.emails && Array.isArray(clientData.emails) && clientData.emails.length > 0) {
-        const firstEmail = clientData.emails[0];
-        emails = [{
-            EmailAddres: firstEmail.EmailAddress || firstEmail.EmailAddres || "",
-            IsPrincipal: firstEmail.IsPrincipal ?? firstEmail.isPrincipal ?? true
-        }];
-    } else if (clientData.email) {
-        emails = [{ EmailAddres: clientData.email, IsPrincipal: true }];
-    }
+  if (clientData.emails && Array.isArray(clientData.emails) && clientData.emails.length > 0) {
+    const firstEmail = clientData.emails[0];
+    emails = [{
+      EmailAddres: firstEmail.EmailAddress || firstEmail.EmailAddres || "",
+      IsPrincipal: firstEmail.IsPrincipal ?? firstEmail.isPrincipal ?? true
+    }];
+  } else if (clientData.email) {
+    emails = [{ EmailAddres: clientData.email, IsPrincipal: true }];
+  }
 
     // ✅ Extraer teléfono correctamente
-    let phones: Cliente['phones'] = [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }];
-    if (clientData.phones && Array.isArray(clientData.phones) && clientData.phones.length > 0) {
-        const firstPhone = clientData.phones[0];
-        phones = [{
-            NumberPhone: firstPhone.NumberPhone || "",
-            Indicative: firstPhone.Indicative || "+57",
-            IsPrincipal: firstPhone.IsPrincipal ?? firstPhone.isPrincipal ?? true
-        }];
-    } else if (clientData.phone) {
-        phones = [{ NumberPhone: clientData.phone, Indicative: "+57", IsPrincipal: true }];
-    }
+     let phones: Cliente['phones'] = [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }];
+  if (clientData.phones && Array.isArray(clientData.phones) && clientData.phones.length > 0) {
+    const firstPhone = clientData.phones[0];
+    phones = [{
+      NumberPhone: firstPhone.NumberPhone || "",
+      Indicative: firstPhone.Indicative || "+57",
+      IsPrincipal: firstPhone.IsPrincipal ?? firstPhone.isPrincipal ?? true
+    }];
+  } else if (clientData.phone) {
+    phones = [{ NumberPhone: clientData.phone, Indicative: "+57", IsPrincipal: true }];
+  }
 
     // ✅ Extraer dirección correctamente
     let address: string[] = [""];
-    if (Array.isArray(clientData.address)) {
-        address = clientData.address;
-    } else if (clientData.address) {
-        address = [clientData.address];
-    }
+  if (Array.isArray(clientData.address)) {
+    address = clientData.address;
+  } else if (clientData.address) {
+    address = [clientData.address];
+  }
+
+  // ✅ City
+  const city = clientData.cityId || clientData.city || "";
 
     // ✅ Normalizar estado
     const state = clientData.state === "Active" ? "activo" : 
@@ -158,27 +160,23 @@ export default function ClienteModal({
                   clientData.state || "activo";
 
     const normalizedClient: Cliente = {
-        _id: clientData._id || "",
-        id: clientData.id || "",
-        name: clientData.name || "",
-        lastName: clientData.lastName || "",
-        password: "",
-        emails,
-        phones,
-        address,
-        city: clientData.cityId || clientData.city || "",
-        role: clientData.role || "Client",
-        priceCategory, // ✅ Usar el valor extraído
-        salesPerson,   // ✅ Usar el valor extraído
-        state,
-    };
+    _id: clientData._id || "",
+    id: clientData.id || "",
+    name: clientData.name || "",
+    lastName: clientData.lastName || "",
+    password: "", // Nunca mostrar contraseña
+    emails,
+    phones,
+    address,
+    city,
+    role: clientData.role || "Client",
+    priceCategoryId,    
+    salesPersonId,         
+    state,
+  };
 
-    console.log("✅ Cliente normalizado COMPLETO:", normalizedClient);
-    console.log("📧 Email:", normalizedClient.emails[0]?.EmailAddres);
-    console.log("👤 Vendedor:", normalizedClient.salesPerson);
-    console.log("💰 Categoría:", normalizedClient.priceCategory);
-    
-    return normalizedClient;
+  console.log("✅ Cliente normalizado completo:", normalizedClient);
+  return normalizedClient;
 };
 
 
@@ -204,8 +202,8 @@ export default function ClienteModal({
       address: [""],
       city: "",
       role: "Client",
-      priceCategory: "",
-      salesPerson: "",
+      priceCategoryId: "",
+      salesPersonId: "",
       state: "activo",
     });
   }
@@ -234,14 +232,14 @@ export default function ClienteModal({
       newErrors.phones = "Teléfono inválido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
-    if (!formData.priceCategory)
-      newErrors.priceCategory = "La categoría de precio es requerida";
+    if (!formData.priceCategoryId)
+      newErrors.priceCategoryId = "La categoría de precio es requerida";
     if (!formData.password.trim())
       newErrors.password = "La contraseña es requerida";
     if (formData.password.length < 6)
       newErrors.password = "La contraseña debe tener al menos 6 caracteres";
-    if (!formData.salesPerson)
-      newErrors.salesPerson = "Debe asignar un vendedor";
+    if (!formData.salesPersonId)
+      newErrors.salesPersonId = "Debe asignar un vendedor";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -442,8 +440,8 @@ export default function ClienteModal({
         <div className="space-y-2 relative z-50">
           <Label>Categoría de Precio *</Label>
           <Select
-            value={formData.priceCategory || ""}
-            onValueChange={(value) => handleChange("priceCategory", value)}
+            value={formData.priceCategoryId || ""}
+            onValueChange={(value) => handleChange("priceCategoryId", value)}
           >
             <SelectTrigger 
                 className="mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 
@@ -453,18 +451,24 @@ export default function ClienteModal({
                 <SelectValue placeholder="Seleccionar categoría de precio" />
               </div>
             </SelectTrigger>
-            <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
-                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
+            <SelectContent className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1
+                outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ 
+                  maxHeight: '80px',
+                }}
+              >
+                <SelectScrollUpButton />
               {priceCategories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
                       >
                   {cat.name}
                 </SelectItem>
               ))}
+              <SelectScrollDownButton />
             </SelectContent>
           </Select>
-          {errors.priceCategory && (
-            <p className="text-red-500 text-sm">{errors.priceCategory}</p>
+          {errors.priceCategoryId && (
+            <p className="text-red-500 text-sm">{errors.priceCategoryId}</p>
           )}
         </div>
 
@@ -473,8 +477,8 @@ export default function ClienteModal({
           <div className="space-y-2 relative z-50">
             <Label>Vendedor Asignado *</Label>
             <Select
-              value={formData.salesPerson || ""}
-              onValueChange={(value) => handleChange("salesPerson", value)
+              value={formData.salesPersonId || ""}
+              onValueChange={(value) => handleChange("salesPersonId", value)
             }
             >
               <SelectTrigger 
@@ -488,8 +492,13 @@ export default function ClienteModal({
               </div>
     
               </SelectTrigger>
-              <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
-                        outline-black/5 [--anchor-gap:4px] sm:text-sm">
+              <SelectContent className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1
+                outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ 
+                  maxHeight: '110px',
+                }}
+              >
+                <SelectScrollUpButton />
                 {vendedores.map((vendedor) => {
                   const vendedorId = vendedor._id || vendedor.id;
                   if (!vendedorId) return null;
@@ -508,10 +517,11 @@ export default function ClienteModal({
                     </SelectItem>
                   );
                 })}
+                <SelectScrollDownButton />
               </SelectContent>
             </Select>
-            {errors.salesPerson && (
-              <p className="text-red-500 text-sm">{errors.salesPerson}</p>
+            {errors.salesPersonId && (
+              <p className="text-red-500 text-sm">{errors.salesPersonId}</p>
             )}
           </div>
 
