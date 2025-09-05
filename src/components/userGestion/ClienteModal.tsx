@@ -11,6 +11,7 @@ import {
   SelectScrollUpButton,
   SelectTrigger,
   SelectValue,
+  VendedorSelectContent,
 } from "@/components/ui/SelectUsers";
 import {
   Dialog,

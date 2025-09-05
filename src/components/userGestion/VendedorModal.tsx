@@ -42,9 +42,9 @@ export default function VendedorModal({
     address: [""],
     city: "",
     role: "SalesPerson",
-    priceCategory: "",
+    priceCategoryId: "",
     state: "activo",
-    salesPerson: "",
+    salesPersonId: "",
     clients: [],
   };
 
@@ -80,7 +80,7 @@ export default function VendedorModal({
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
-    if (!formData.priceCategory)
+    if (!formData.priceCategoryId)
       newErrors.priceCategory = "La categoría de precio es requerida";
     if (!formData.password.trim())
       newErrors.password = "La contraseña es requerida";
