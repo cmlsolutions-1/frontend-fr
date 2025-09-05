@@ -15,9 +15,14 @@ export interface Product {
   codigo: string;
   detalle: string;
   subgategoryId: string;
-  image: string;           // por ahora parece ser un id de imagen
-  precios: Precio[];       // array de precios
-  packages: Package[];     // array de presentaciones
+  image: {
+    _id: string;
+    url: string;
+    name: string;
+    idCloud: string;
+  };           
+  precios: Precio[];      
+  packages: Package[];     
   stock: number;
 }
 

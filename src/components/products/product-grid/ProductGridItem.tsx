@@ -4,19 +4,31 @@ import { Product } from "@/interfaces";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Agregar } from "./Agregar";
-import { useAuthStore } from '@/store/auth-store';
+import { useAuthStore } from "@/store/auth-store";
 
 interface Props {
   product: Product;
 }
 
 export const ProductGridItem = ({ product }: Props) => {
-  const { user } = useAuthStore(); 
-  const masterPackage = product.packages?.find(p => p.typePackage === "Master");
-  const [displayImage, setDisplayImage] = useState(
-    product.image? `/products/${product.image}` : "/products/placeholder.jpg"
+  const { user } = useAuthStore();
+  const masterPackage = product.packages?.find(
+    (p) => p.typePackage === "Master"
   );
-  // ✅ Función para obtener el precio correcto según la categoría del cliente
+  // Asegúrate de que image y image.url existan
+  const imageUrl = product.image?.url?.trim();
+  const fallbackImage = "/images/no-image.jpg";
+
+  const [displayImage, setDisplayImage] = useState(imageUrl || fallbackImage);
+  const handleMouseEnter = () => {
+    // poner imagen alternativa
+  };
+
+  const handleMouseLeave = () => {
+    setDisplayImage(imageUrl || fallbackImage);
+  };
+
+  //Función para obtener el precio correcto según la categoría del cliente
   const getClientProductPrice = (product: Product): number => {
     if (!product.precios || product.precios.length === 0) return 0;
 
@@ -27,10 +39,12 @@ export const ProductGridItem = ({ product }: Props) => {
 
     // Buscar la categoría de precio del cliente
     const clientPriceCategory = user.priceCategory;
-    
+
     // Buscar el precio que corresponde a la categoría del cliente
-    const precioCliente = product.precios.find(p => p.precio === clientPriceCategory);
-    
+    const precioCliente = product.precios.find(
+      (p) => p.precio === clientPriceCategory
+    );
+
     // Si no se encuentra el precio específico, usar el primero disponible
     if (!precioCliente) {
       return product.precios[0]?.valorpos || product.precios[0]?.valor || 0;
@@ -57,26 +71,30 @@ export const ProductGridItem = ({ product }: Props) => {
     );
   };
 
-  // ✅ Obtener el precio correcto
+  // Obtener el precio correcto
   const productPrice = getClientProductPrice(product);
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
       {/* Imagen */}
-      <Link to={`/product/${product._id}`} className="block w-full aspect-[4/3]">
+      <Link
+        to={`/product/${product._id}`}
+        className="block w-full aspect-[4/3]"
+      >
         <img
-          src={`/products/${displayImage}`}
+          src={displayImage}
           alt={product.detalle}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-          onMouseEnter={() =>
-            setDisplayImage(product.image ? `/products/${product.image}` : displayImage)
-          }
-          onMouseLeave={() =>
-            setDisplayImage(product.image ? `/products/${product.image}` : displayImage)
-          }
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onError={(e) => {
+            if (displayImage !== fallbackImage) {
+              setDisplayImage(fallbackImage);
+            }
+          }}
         />
       </Link>
-{/* Contenido */}
+      |||{/* Contenido */}
       <div className="p-4 flex flex-col justify-between flex-1">
         <Link
           className="text-sm font-medium text-gray-800 hover:text-blue-600 truncate"
@@ -85,11 +103,14 @@ export const ProductGridItem = ({ product }: Props) => {
           {cleanTitle(product.detalle)}
         </Link>
         <span className="mt-1 text-base font-bold text-gray-900">
-          {productPrice > 0 ? `$${productPrice.toLocaleString()}` : "Sin precio"}
+          {productPrice > 0
+            ? `$${productPrice.toLocaleString()}`
+            : "Sin precio"}
         </span>
 
         <span className="text-sm text-gray-600">
-          <span className="font-bold">Master:</span> {masterPackage ? masterPackage.mount : "N/A"}
+          <span className="font-bold">Master:</span>{" "}
+          {masterPackage ? masterPackage.mount : "N/A"}
         </span>
         {/* Agregar al carrito */}
         <div className="mt-auto pt-4">

@@ -38,7 +38,7 @@ export const ProductPage = () => {
         console.log("🚀 Solicitando producto con ID:", _id);
       const fetchedProduct = await getProductById(_id);
 
-      // ✅ Validación adicional del producto recibido
+      // Validación adicional del producto recibido
         if (!fetchedProduct || !fetchedProduct._id) {
           throw new Error("Producto inválido recibido del servidor");
         }
@@ -88,7 +88,10 @@ export const ProductPage = () => {
   }
   if (!product) return <p className="p-4">Producto no encontrado</p>;
 
-  // ✅ Función para obtener el precio correcto del cliente
+  // Obtener la URL de la imagen
+  const imageUrl = product.image?.url?.trim() || placeholder;
+
+  // Función para obtener el precio correcto del cliente
   const getClientProductPrice = (): number | null => {
     if (!product.precios || product.precios.length === 0) return null;
 
@@ -109,7 +112,7 @@ export const ProductPage = () => {
     return precioCliente.valorpos || precioCliente.valor || null;
   };
 
-  // ✅ Función para formatear el precio
+  // Función para formatear el precio
   const formatPrice = (): string => {
     const price = getClientProductPrice();
     if (price === null) return "Sin precio";
@@ -125,12 +128,12 @@ export const ProductPage = () => {
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow
           title={product.detalle}
-          images={[product.image ? `/products/${product.image}` : placeholder]}
+          images={[imageUrl]}
           className="block md:hidden"
         />
         <ProductSlideshow
           title={product.detalle}
-          images={[product.image ? `/products/${product.image}` : placeholder]}
+          images={[imageUrl]}
           className="hidden md:block"
         />
       </div>
