@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useCartStore } from '@/store';
 import { currencyFormat } from '@/utils';
 import { CartProduct } from "@/interfaces";
+import { ProductImage, QuantitySelector } from "@/components";
 
 export const ProductsInCart = () => {
 
@@ -30,19 +31,20 @@ export const ProductsInCart = () => {
 
   return (
     <>
-      {productsInCart.map((product) => (
+      {productsInCart.map((product) => {
+
+        const imageUrl = product.image?.url?.trim();
+        const fallbackImage = "/products/placeholder.jpg";
+        return (
+
         <div key={product._id} className="flex mb-5">
-          <img
-            src={product.image ? `/products/${product.image}` : "/products/placeholder.jpg"}
-            width={100}
-            height={100}
-            style={{
-              width: "100px",
-              height: "100px",
-            }}
-            alt={product.detalle}
-            className="mr-5 rounded"
-          />
+          <ProductImage
+                        src={imageUrl || fallbackImage}
+                        width={100}
+                        height={100}
+                        alt={product.detalle}
+                        className="mr-5 rounded"
+                      />
 
           <div>
             <span>
@@ -54,7 +56,8 @@ export const ProductsInCart = () => {
             </p>
           </div>
         </div>
-      ))}
+      );
+    })}
     </>
   );
 };

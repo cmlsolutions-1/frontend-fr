@@ -1,6 +1,7 @@
 // src/store/auth-store.ts
 import { create } from "zustand";
 import { loginRequest, fetchMe } from "@/services/user.service";
+import { persist } from "zustand/middleware";
 
 
 interface AuthState {
@@ -11,56 +12,44 @@ interface AuthState {
   restoreSession: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
 
-  login: async (email, password) => {
-    try {
-      const { user, token } = await loginRequest(email, password);
+      login: async (email, password) => {
+        try {
+          const { user, token } = await loginRequest(email, password);
 
-      // Almacenar con la estructura correcta que esperan tus servicios
-      const authData = {
-        state: {
-          token: token,
-          user: user
+          set({ user, token }); // ✅ persist guarda esto automáticamente
+          return true;
+        } catch (err) {
+          console.error("Login fallido", err);
+          return false;
         }
-      };
+      },
 
-      localStorage.setItem('auth-storage', JSON.stringify(authData));
+      logout: () => {
+        set({ user: null, token: null }); // ✅ persist borra del storage
+      },
 
-      set({ user, token });
-      return true;
-    } catch (err) {
-      console.error("Login fallido", err);
-      return false;
+      restoreSession: async () => {
+        try {
+          const token = get().token;
+          if (!token) return;
+
+          const userData = await fetchMe(token);
+          set({ user: userData, token });
+        } catch (err) {
+          console.warn("No se pudo restaurar la sesión", err);
+          set({ user: null, token: null });
+        }
+      },
+    }),
+    {
+      name: "auth-storage", // 🔑 clave en localStorage
+      partialize: (state) => ({ token: state.token, user: state.user }), // solo guarda estos
     }
-  },
-
-  logout: () => {
-    localStorage.removeItem('auth-storage');
-    set({ user: null, token: null });
-  },
-
-  restoreSession: async () => {
-    try {
-      // Leer desde la estructura correcta
-      const authData = localStorage.getItem('auth-storage');
-      if (!authData) return;
-
-      const parsed = JSON.parse(authData);
-      const token = parsed.state?.token;
-      const user = parsed.state?.user;
-      
-      if (!token) return;
-
-      // Verificar si el token es válido (opcional)
-      // const userData = await fetchMe(token);
-      
-      set({ user, token });
-    } catch (err) {
-      console.warn("No se pudo restaurar la sesión");
-      localStorage.removeItem('auth-storage');
-    }
-  },
-}));
+  )
+);

@@ -18,7 +18,7 @@ export default function OrdersByIdPage() {
   const [error, setError] = useState<string | null>(null);
 
 
-  // ✅ Función para determinar la ruta de vuelta según el rol
+  // Función para determinar la ruta de vuelta según el rol
   const getBackRoute = () => {
     if (!user) return '/orders';
     
@@ -37,7 +37,7 @@ export default function OrdersByIdPage() {
   const backRoute = getBackRoute();
   console.log("🔙 Ruta de vuelta:", backRoute);
 
-  // ✅ Debug para ver qué ID se está recibiendo
+  // Debug para ver qué ID se está recibiendo
   console.log("🔍 useParams id:", _id);
   console.log("🔍 typeof id:", typeof _id);
   
@@ -53,8 +53,8 @@ export default function OrdersByIdPage() {
 
     const loadOrder = async () => {
       try {
-        setLoading(true); // ✅ Iniciar carga
-        setError(null); // ✅ Limpiar errores previos
+        setLoading(true); // Iniciar carga
+        setError(null); // Limpiar errores previos
         
         console.log("🚀 Solicitando orden con ID:", _id);
         const { ok, order } = await getOrderById(_id);
@@ -72,11 +72,12 @@ export default function OrdersByIdPage() {
         setLoading(false); // ✅ Finalizar carga
       }
     };
+    
 
     loadOrder();
   }, [_id, navigate]);
 
-  // ✅ Manejar estados de loading y error
+  // Manejar estados de loading y error
   if (loading) {
     return (
       <div className="container mx-auto p-6 text-center">
@@ -116,6 +117,7 @@ export default function OrdersByIdPage() {
     );
   }
 
+
   // Calcular totales en base a los items
   const itemsInOrder = order.items?.length || 0;
   const subTotal = order.items?.reduce(
@@ -135,11 +137,33 @@ export default function OrdersByIdPage() {
           <div className="flex flex-col mt-5">
             <OrderStatus isPaid={order.isPaid} />
 
-            {order.items?.map((item: any, index: number) => (
+            {order.items?.length > 0 ? (
+              order.items.map((item: any, index: number) => {
+                // Extraer la URL de la imagen
+                const imageUrl = item.Product?.image?.url?.trim();
+                const hasValidImage = imageUrl && !imageUrl.includes('undefined');
+                const fallbackImage = "/images/no-image.jpg";
+            
+            return (
+              
+
               <div key={item._id || index} className="flex mb-5 p-4 border rounded-lg">
-                <div className="mr-5 w-24 h-24 flex items-center justify-center bg-gray-100 rounded">
-                  <span className="text-gray-500 text-xs">IMG</span>
-                </div>
+                {/* Imagen */}
+
+                <div className="mr-5 w-24 h-24 flex items-center justify-center bg-gray-100 rounded overflow-hidden">
+                      {/* <img
+                        src={hasValidImage ? imageUrl : fallbackImage}
+                        alt={item.Product?.detalle}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        width={100}
+                        height={100}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = fallbackImage;
+                        }}
+                      /> */}
+                    </div>
+
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">
                     {item.Product?.description || item.Product?.detalle || "Producto sin detalle"}
@@ -152,7 +176,9 @@ export default function OrdersByIdPage() {
                   </p>
                 </div>
               </div>
-            )) || (
+            )
+          }) 
+        ) : (
               <p className="text-gray-500">No hay productos en esta orden.</p>
             )}
           </div>

@@ -1,34 +1,21 @@
 // src/services/user.service.ts
 import type { Cliente, Vendedor } from "@/interfaces";
+import { useAuthStore } from "@/store/auth-store";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const getToken = () => {
-  try {
-    const authData = localStorage.getItem('auth-storage');
-    if (!authData) {
-      console.log("❌ No hay auth-storage en localStorage");
-      return null;
-    }
-    
-    const parsed = JSON.parse(authData);
-    const token = parsed.state?.token || null;
-    
-    if (token) {
-      console.log("✅ Token encontrado:", `${token.substring(0, 20)}...`);
-    } else {
-      console.log("❌ Token no encontrado en la estructura");
-    }
-    
-    return token;
-  } catch (error) {
-    console.error("❌ Error al obtener token:", error);
-    return null;
+  const token = useAuthStore.getState().token;
+  if (token) {
+    console.log("✅ Token encontrado:", token.substring(0, 20) + "...");
+  } else {
+    console.log("❌ No hay token en el store");
   }
+  return token;
 };
 
-// ✅ Función para obtener headers con token
-const getAuthHeaders = (includeContentType: boolean = true) => {
+// Función para obtener headers con token
+export const getAuthHeaders = (includeContentType: boolean = true) => {
   const token = getToken();
   const headers: Record<string, string> = {};
   
@@ -38,8 +25,6 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
   
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    console.warn("⚠️ No se encontró token para ruta protegida");
   }
   
   return headers;
@@ -75,18 +60,18 @@ export interface LoginResponse {
   };
 }
 
-// ✅ Servicio de login (SIN TOKEN - ruta pública)
+// Servicio de login (SIN TOKEN - ruta pública)
 export const loginRequest = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
   console.log("🚀 Iniciando login request:", { email });
   
-  // ✅ NO USAR getAuthHeaders() - el login es ruta pública
+  // getAuthHeaders() - el login es ruta pública
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json", // ✅ Solo Content-Type, sin Authorization
+      "Content-Type": "application/json", // Solo Content-Type, sin Authorization
     },
     body: JSON.stringify({ email, password }),
   });
@@ -104,14 +89,17 @@ export const loginRequest = async (
   return data;
 };
 
-// ✅ Servicio para obtener el usuario autenticado usando el token
-export const fetchMe = async (token: string) => {
+// Servicio para obtener el usuario autenticado usando el token
+export const fetchMe = async (token: string): Promise<any> => {
   console.log("👤 Solicitando información de usuario con token");
-  
-  const response = await fetch(`${API_URL}/me`, {
+
+  const userId = useAuthStore.getState().user?._id || useAuthStore.getState().user?.id;
+  if (!userId) throw new Error("No se encontró ID de usuario en la sesión");
+
+  const response = await fetch(`${API_URL}/users/getById/${userId}`, {
     headers: {
-      "Content-Type": "application/json", // ✅ Agregar Content-Type
-      "Authorization": `Bearer ${token}`,   // ✅ Usar token proporcionado
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
     },
   });
 

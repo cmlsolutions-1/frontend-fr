@@ -32,7 +32,7 @@ export default function OrdersPage() {
           setOrders([]);
           return;
         }
-        // ✅ Asegúrate de pasar solo el _id como string
+        // Asegúrate de pasar solo el _id como string
         console.log("🆔 ID del cliente:", user._id); // Debug
 
         const result = await getOrdersByClient(user._id);

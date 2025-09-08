@@ -20,8 +20,9 @@ export const ProductsInCart = () => {
   if (!loaded) {
     return <p>Loading...</p>;
   }
+  
 
-  // ✅ Función para obtener el precio correcto del cliente
+  // Función para obtener el precio correcto del cliente
   const getProductPrice = (product: CartProduct): number => {
     // Por ahora usamos el primer precio disponible, luego puedes integrar el sistema de precios por cliente
     if (product.precios && product.precios.length > 0) {
@@ -32,19 +33,20 @@ export const ProductsInCart = () => {
 
   return (
     <>
-      {productsInCart.map((product) => (
-        <div key={`${product._id}`} className="flex mb-5">
-          <ProductImage
-            src={product.image ? `/products/${product.image}` : "/products/placeholder.jpg"}
-            width={100}
-            height={100}
-            style={{
-              width: "100px",
-              height: "100px",
-            }}
-            alt={product.detalle}
-            className="mr-5 rounded"
-          />
+      {productsInCart.map((product) => {
+        //Extraer la URL de la imagen
+        const imageUrl = product.image?.url?.trim();
+        const fallbackImage = "/products/placeholder.jpg";
+
+        return (
+          <div key={`${product._id}`} className="flex mb-5">
+            <ProductImage
+              src={imageUrl || fallbackImage}
+              width={100}
+              height={100}
+              alt={product.detalle}
+              className="mr-5 rounded"
+            />
 
           <div>
             <Link
@@ -71,7 +73,8 @@ export const ProductsInCart = () => {
             </button>
           </div>
         </div>
-      ))}
+      );
+    })}
     </>
   );
 };

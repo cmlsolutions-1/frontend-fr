@@ -57,9 +57,9 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
         address: Array.isArray(item.address) ? item.address : [],
         city: item.cityId,
         role: item.role,
-        priceCategory: "", 
+        priceCategoryId: "", 
         state: item.state === "Active" ? "activo" : "inactivo",
-        salesPerson: "", // Asumiendo que no aplica aquí
+        salesPersonId: "", // Asumiendo que no aplica aquí
         clients: item.extra?.clients || [],
       })
     );
@@ -105,7 +105,7 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     password: vendedor.password,
     role: vendedor.role,
     state: "Active",
-    priceCategory: vendedor.priceCategory || "",
+    priceCategory: vendedor.priceCategoryId || "",
   };
 
   console.log("Payload final para el backend:", payload);
@@ -193,7 +193,7 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
     city: vendedor.city || undefined,
     // password: vendedor.password || undefined, // Cuidado al actualizar passwords
     // role: vendedor.role || undefined, // Generalmente no se cambia el rol
-    priceCategory: vendedor.priceCategory || undefined, // Si aplica
+    priceCategory: vendedor.priceCategoryId || undefined, // Si aplica
     // salesPerson: vendedor.salesPerson || undefined, // Un vendedor no tiene un "salesPerson" asignado, eso es para clientes
     state: vendedor.state === "activo" ? "Active" :
            vendedor.state === "inactivo" ? "Inactive" : undefined,
@@ -267,7 +267,7 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
       city: updatedSellerData.city || vendedor.city || '',
       password: "", // Nunca devolver la contraseña
       role: updatedSellerData.role || vendedor.role || "SalesPerson", // Default a SalesPerson
-      priceCategory: updatedSellerData.priceCategory || vendedor.priceCategory || "",
+      priceCategoryId: updatedSellerData.priceCategory || vendedor.priceCategoryId || "",
       // salesPerson: updatedSellerData.salesPerson || vendedor.salesPerson || "", // No debería aplicar
       state: mappedState,
       clients: updatedSellerData.clients || vendedor.clients || [], // Default a array vacío
