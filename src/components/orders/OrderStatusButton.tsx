@@ -21,7 +21,7 @@ export const OrderStatusButton = ({
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // ✅ Verificar si el usuario puede gestionar ordenes
+  // Verificar si el usuario puede gestionar ordenes
   const canManageOrders = user?.role === 'Admin' || user?.role === 'SalesPerson';
 
  const handleMarkAsPaid = async () => {

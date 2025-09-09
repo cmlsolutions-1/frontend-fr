@@ -120,12 +120,9 @@ export default function OrdersByIdPage() {
 
   // Calcular totales en base a los items
   const itemsInOrder = order.items?.length || 0;
-  const subTotal = order.items?.reduce(
-    (acc: number, item: any) => acc + (item.price || item.Product?.valorpos || 0) * item.quantity,
-    0
-  ) || 0;
-  const tax = subTotal * 0.15;
-  const total = subTotal + tax;
+  const subTotal = order.subTotal || 0;
+  const tax = order.tax || 0;
+  const total = order.total || 0;
 
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
@@ -146,22 +143,19 @@ export default function OrdersByIdPage() {
             
             return (
               
-
               <div key={item._id || index} className="flex mb-5 p-4 border rounded-lg">
-                {/* Imagen */}
 
+                {/* Imagen */}
                 <div className="mr-5 w-24 h-24 flex items-center justify-center bg-gray-100 rounded overflow-hidden">
-                      {/* <img
+                      <img
                         src={hasValidImage ? imageUrl : fallbackImage}
-                        alt={item.Product?.detalle}
+                        alt={item.Product?.description || "Producto sin imagen"}
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        width={100}
-                        height={100}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = fallbackImage;
                         }}
-                      /> */}
+                      />
                     </div>
 
                 <div className="flex-1">
@@ -170,6 +164,9 @@ export default function OrdersByIdPage() {
                   </p>
                   <p className="text-gray-600">
                     ${(item.price || item.Product?.valorpos || 0).toLocaleString()} x {item.quantity}
+                  </p>
+                  <p className="font-bold text-gray-900">
+                    Ref: {item.Product?.reference}
                   </p>
                   <p className="font-bold text-gray-900">
                     Subtotal: {currencyFormat((item.price || item.Product?.valorpos || 0) * item.quantity)}
@@ -197,7 +194,7 @@ export default function OrdersByIdPage() {
               <span className="text-gray-600">Subtotal</span>
               <span className="text-right font-medium">{currencyFormat(subTotal)}</span>
 
-              <span className="text-gray-600">Impuestos (15%)</span>
+              <span className="text-gray-600">Iva (19%)</span>
               <span className="text-right font-medium">{currencyFormat(tax)}</span>
 
               <span className="mt-5 text-2xl font-bold text-gray-900">

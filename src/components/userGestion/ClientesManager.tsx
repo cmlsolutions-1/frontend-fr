@@ -11,6 +11,9 @@ import {
 } from "@/services/client.service";
 import { useAuthStore } from "@/store/auth-store";
 import { getClientsBySalesPerson } from "@/services/client.salesPerson";
+import { IoSearchOutline } from "react-icons/io5";
+import { ProductSearchDropdown } from "../ui/ProductSearchDropdown";
+import { ClientSearch } from "../ui/ClientSearch";
 
 interface ClientesManagerProps {
   searchTerm: string;
@@ -337,13 +340,29 @@ export default function ClientesManager({
             {filteredClientes.length !== 1 ? "s" : ""}
           </p>
         </div>
+        
         <Button
           onClick={handleCreateCliente}
           className="bg-[#F2B318] hover:bg-[#F4C048]"
         >
           + Nuevo Cliente
         </Button>
+        
       </div>
+        {/* Search buscar clientes */}
+
+                <div className="w-full order-3 md:order-1 md:flex-1 md:mx-8 md:block hidden mb-8">
+                  <div className="relative w-full max-w-[600px] mx-auto">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <IoSearchOutline />
+                    </div>
+                    <ClientSearch
+                      clientes={clientes}
+                      onResults={(results) => setFilteredClientes(results)}
+                    />
+                  </div>
+                </div>
+      
 
       {/* Lista de clientes */}
       {filteredClientes.length === 0 ? (

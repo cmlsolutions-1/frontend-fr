@@ -21,7 +21,7 @@ interface State {
   clearCart: () => void;
 }
 
-// ✅ Función para obtener el precio del producto
+// Función para obtener el precio del producto
 const getProductPrice = (product: CartProduct): number => {
   if (product.precios && product.precios.length > 0) {
     return product.precios[0].valorpos || product.precios[0].valor || 0;
@@ -43,16 +43,24 @@ export const useCartStore = create<State>()(
       getSummaryInformation: () => {
         const { cart } = get();
 
-        const subTotal = cart.reduce(
-          (subTotal, product) => product.quantity * getProductPrice(product) + subTotal,
-          0
-        );
-        const tax = subTotal * 0.15;
-        const total = subTotal + tax;
-        const itemsInCart = cart.reduce(
-          (total, item) => total + item.quantity,
-          0
-        );
+        let subTotal = 0;
+        let tax = 0;
+        let total = 0;
+
+        cart.forEach((product) => {
+          const price = getProductPrice(product);
+          const quantity = product.quantity;
+
+          const itemTax = price * 0.19;             // IVA unitario
+          const itemSubTotal = price - itemTax;     // Precio sin IVA
+          const itemTotal = price * quantity;       // Precio con IVA x cantidad
+
+          subTotal += itemSubTotal * quantity;
+          tax += itemTax * quantity;
+          total += itemTotal;
+        });
+
+        const itemsInCart = cart.reduce((acc, item) => acc + item.quantity, 0);
 
         return {
           subTotal,
@@ -90,7 +98,7 @@ export const useCartStore = create<State>()(
       updateProductQuantity: (product: CartProduct, quantity: number) => {
         const { cart } = get();
 
-        // ✅ No permitir cantidades negativas o cero
+        // No permitir cantidades negativas o cero
         if (quantity <= 0) {
           get().removeProduct(product);
           return;

@@ -27,6 +27,8 @@ export const PlaceOrder = () => {
     setLoaded(true);
   }, []);
 
+  const isClient = user?.role === "Client"; // Solo clientes pueden ordenar
+
   const onPlaceOrder = async () => {
     setIsPlacingOrder(true);
     setErrorMessage("");
@@ -34,6 +36,13 @@ export const PlaceOrder = () => {
     // --- Validación inicial ---
     if (!user) {
       setErrorMessage("Debes iniciar sesión para realizar un pedido.");
+      setIsPlacingOrder(false);
+      return;
+    }
+
+    // Verificar que el usuario es cliente
+    if (!isClient) {
+      setErrorMessage("Tu rol no permite realizar pedidos.");
       setIsPlacingOrder(false);
       return;
     }
@@ -46,8 +55,8 @@ export const PlaceOrder = () => {
       return;
     }
 
- // ✅ Obtener la categoría de precio del cliente (estructura correcta)
-    const clientPriceCategory = user.priceCategory; // ✅ Aquí está la categoría de precio
+ // Obtener la categoría de precio del cliente (estructura correcta)
+    const clientPriceCategory = user.priceCategory; //Aquí está la categoría de precio
     console.log("🏷️ Categoría de precio encontrada:", clientPriceCategory);
     
     if (!clientPriceCategory) {
@@ -58,7 +67,7 @@ export const PlaceOrder = () => {
 
 
     try {
-      // ✅ Preparar los items de la orden con la estructura correcta
+      // Preparar los items de la orden con la estructura correcta
       const orderItems = cart.map(item => ({
         quantity: item.quantity,
         idProduct: item._id,
@@ -85,24 +94,29 @@ export const PlaceOrder = () => {
       // Éxito: Limpiar carrito y redirigir
       clearCart();
       
+      // if (result.order && result.order._id) {
+      //   // Redirigir según el rol del usuario
+      //   const redirectPath = user.role === 'Client' 
+      //     ? `/orders/${result.order._id}`
+      //     : user.role === 'SalesPerson'
+      //     ? `/salesperson/orders/${result.order._id}`
+      //     : `/admin/orders/${result.order._id}`;
+        
+      //   navigate(redirectPath);
+      // } else {
+      //   // Redirigir a la lista de órdenes si no hay ID específico
+      //   const ordersPath = user.role === 'Client' 
+      //     ? '/orders'
+      //     : user.role === 'SalesPerson'
+      //     ? '/salesperson/orders'
+      //     : '/admin/orders';
+        
+      //   navigate(ordersPath);
+      // }
       if (result.order && result.order._id) {
-        // Redirigir según el rol del usuario
-        const redirectPath = user.role === 'Client' 
-          ? `/orders/${result.order._id}`
-          : user.role === 'SalesPerson'
-          ? `/salesperson/orders/${result.order._id}`
-          : `/admin/orders/${result.order._id}`;
-        
-        navigate(redirectPath);
+        navigate(`/orders/${result.order._id}`);
       } else {
-        // Redirigir a la lista de órdenes si no hay ID específico
-        const ordersPath = user.role === 'Client' 
-          ? '/orders'
-          : user.role === 'SalesPerson'
-          ? '/salesperson/orders'
-          : '/admin/orders';
-        
-        navigate(ordersPath);
+        navigate("/orders");
       }
 
     } catch (error) {
@@ -136,7 +150,7 @@ export const PlaceOrder = () => {
         <span>Subtotal</span>
         <span className="text-right">{currencyFormat(subTotal)}</span>
 
-        <span>Impuestos (15%)</span>
+        <span>Iva (19%)</span>
         <span className="text-right">{currencyFormat(tax)}</span>
 
         <span className="mt-5 text-2xl font-medium text-gray-900">Total:</span>
@@ -160,18 +174,43 @@ export const PlaceOrder = () => {
           </span>
         </p>
 
-        {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
+        {errorMessage && (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-red-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8.75-3.75a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0v-3.5zm.75 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
 
         <button
           onClick={onPlaceOrder}
-          disabled={isPlacingOrder || cart.length === 0}
-          className={clsx("w-full py-3 px-4 rounded-md", {
-            "bg-[#F2B318] text-white hover:bg-[#F4C048]": !isPlacingOrder && cart.length > 0,
-            "bg-gray-300 text-gray-600 cursor-not-allowed": isPlacingOrder || cart.length === 0,
-          })}
+          disabled={!isClient || isPlacingOrder || cart.length === 0}
+          className={clsx(
+            "w-full py-3 px-4 rounded-md transition-colors duration-200",
+            {
+              "bg-[#F2B318] text-white hover:bg-[#F4C048]":
+                isClient && !isPlacingOrder && cart.length > 0,
+              "bg-gray-300 text-gray-600 cursor-not-allowed":
+                !isClient || isPlacingOrder || cart.length === 0,
+            }
+          )}
         >
-          {isPlacingOrder ? "Procesando..." : "Colocar orden"}
+          {!isClient
+            ? "Solo los clientes pueden ordenar"
+            : isPlacingOrder
+            ? "Procesando..."
+            : "Colocar orden"}
         </button>
       </div>
     </div>
