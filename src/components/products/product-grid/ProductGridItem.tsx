@@ -12,6 +12,8 @@ interface Props {
 
 export const ProductGridItem = ({ product }: Props) => {
   const { user } = useAuthStore();
+  const isClient = user?.role === "Client";
+
   const masterPackage = product.packages?.find(
     (p) => p.typePackage === "Master"
   );
@@ -112,10 +114,13 @@ export const ProductGridItem = ({ product }: Props) => {
           <span className="font-bold">Master:</span>{" "}
           {masterPackage ? masterPackage.mount : "N/A"}
         </span>
-        {/* Agregar al carrito */}
+
+        {/* Agregar al carrito mostrar solo para clientes */}
+        {isClient && (
         <div className="mt-auto pt-4">
           <Agregar product={product} />
         </div>
+        )}
       </div>
     </div>
   );

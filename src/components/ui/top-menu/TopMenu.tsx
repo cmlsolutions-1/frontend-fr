@@ -5,6 +5,7 @@ import { titleFont } from "@/config/fonts";
 import { useCartStore } from "@/store";
 import { useUIStore } from "@/store";
 import clsx from "clsx";
+import { useAuthStore } from "@/store/auth-store"; 
 import { FrLogo } from "@/assets/icons/logo";
 import { ProductSearchDropdown } from "@/components/ui/ProductSearchDropdown";
 import { UserInfo } from "../UserInfo";
@@ -12,6 +13,7 @@ import { UserInfo } from "../UserInfo";
 export const TopMenu = () => {
   const openSideMenu = useUIStore((state) => state.openSideMenu);
   const totalItemsInCart = useCartStore((state) => state.getTotalItems());
+  const { user } = useAuthStore();
 
   const [loaded, setLoaded] = useState(false);
   const location = useLocation(); // Usa useLocation en lugar de usePathname
@@ -19,6 +21,8 @@ export const TopMenu = () => {
   useEffect(() => {
     setLoaded(true);
   }, []);
+
+  const isClient = user?.role === "Client";
 
   return (
     <nav className="flex px-5 justify-between items-center w-full bg-white">
@@ -48,6 +52,7 @@ export const TopMenu = () => {
 
       {/* Search, Cart, Menu - Compacto para móviles */}
       <div className="flex items-center space-x-2 order-4 md:order-3 mt-2 md:mt-0">
+        {isClient && (
         <Link
           to={totalItemsInCart === 0 && loaded ? "/empty" : "/cart"} // Cambia href a to
           className="relative"
@@ -61,6 +66,7 @@ export const TopMenu = () => {
             <IoCartOutline className="w-5 h-5" />
           </div>
         </Link>
+        )}
 
         <button
           onClick={openSideMenu}
