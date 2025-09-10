@@ -5,12 +5,15 @@ import { QuantitySelector} from "@/components";
 //import { QuantitySelector, SizeSelector } from "@/components";
 import type { CartProduct, Product } from "@/interfaces";
 import { useCartStore } from '@/store';
+import { useAuthStore } from "@/store/auth-store";
+
 
 interface Props {
   product: Product;
 }
 
 export const AddToCart = ({ product }: Props) => {
+  const { user } = useAuthStore();
 
   const addProductToCart = useCartStore( state => state.addProductTocart );
 
@@ -24,18 +27,9 @@ export const AddToCart = ({ product }: Props) => {
     //if (!size) return;
 
     const cartProduct: CartProduct = {
-      id: product.id,
-      slug: product.slug,
-      title: product.title,
-      price: product.price,
-      quantity: quantity,
-      //size: size,
-      reference: product.reference,
-      code: product.code,
-      master: product.master,
-      inner: product.inner,
-      image: product.ProductImage?.[0]?.url || '',
-    }
+      ...product,      // toma todo lo de Product
+      quantity: quantity, // y agregamos la cantidad
+    };
 
     addProductToCart(cartProduct);
     setPosted(false);
@@ -45,6 +39,11 @@ export const AddToCart = ({ product }: Props) => {
 
   };
 
+  //No mostrar el botón si el rol no es "Client"
+  if (user?.role !== "Client") {
+    return null;
+  }
+
 
   return (
     <>
@@ -53,13 +52,6 @@ export const AddToCart = ({ product }: Props) => {
           Debe de seleccionar una talla*
         </span>
       )}
-
-      {/* Selector de Tallas */}
-      {/* <SizeSelector
-        selectedSize={size}
-        availableSizes={product.sizes}
-        onSizeChanged={setSize}
-      /> */}
 
       {/* Selector de Cantidad */}
       <QuantitySelector quantity={quantity} onQuantityChanged={setQuantity} />

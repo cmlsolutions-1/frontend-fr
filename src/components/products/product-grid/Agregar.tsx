@@ -19,15 +19,8 @@ export const Agregar = ({ product }: Props) => {
     //if (!size) return;
 
     const cartProduct: CartProduct = {
-      _id: product._id,
-      referencia: product.referencia,
-      codigo: product.codigo,
-      detalle: product.detalle,
-      subgategoryId: product.subgategoryId,
-      quantity: quantity,
-      //size: size,
-      precios: product.precios,
-      image: product.image
+      ...product,      // toma todo lo de Product
+      quantity: quantity, // y agregamos la cantidad
     };
 
     addProductToCart(cartProduct);
