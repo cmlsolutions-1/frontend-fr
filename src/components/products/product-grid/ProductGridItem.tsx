@@ -13,6 +13,7 @@ interface Props {
 export const ProductGridItem = ({ product }: Props) => {
   const { user } = useAuthStore();
   const isClient = user?.role === "Client";
+  const isAdminOrSales = user?.role === "Admin" || user?.role === "SalesPerson";
 
   const masterPackage = product.packages?.find(
     (p) => p.typePackage === "Master"
@@ -41,6 +42,8 @@ export const ProductGridItem = ({ product }: Props) => {
 
     // Buscar la categoría de precio del cliente
     const clientPriceCategory = user.priceCategory;
+
+    const referenceProduct = product.referencia;
 
     // Buscar el precio que corresponde a la categoría del cliente
     const precioCliente = product.precios.find(
@@ -96,7 +99,7 @@ export const ProductGridItem = ({ product }: Props) => {
           }}
         />
       </Link>
-      |||{/* Contenido */}
+      {/* Contenido */}
       <div className="p-4 flex flex-col justify-between flex-1">
         <Link
           className="text-sm font-medium text-gray-800 hover:text-blue-600 truncate"
@@ -104,10 +107,33 @@ export const ProductGridItem = ({ product }: Props) => {
         >
           {cleanTitle(product.detalle)}
         </Link>
+
+        {/* Vista diferente según el rol */}
+        {isClient && (
         <span className="mt-1 text-base font-bold text-gray-900">
           {productPrice > 0
             ? `$${productPrice.toLocaleString()}`
             : "Sin precio"}
+        </span>
+        )}
+
+        {isAdminOrSales && (
+          <div className="mt-1 text-sm text-gray-700 space-y-1">
+            {product.precios.map((p, idx) => (
+              <div key={idx} className="flex justify-between">
+                <span className="font-semibold">{p.precio}:</span>
+                <span>
+                  Valor: ${p.valor.toLocaleString()} / POS: $
+                  {p.valorpos.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <span className="text-sm text-gray-600">
+          <span className="font-bold">Ref:</span>{" "}
+          {product.referencia ? product.referencia : "N/A"}
         </span>
 
         <span className="text-sm text-gray-600">
