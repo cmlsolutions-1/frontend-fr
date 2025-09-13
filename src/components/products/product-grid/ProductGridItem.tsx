@@ -34,6 +34,7 @@ export const ProductGridItem = ({ product }: Props) => {
   //Función para obtener el precio correcto según la categoría del cliente
   const getClientProductPrice = (product: Product): number => {
     if (!product.precios || product.precios.length === 0) return 0;
+    //console.log("👉 Precio mostrado:", productPrice);
 
     // Si no hay usuario autenticado, mostrar el primer precio disponible
     if (!user || !user.priceCategory) {
@@ -42,6 +43,7 @@ export const ProductGridItem = ({ product }: Props) => {
 
     // Buscar la categoría de precio del cliente
     const clientPriceCategory = user.priceCategory;
+
 
     const referenceProduct = product.referencia;
 
@@ -78,6 +80,7 @@ export const ProductGridItem = ({ product }: Props) => {
 
   // Obtener el precio correcto
   const productPrice = getClientProductPrice(product);
+  console.log("👉 precios recibidos:", product.precios);
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
@@ -118,18 +121,16 @@ export const ProductGridItem = ({ product }: Props) => {
         )}
 
         {isAdminOrSales && (
-          <div className="mt-1 text-sm text-gray-700 space-y-1">
-            {product.precios.map((p, idx) => (
-              <div key={idx} className="flex justify-between">
-                <span className="font-semibold">{p.precio}:</span>
-                <span>
-                  Valor: ${p.valor.toLocaleString()} / POS: $
-                  {p.valorpos.toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="mt-1 text-sm text-gray-700 space-y-1">
+          {product.precios?.map((p) => (
+            <div key={p.precio} className="flex justify-between">
+              <span className="font-semibold">{p.precio}:</span>
+              <span>${(p.valorpos ?? p.valor ?? 0).toLocaleString()}</span>
+              
+            </div>
+          ))}
+        </div>
+      )}
 
         <span className="text-sm text-gray-600">
           <span className="font-bold">Ref:</span>{" "}

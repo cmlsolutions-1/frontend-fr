@@ -25,6 +25,7 @@ export const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const placeholder = "/img/placeholder.jpg"; // imagen por defecto
+  const isAdminOrSales = user?.role === "Admin" || user?.role === "SalesPerson";
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -146,12 +147,33 @@ export const ProductPage = () => {
           {product.referencia}
         </h1>
 
-        <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
+        <h1 className={`${titleFont.className} antialiased font-bold text-xl mb-5`}>
           {product.detalle}
         </h1>
 
         {/* Precio */}
-        <p className="text-lg mb-5 font-bold text-gray-900">{formatPrice()}</p>
+          {isAdminOrSales ? (
+            <div className="mb-5 space-y-1">
+              <h3 className="font-bold text-gray-800 mb-2">Lista de precios:</h3>
+              {product.precios?.map((p) => {
+                // Diccionario de etiquetas 
+                const priceLabels: Record<string, string> = {
+                  FER: "Ferretería",
+                  "001": "VIP SAS",
+                };
+
+                const label = priceLabels[p.precio] || p.precio;
+
+                return (
+                  <div key={p.precio} className="text-lg text-gray-900">
+                  <span className="font-bold">{label}</span>: ${ (p.valorpos ?? p.valor ?? 0).toLocaleString() }
+                </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-lg mb-5 font-bold text-gray-900">{formatPrice()}</p>
+          )}
 
         <AddToCart product={product} />
         {/* Master package */}
