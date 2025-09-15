@@ -11,16 +11,17 @@ const HomePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-
-  //ESTE ES DEL BACKEND----------------------------------------
-
-  //habilitar este y cerrar el otro de los mocks DEL 1-
+  // const PRODUCTS_PER_PAGE = 8; // Define cuántos productos mostrar por página
+  const PRODUCTS_PER_PAGE = 18;
+  
+  
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const data = await getProducts();
         setProducts(data);
-        setTotalPages(1); // No hay paginación en el backend aún
+        // Total de páginas calculado en base a los productos
+        setTotalPages(Math.ceil(data.length / PRODUCTS_PER_PAGE)); 
       } catch (error) {
         console.error("Error al traer productos:", error);
       }
@@ -29,7 +30,10 @@ const HomePage = () => {
     fetchProducts();
   }, [currentPage]);
 
-
+// Productos que se deben mostrar en la página actual
+  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
+  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -46,8 +50,12 @@ const HomePage = () => {
 
         {/* Columna derecha - Contenido */}
         <div className="md:col-span-3">
-          <ProductGrid products={products} />
-          <Pagination totalPages={totalPages} />
+          <ProductGrid products={currentProducts} />
+          <Pagination 
+            totalPages={totalPages} 
+            currentPage={currentPage} 
+            onPageChange={setCurrentPage} 
+          />
         </div>
       </div>
     </div>
