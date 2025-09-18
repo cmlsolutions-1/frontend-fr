@@ -1,6 +1,5 @@
 //src/pages/CategoriesPage.tsx
 
-import { mockCategories } from "@/mocks/mock-categories";
 import { Link } from "react-router-dom";
 import React from "react";
 import { displayCategory } from "@/utils/formatters";

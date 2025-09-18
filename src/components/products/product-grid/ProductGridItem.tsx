@@ -78,9 +78,14 @@ export const ProductGridItem = ({ product }: Props) => {
     );
   };
 
+    const priceCategoryLabels: Record<string, string> = {
+    "001": "VIP SAS",
+    "FER": "Ferretería",
+  };
+
   // Obtener el precio correcto
   const productPrice = getClientProductPrice(product);
-  console.log("👉 precios recibidos:", product.precios);
+  console.log("precios recibidos:", product.precios);
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
@@ -122,16 +127,20 @@ export const ProductGridItem = ({ product }: Props) => {
 
         {isAdminOrSales && (
         <div className="mt-1 text-sm text-gray-700 space-y-1">
-          {product.precios?.map((p) => (
-            <div key={p.precio} className="flex justify-between">
-              <span className="font-semibold">{p.precio}:</span>
-              <span>${(p.valorpos ?? p.valor ?? 0).toLocaleString()}</span>
-              
-            </div>
-          ))}
+          {product.precios?.map((p) => {
+            // Obtiene el nombre amigable, o usa el código si no está en el mapeo
+            const label = priceCategoryLabels[p.precio] || p.precio;
+
+            return (
+              <div key={p.precio} className="flex justify-between">
+                <span className="font-semibold">{label}:</span>
+                <span>${(p.valorpos ?? p.valor ?? 0).toLocaleString()}</span>
+              </div>
+            );
+          })}
         </div>
       )}
-
+      
         <span className="text-sm text-gray-600">
           <span className="font-bold">Ref:</span>{" "}
           {product.referencia ? product.referencia : "N/A"}
