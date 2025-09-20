@@ -55,8 +55,8 @@ export const Sidebar = () => {
       {/* Sidemenu */}
       <nav
         className={clsx(
-          "fixed right-0 top-0 h-screen bg-white z-20 shadow-2xl transform transition-transform duration-300 overflow-y-auto",
-          "w-full max-w-xs sm:max-w-sm md:max-w-md", // Responsivo
+          "fixed right-0 top-0 h-screen bg-white z-20 shadow-2xl transform transition-transform duration-300",
+            "w-full max-w-xs sm:max-w-sm md:max-w-md flex flex-col justify-between", // Responsivo
           {
             "translate-x-full": !isSideMenuOpen,
             "translate-x-0": isSideMenuOpen,
@@ -69,9 +69,9 @@ export const Sidebar = () => {
           onClick={() => closeMenu()}
         />
 
-        {/* Menú */}
+        {/* Contenido del Menú */}
         <div className="pt-16 px-6 pb-10 flex flex-col space-y-6">
-        {isAuthenticated && (
+        {/* {isAuthenticated && (
           <>
             <Link
               to="/profile"
@@ -84,18 +84,10 @@ export const Sidebar = () => {
 
             
           </>
-        )}
-
-        {isAuthenticated && (
-          <button
-            className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
-            //onClick={() => logout()}
-            onClick={handleLogout}
-          >
-            <IoLogOutOutline size={30} />
-            <span className="ml-3 text-lg">Salir</span>
-          </button>
-        )}
+        )} */}
+        {/* // Mostrar opciones basadas en el rol del usuario
+        //el boton salir */}
+        
 
         {!isAuthenticated && (
           <Link
@@ -111,8 +103,7 @@ export const Sidebar = () => {
           <>
             {/* Line Separator */}
             <div className="w-full h-px bg-gray-200 my-10" />
-            <hr className="my-4 border-gray-300" />
-
+  
             <Link
               to="/orders"
               onClick={() => closeMenu()}
@@ -150,7 +141,7 @@ export const Sidebar = () => {
           <>
             {/* Line Separator */}
             <div className="w-full h-px bg-gray-200 my-10" />
-            <hr className="my-4 border-gray-300" />
+           
 
             {/* <Link
               to="/admin/products"
@@ -195,7 +186,23 @@ export const Sidebar = () => {
 
           </>
         )}
+
         </div>
+
+        {isAuthenticated && (
+          <div className="p-6 border-t">
+
+          
+          <button
+            className="flex w-full items-center justify-center gap-3 p-3 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all"
+            //onClick={() => logout()}
+            onClick={handleLogout}
+          >
+            <IoLogOutOutline size={30} />
+            <span className="ml-3 text-lg">Salir</span>
+          </button>
+          </div>
+        )}
       </nav>
     </div>
   );

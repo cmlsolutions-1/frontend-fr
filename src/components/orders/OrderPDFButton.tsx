@@ -48,6 +48,7 @@ export const OrderPDFButton = ({ order }: Props) => {
       console.log("🔍 Orden recibida:", order);
       console.log("🆔 ID del cliente:", order.idClient);
       console.log("👥 ID del vendedor:", order.idSalesPerson);
+      
 
       // Obtener el nombre del vendedor
       let salesPersonName = 'Vendedor N/A';
@@ -194,10 +195,11 @@ export const OrderPDFButton = ({ order }: Props) => {
         </thead>
         <tbody>
           ${orderData.items?.map((item: any) => {
-            const productName = item.idProduct?.description || 
-                              item.idProduct?.detalle || 
+            const productData = item.idProduct || item.Product;
+            const productName = productData?.description || 
+                                productData?.detalle ||  
                               'Producto sin nombre';
-            const reference = item.idProduct?.reference || 'N/A';
+            const reference = productData?.reference || 'N/A';
             const unitPrice = item.price / item.quantity;
             const quantity = item.quantity || 0;
             const subtotal = item.price;
@@ -206,7 +208,7 @@ export const OrderPDFButton = ({ order }: Props) => {
               <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 12px 8px;">
                   <div style="font-weight: 600; color: #000000;">${productName}</div>
-                  <div style="font-size: 12px; color: #999;">ID: ${item.idProduct?._id?.slice(-6) || 'N/A'}</div>
+                  <div style="font-size: 12px; color: #999;">Ref: ${productData?.reference?.slice(-6) || 'N/A'}</div>
                 </td>
                 <td style="text-align: center; padding: 12px 8px; color: #555;">${reference}</td>
                 <td style="text-align: center; padding: 12px 8px; font-weight: 600; color: #000000;">${quantity}</td>
