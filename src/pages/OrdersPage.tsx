@@ -19,6 +19,8 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
 
+  
+
 
 
   //BACKEND
@@ -39,7 +41,16 @@ export default function OrdersPage() {
         
         if (result.ok) {
           console.log("📋 Órdenes cargadas:", result.orders); // Debug
-          setOrders(result.orders);
+
+          // Aca agramos el cliente y vendedor a cada orden
+          const enrichedOrders = result.orders.map((o: any) => ({
+            ...o,
+            idClient: user?._id,                  // del usuario logueado
+            clientName: `${user?.name || ""} ${user?.lastName || ""}`.trim() || "Cliente N/A",
+            idSalesPerson: user?.salesPerson || null // si viene en el user
+          }));
+
+          setOrders(enrichedOrders);
         } else {
           console.error('No se pudieron cargar las órdenes del cliente');
           setOrders([]);
