@@ -24,37 +24,6 @@ interface PromotionState {
   //removePromotion: (id: string) => Promise<void>;
 }
 
-// export const usePromotionStore = create<PromotionState>()(
-//   persist(
-//     (set) => ({
-//       promotions: mockPromotions,
-//       addPromotion: (promotionData) =>
-//         set((state) => ({
-//           promotions: [
-//             ...state.promotions,
-//             {
-//               ...promotionData,
-//               id: Date.now().toString(),
-//               createdAt: new Date().toISOString().split("T")[0],
-//             },
-//           ],
-//         })),
-//       updatePromotion: (id, updatedFields) =>
-//         set((state) => ({
-//           promotions: state.promotions.map((promo) =>
-//             promo.id === id ? { ...promo, ...updatedFields } : promo
-//           ),
-//         })),
-//       deletePromotion: (id) =>
-//         set((state) => ({
-//           promotions: state.promotions.filter((promo) => promo.id !== id),
-//         })),
-//     }),
-//     {
-//       name: "promotions-storage", // nombre de la key en localStorage
-//     }
-//   )
-// );
 
 export const usePromotionStore = create<PromotionState>()(
   persist(
@@ -64,11 +33,20 @@ export const usePromotionStore = create<PromotionState>()(
       error: null,
 
       loadPromotions: async () => {
-        set({ loading: true });
+        set({ loading: true, error: null });
         try {
-          const data = await getPromotions(); // Llama al servicio del backend
-          set({ promotions: data.promotions, loading: false });
+          const rawPromotions = await getPromotions(); // Esto es un array de promociones sin tipar
+          
+          // Normalizamos: aseguramos que cada promoción tenga `id` y `products`
+          const normalizedPromotions = rawPromotions.map((promo: any) => ({
+            ...promo,
+            id: promo._id || promo.id, // El backend usa _id
+            products: Array.isArray(promo.products) ? promo.products : [], // ✅ clave
+          }));
+
+          set({ promotions: normalizedPromotions, loading: false });
         } catch (error) {
+          console.error("Error en loadPromotions:", error);
           set({ error: "No se pudieron cargar las promociones", loading: false });
         }
       },

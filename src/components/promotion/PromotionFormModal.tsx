@@ -7,6 +7,7 @@ import { Promotion } from '@/interfaces/promotion.interface';
 import { ProductCheckList } from '@/components/ui/ProductCheckList';
 import { SelectProduct } from '@/components/ui/SelectProduct';
 import { SelectedProductsList } from '@/components/ui/SelectedProductsList';
+import type { Product } from "@/interfaces/product.interface";
 
 interface PromotionFormModalProps {
   isOpen: boolean;
@@ -14,15 +15,18 @@ interface PromotionFormModalProps {
   editingPromotion?: Promotion | null;
   formData: Omit<Promotion, 'id' | 'createdAt'> & {
     typePackage: 'unidad' | 'master';
+     products: string[];
   };
   setFormData: React.Dispatch<
     React.SetStateAction<
       Omit<Promotion, 'id' | 'createdAt'> & {
         typePackage: 'unidad' | 'master';
+        products: string[];
       }
     >
   >;
   handleSavePromotion: () => void;
+  allProducts: Product[];
 }
 
 export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
@@ -32,13 +36,14 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
   formData,
   setFormData,
   handleSavePromotion,
+  allProducts,
 }) => {
   const handleTypePackageChange = (value: 'unidad' | 'master') => {
     if (value === 'master') {
       setFormData({
         ...formData,
         typePackage: value,
-        minimunQuantity: 1,
+        minimumQuantity: 1,
       });
     } else {
       setFormData({
@@ -51,14 +56,14 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
   const handleProductChange = (selectedProductIds: string[]) => {
     setFormData({
       ...formData,
-      productIds: selectedProductIds, // ✅ Ya existe en `Promotion`
+      products: selectedProductIds,
     });
   };
 
   const removeProduct = (id: string) => {
     setFormData({
       ...formData,
-      productIds: formData.productIds.filter(productId => productId !== id),
+      products: formData.products.filter(productId => productId !== id),
     });
   };
 
@@ -122,11 +127,11 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
               type="number"
               min="1"
               max="100"
-              value={formData.discountPercentage || 0}
+              value={formData.percentage || 0}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  discountPercentage: Number(e.target.value),
+                  percentage: Number(e.target.value),
                 })
               }
               placeholder="25"
@@ -153,11 +158,11 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
                 id="minimunQuantity"
                 type="number"
                 min="1"
-                value={formData.minimunQuantity}
+                value={formData.minimumQuantity}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    minimunQuantity: Number(e.target.value),
+                    minimumQuantity: Number(e.target.value),
                   })
                 }
                 placeholder="Ej: 5"
@@ -181,11 +186,13 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           {/* Selector de productos */}
           <div className="grid gap-2">
             <label htmlFor="products">Selecciona productos</label>
+            
             <ProductCheckList
-              selectedIds={formData.productIds}
+              selectedIds={formData.products}
               onValueChange={handleProductChange}
+              products={allProducts} 
             />
-            <SelectedProductsList selectedIds={formData.productIds} onRemove={removeProduct} />
+            <SelectedProductsList selectedIds={formData.products} onRemove={removeProduct} />
           </div>
 
           {/* Fechas */}
@@ -221,9 +228,12 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
             <input
               id="isActive"
               type="checkbox"
-              checked={formData.isActive}
+              checked={formData.state === "Activo"}
               onChange={(e) =>
-                setFormData({ ...formData, isActive: e.target.checked })
+                setFormData({
+                ...formData,
+                state: e.target.checked ? "Active" : "Inactive",
+              })
               }
               className="h-4 w-4"
             />

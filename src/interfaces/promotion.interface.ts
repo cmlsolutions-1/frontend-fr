@@ -1,15 +1,17 @@
 // src/interfaces/promotion.interface.ts
 export interface Promotion {
   id: string;
+  _id?: string;
   name: string;
-  description: string;
-  discountPercentage: number;
-  typePackage: 'unidad' | 'master';
-  productIds: string[];
-  minimunQuantity: number;
-  productTypes: string[];
+  description?: string;
+  percentage: number;
+  typePackage: "unidad" | "master" | "inner";
+  products: string[];
+  minimumQuantity: number;
   startDate: string;
   endDate: string;
-  isActive: boolean;
+  isAll: boolean;
+  state: "Activo" | "Inactivo" | "Active" | "Inactive"; 
   createdAt: string;
 }
+

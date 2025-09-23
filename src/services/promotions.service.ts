@@ -1,14 +1,40 @@
 // src/services/promotions.service.ts
-import type { Promotion } from "@/interfaces/promotion.interface";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const getToken = () => {
+  try {
+    const authData = localStorage.getItem("auth-storage");
+    if (!authData) return null;
+
+    const parsed = JSON.parse(authData);
+    return parsed.state?.token || parsed.token || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const getAuthHeaders = (includeContentType: boolean = true) => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+
 
 export const getPromotions = async () => {
   const response = await fetch(`${API_URL}/offer/`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(false),
   });
 
   if (!response.ok) {
@@ -21,9 +47,7 @@ export const getPromotions = async () => {
 export const createPromotion = async (promotionData: any) => {
   const response = await fetch(`${API_URL}/offer`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(true),
     body: JSON.stringify(promotionData),
   });
 
@@ -37,9 +61,7 @@ export const createPromotion = async (promotionData: any) => {
 export const updatePromotion = async (id: string, promotionData: any) => {
   const response = await fetch(`${API_URL}/offer/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(true),
     body: JSON.stringify(promotionData),
   });
 
@@ -52,10 +74,8 @@ export const updatePromotion = async (id: string, promotionData: any) => {
 
 export const deletePromotion = async (id: string) => {
   const response = await fetch(`${API_URL}/${id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    method: "DELETE",
+    headers: getAuthHeaders(false),
      body: JSON.stringify({ estado: "Inactivo" }),
   });
 

@@ -1,19 +1,24 @@
 // src/components/ui/ProductCheckList.tsx
 import React, { useState, useEffect } from "react";
-import { mockProducts } from "@/mocks/mock-products";
+import { Product } from '@/interfaces/product.interface';
+
 
 interface ProductCheckListProps {
   selectedIds: string[];
   onValueChange: (selectedIds: string[]) => void;
+  products: Product[];
+  
 }
+
 
 export const ProductCheckList = ({
   selectedIds,
   onValueChange,
+  products,
 }: ProductCheckListProps) => {
   
   const [localSelected, setLocalSelected] = useState<string[]>(selectedIds || []);
-  const allProductIds = mockProducts.map(product => product.id);
+  const allProductIds = products.map(product => product._id);
   const allSelected = localSelected.length === allProductIds.length;
 
   useEffect(() => {
@@ -30,21 +35,15 @@ export const ProductCheckList = ({
     ) {
       onValueChange(localSelected);
     }
-  }, [localSelected]);
+  }, [localSelected,selectedIds]);
 
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setLocalSelected([]);
-    } else {
-      setLocalSelected([...allProductIds]);
-    }
+ const handleSelectAll = () => {
+    setLocalSelected(allSelected ? [] : [...allProductIds]);
   };
   
   const handleCheck = (id: string) => {
-    setLocalSelected((prev) =>
-      prev.includes(id)
-        ? prev.filter((productId) => productId !== id)
-        : [...prev, id]
+    setLocalSelected(prev =>
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     );
   };
 
@@ -61,20 +60,22 @@ export const ProductCheckList = ({
         <span className="text-sm font-medium">Seleccionar todos</span>
       </label>
 
-      {mockProducts.map((product) => (
+      {products.map((product) => (
         
         
         <label
-          key={product.id}
+          key={product._id}
           className="flex items-center space-x-2 cursor-pointer"
         >
           <input
             type="checkbox"
-            checked={localSelected.includes(product.id)}
-            onChange={() => handleCheck(product.id)}
+            checked={localSelected.includes(product._id)}
+            onChange={() => handleCheck(product._id)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-sm">{product.id}</span>
+          <span className="text-sm">
+            {product.referencia || product._id}
+          </span>
         </label>
       ))}
     </div>

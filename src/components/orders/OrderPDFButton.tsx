@@ -60,7 +60,7 @@ export const OrderPDFButton = ({ order }: Props) => {
           const name = salesPerson.name || '';
           const lastName = salesPerson.lastName || '';
           salesPersonName = `${name} ${lastName}`.trim() || 'Vendedor N/A';
-          console.log("👤 Nombre del vendedor:", salesPersonName);
+          console.log("Nombre del vendedor:", salesPersonName);
         }
       }
 
@@ -68,9 +68,9 @@ export const OrderPDFButton = ({ order }: Props) => {
       let clientName = 'Cliente N/A';
       let clientIdToShow = 'N/A';
       if (order.idClient) {
-        console.log("🚀 Solicitando cliente con ID:", order.idClient);
+        console.log("Solicitando cliente con ID:", order.idClient);
         const client = await getClientById(order.idClient);
-        console.log("📥 Cliente recibido:", client);
+        console.log("Cliente recibido:", client);
         
         if (client) {
           const name = client.name || '';

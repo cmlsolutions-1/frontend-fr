@@ -9,24 +9,12 @@ import {
   FaPlus as Plus,
   FaTrashAlt as Trash2,
 } from "react-icons/fa";
-import { mockProducts } from "@/mocks/mock-products";
-
-interface Promotion {
-  id: string;
-  name: string;
-  description?: string;
-  discountPercentage: number;
-  productIds: string[];
-  typePackage: "unidad" | "master";
-  minimunQuantity: number;
-  productTypes: string[];
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-}
+import type { Product } from "@/interfaces/product.interface";
+import { Promotion } from "@/interfaces/promotion.interface";
 
 interface Props {
   promotions: Promotion[];
+  products: Product[];
   onEdit: (promotion: Promotion) => void;
   onDelete: (id: string) => void;
   isPromotionExpired: (endDate: string) => boolean;
@@ -103,24 +91,31 @@ export const PromotionTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Badge variant="outline">
-                    {promotion.discountPercentage}% OFF
+                    {promotion.percentage}% OFF
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex flex-wrap gap-2">
-                  {promotion.productIds?.map((id) => {
-                    const product = mockProducts.find(p => p.id === id);
-                    return (
-                      <Badge key={id} variant="secondary" className="text-xs">
-                        ID: {id}
+                    {promotion.isAll ? (
+                      <Badge variant="secondary" className="text-xs">
+                        Todo
                       </Badge>
-                    );
-                    })}
+                    ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
+                      promotion.products.map((id) => (
+                        <Badge key={id} variant="secondary" className="text-xs">
+                          {id}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        Sin productos
+                      </Badge>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center gap-1">
-                    <CalendarDays /> {/* ✅ Icono correcto */}
+                    <CalendarDays /> {/* Icono correcto */}
                     {promotion.startDate} - {promotion.endDate}
                   </div>
                 </td>

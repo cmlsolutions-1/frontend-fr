@@ -3,7 +3,7 @@ import type { Product } from "@/interfaces/product.interface";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ✅ Obtener el token del localStorage
+// Obtener el token del localStorage
 const getToken = () => {
   try {
     const authData = localStorage.getItem('auth-storage');
@@ -28,7 +28,7 @@ const getToken = () => {
   }
 };
 
-// ✅ Función para obtener headers con token (REQUERIDO PARA TODAS LAS RUTAS)
+// Función para obtener headers con token (REQUERIDO PARA TODAS LAS RUTAS)
 const getAuthHeaders = () => {
   const token = getToken();
   
