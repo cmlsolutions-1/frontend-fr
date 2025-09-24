@@ -50,13 +50,10 @@ export const usePromotionStore = create<PromotionState>()(
         }
       },
 
-      addPromotion: async (promotionData) => {
-        try {
-          const newPromotion = await createPromotionService(promotionData);
-          set((state) => ({ promotions: [...state.promotions, newPromotion] }));
-        } catch (error) {
-          set({ error: "No se pudo crear la promoción" });
-        }
+      addPromotion: (promotion: Promotion) => {
+        set((state) => ({
+          promotions: [...state.promotions, promotion],
+        }));
       },
 
       updatePromotion: async (id, updatedFields) => {

@@ -119,59 +119,54 @@ export default function PromotionsPage() {
   };
 
   const handleSavePromotion = async () => {
-    if (
-      !formData.name ||
-      !formData.startDate ||
-      !formData.endDate ||
-      !formData.percentage
-    ) {
-      alert("Completa todos los campos obligatorios");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.startDate ||
+    !formData.endDate ||
+    !formData.percentage ||
+    isNaN(formData.percentage)
+  ) {
+    alert("Completa todos los campos obligatorios");
+    return;
+  }
 
-    // Adaptamos al formato del backend
-    // Adaptamos el payload tal cual espera el backend
-    const offerData = {
-      name: formData.name,
-      percentage: Number(formData.percentage),
-      startDate: new Date(formData.startDate).toISOString(),
-      endDate: new Date(formData.endDate).toISOString(),
-      typePackage: formData.typePackage === "unidad" ? "inner" : "master",
-      isAll: formData.products.length === 0,
-      products: formData.products.length > 0 ? formData.products : [],
-      state: formData.state,
-      minimumQuantity:
-        formData.typePackage === "master" ? 1 : formData.minimumQuantity,
-    };
-
-    //  para saber que se esta enviando
-    console.log("🚀 Payload que se enviará al backend:", offerData);
-    console.log(
-      "📊 Tipo de percentage:",
-      typeof offerData.percentage,
-      "Valor:",
-      offerData.percentage
-    );
-
-    try {
-      let result;
-      if (editingPromotion) {
-        const result = await updatePromotion(editingPromotion.id, offerData);
-        usePromotionStore
-          .getState()
-          .updatePromotion(editingPromotion.id, result);
-      } else {
-        result = await createPromotion(offerData);
-        usePromotionStore.getState().addPromotion(result);
-      }
-
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      console.error("❌ Error al guardar oferta:", error);
-      alert("Hubo un problema al guardar la oferta");
-    }
+  const offerData = {
+    name: formData.name,
+    percentage: Number(formData.percentage),
+    startDate: new Date(formData.startDate).toISOString(),
+    endDate: new Date(formData.endDate).toISOString(),
+    typePackage: formData.typePackage === "unidad" ? "inner" : "master",
+    isAll: formData.products.length === 0,
+    products: formData.products.length > 0 ? formData.products : [],
+    state: formData.state,
+    minimumQuantity:
+      formData.typePackage === "master" ? 1 : formData.minimumQuantity,
   };
+
+  console.log("🚀 Payload que se enviará al backend:", offerData);
+  console.log(
+    "📊 Tipo de percentage:",
+    typeof offerData.percentage,
+    "Valor:",
+    offerData.percentage
+  );
+
+  try {
+    if (editingPromotion) {
+      const result = await updatePromotion(editingPromotion.id, offerData);
+      usePromotionStore.getState().updatePromotion(editingPromotion.id, result);
+    } else {
+      const result = await createPromotion(offerData); // ✅ Solo una vez al backend
+      usePromotionStore.getState().addPromotion(result); // ✅ Ya no vuelve a llamar al backend
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+  } catch (error) {
+    console.error("❌ Error al guardar oferta:", error);
+    alert("Hubo un problema al guardar la oferta");
+  }
+};
 
   const handleDeletePromotion = async (id: string) => {
     try {

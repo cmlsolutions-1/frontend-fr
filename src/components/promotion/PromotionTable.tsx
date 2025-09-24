@@ -79,8 +79,14 @@ export const PromotionTable = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {promotions.map((promotion) => (
-              <tr key={promotion.id}>
+            
+            {promotions.map((promotion, promotionIndex) => {
+               console.log("Promotion individual:", promotion);
+              console.log("Products de esta promo:", promotion.products);
+
+              return (
+
+              <tr key={promotion._id ?? promotion.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="font-medium">{promotion.name}</div>
                   {promotion.description && (
@@ -99,42 +105,59 @@ export const PromotionTable = ({
                 {promotion.isAll ? (
                     <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
                   ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
-                    promotion.products.map((product) => (
-                      <Badge key={product._id} variant="secondary" className="text-xs">
-                        {product.reference || product.description || product._id}
-                      </Badge>
-                    ))
-                  ) : (
-                    <Badge variant="secondary" className="text-xs">Sin productos</Badge>
-                  )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <div className="flex items-center gap-1">
-                    <CalendarDays /> {/* Icono correcto */}
-                    {promotion.startDate} - {promotion.endDate}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(promotion)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => onEdit(promotion)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
+                    promotion.products.map((product, productIndex ) => {
+                       console.log("Product en el map:", product);
+
+                       return (
+                  <Badge
+                    key={
+                      product._id ??
+                      `${promotion._id ?? promotion.id}-product-${productIndex}`
+                    }
+                    variant="secondary"
+                    className="text-xs"
                   >
-                    <Edit />
-                  </button>
-                  <button
-                    onClick={() => onDelete(promotion.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <Trash2 />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                    {product.reference ||
+                      product.description ||
+                      product._id ||
+                      "Sin referencia"}
+                  </Badge>
+                );
+              })
+            ) : (
+              <Badge variant="secondary" className="text-xs">
+                Sin productos
+              </Badge>
+            )}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm">
+          <div className="flex items-center gap-1">
+            <CalendarDays />
+            {promotion.startDate} - {promotion.endDate}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          {getStatusBadge(promotion)}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <button
+            onClick={() => onEdit(promotion)}
+            className="text-blue-600 hover:text-blue-900 mr-4"
+          >
+            <Edit />
+          </button>
+          <button
+            onClick={() => onDelete(promotion._id ?? promotion.id)}
+            className="text-red-600 hover:text-red-900"
+          >
+            <Trash2 />
+          </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
         </table>
       </div>
     </div>

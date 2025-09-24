@@ -131,11 +131,11 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
               type="number"
               min="1"
               max="100"
-              value={formData.percentage || 0}
+              value={formData.percentage || ""}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  percentage: Number(e.target.value),
+                  percentage: e.target.value === "" ? 0 : Number(e.target.value),
                 })
               }
               placeholder="25"
