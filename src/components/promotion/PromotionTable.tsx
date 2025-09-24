@@ -96,21 +96,17 @@ export const PromotionTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex flex-wrap gap-2">
-                    {promotion.isAll ? (
-                      <Badge variant="secondary" className="text-xs">
-                        Todo
+                {promotion.isAll ? (
+                    <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
+                  ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
+                    promotion.products.map((product) => (
+                      <Badge key={product._id} variant="secondary" className="text-xs">
+                        {product.reference || product.description || product._id}
                       </Badge>
-                    ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
-                      promotion.products.map((id) => (
-                        <Badge key={id} variant="secondary" className="text-xs">
-                          {id}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">
-                        Sin productos
-                      </Badge>
-                    )}
+                    ))
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">Sin productos</Badge>
+                  )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">

@@ -1,74 +1,92 @@
 // src/pages/PromotionsPage.tsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { PromotionTable, PromotionFormModal } from '@/components/promotion';
-import { usePromotionStore } from '@/store/usePromotionStore';
-import { Promotion } from '@/interfaces/promotion.interface';
-import { Badge } from '@/components/ui/Badge';
-import { FaRegCalendarCheck as CalendarDays, 
-        FaEdit as Edit, FaPlus as Plus, 
-        FaTrashAlt as Trash2 
-        } from 'react-icons/fa';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/Button";
+import { PromotionTable, PromotionFormModal } from "@/components/promotion";
+import { usePromotionStore } from "@/store/usePromotionStore";
+import { Promotion } from "@/interfaces/promotion.interface";
+import { Badge } from "@/components/ui/Badge";
+import {
+  FaRegCalendarCheck as CalendarDays,
+  FaEdit as Edit,
+  FaPlus as Plus,
+  FaTrashAlt as Trash2,
+} from "react-icons/fa";
 import { useEffect } from "react";
-import { getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/services/promotions.service";
+import {
+  getPromotions,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
+} from "@/services/promotions.service";
 import { getProducts } from "@/services/products.service";
 import type { Product } from "@/interfaces/product.interface";
 
+interface PromotionFormValues {
+  name: string;
+  percentage: number;
+  typePackage: "unidad" | "master";
+  minimumQuantity: number;
+  products: string[];
+  startDate: string;
+  endDate: string;
+  state: "Active" | "Inactive";
+  isAll: boolean;
+  description?: string;
+}
 
 export default function PromotionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
+  const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(
+    null
+  );
 
   const { promotions, loading, loadPromotions } = usePromotionStore();
   const [products, setProducts] = useState<Product[]>([]);
 
-  
   // Cargar promociones desde backend
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (promotions.length === 0) {
+          await loadPromotions();
+        }
 
-  const fetchData = async () => {
-    try {
-      if (promotions.length === 0) {
-        await loadPromotions();
+        const productList = await getProducts();
+        setProducts(productList);
+      } catch (error) {
+        console.error("❌ Error cargando datos:", error);
+        alert("No se pudieron cargar productos o promociones");
       }
+    };
 
-      const productList = await getProducts();
-      setProducts(productList);
-    } catch (error) {
-      console.error("❌ Error cargando datos:", error);
-      alert("No se pudieron cargar productos o promociones");
-    }
-  };
+    fetchData();
+  }, []);
 
-  fetchData();
-}, []);
-
-
-// Estado del formulario (adaptado al backend)
+  // Estado del formulario (adaptado al backend)
 
   const [formData, setFormData] = useState({
-    name: '',
+    name: "",
     percentage: 0,
-    typePackage: 'unidad' as 'unidad' | 'master',
+    typePackage: "unidad" as "unidad" | "master",
     minimumQuantity: 1,
-    products: [] as string[],
-    startDate: '',
-    endDate: '',
-    state: 'Active' as 'Active' | 'Inactive',
+    products: [],
+    startDate: "",
+    endDate: "",
+    state: "Active" as "Active" | "Inactive",
     isAll: false,
   });
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      name: "",
       percentage: 0,
-      typePackage: 'unidad',
+      typePackage: "unidad",
       minimumQuantity: 1,
       products: [],
-      startDate: '',
-      endDate: '',
-      state: 'Active',
+      startDate: "",
+      endDate: "",
+      state: "Active",
       isAll: false,
     });
     setEditingPromotion(null);
@@ -86,23 +104,33 @@ export default function PromotionsPage() {
       percentage: promotion.percentage,
       typePackage: promotion.typePackage === "inner" ? "unidad" : "master",
       minimumQuantity: promotion.minimumQuantity,
-      products: [...promotion.products],
+      products: promotion.products.map((p) => p._id),
       startDate: promotion.startDate,
       endDate: promotion.endDate,
-      state: promotion.state === "Activo" ? "Active" : promotion.state === "Inactivo" ? "Inactive" : promotion.state,
+      state:
+        promotion.state === "Activo"
+          ? "Active"
+          : promotion.state === "Inactivo"
+          ? "Inactive"
+          : promotion.state,
       isAll: promotion.isAll,
     });
     setIsDialogOpen(true);
   };
 
   const handleSavePromotion = async () => {
-    if (!formData.name || !formData.startDate || !formData.endDate || !formData.percentage) {
-      alert('Completa todos los campos obligatorios');
+    if (
+      !formData.name ||
+      !formData.startDate ||
+      !formData.endDate ||
+      !formData.percentage
+    ) {
+      alert("Completa todos los campos obligatorios");
       return;
     }
 
-  // Adaptamos al formato del backend
-  // Adaptamos el payload tal cual espera el backend
+    // Adaptamos al formato del backend
+    // Adaptamos el payload tal cual espera el backend
     const offerData = {
       name: formData.name,
       percentage: Number(formData.percentage),
@@ -112,14 +140,26 @@ export default function PromotionsPage() {
       isAll: formData.products.length === 0,
       products: formData.products.length > 0 ? formData.products : [],
       state: formData.state,
-      minimumQuantity: formData.typePackage === "master" ? 1 : formData.minimumQuantity,
+      minimumQuantity:
+        formData.typePackage === "master" ? 1 : formData.minimumQuantity,
     };
 
-  try {
+    //  para saber que se esta enviando
+    console.log("🚀 Payload que se enviará al backend:", offerData);
+    console.log(
+      "📊 Tipo de percentage:",
+      typeof offerData.percentage,
+      "Valor:",
+      offerData.percentage
+    );
+
+    try {
       let result;
       if (editingPromotion) {
-        result = await updatePromotion(editingPromotion.id, offerData);
-        usePromotionStore.getState().updatePromotion(editingPromotion.id, result);
+        const result = await updatePromotion(editingPromotion.id, offerData);
+        usePromotionStore
+          .getState()
+          .updatePromotion(editingPromotion.id, result);
       } else {
         result = await createPromotion(offerData);
         usePromotionStore.getState().addPromotion(result);
@@ -147,34 +187,42 @@ export default function PromotionsPage() {
     return new Date(endDate) < new Date();
   };
 
-  const productOptions = products.map(product => ({
+  const productOptions = products.map((product) => ({
     value: product._id,
-    label: `${product.detalle || product.referencia || "Producto"} (${product._id})`,
-}));
+    label: `${product.detalle || product.referencia || "Producto"} (${
+      product._id
+    })`,
+  }));
 
   const getStatusBadge = (promotion: Promotion) => {
-  const normalizedState =
-    promotion.state === "Activo" ? "Active" :
-    promotion.state === "Inactivo" ? "Inactive" :
-    promotion.state;
+    const normalizedState =
+      promotion.state === "Activo"
+        ? "Active"
+        : promotion.state === "Inactivo"
+        ? "Inactive"
+        : promotion.state;
 
-  if (isPromotionExpired(promotion.endDate)) {
-    return <Badge variant="secondary">Expirada</Badge>;
-  }
+    if (isPromotionExpired(promotion.endDate)) {
+      return <Badge variant="secondary">Expirada</Badge>;
+    }
 
-  return normalizedState === "Active" ? (
-    <Badge variant="default" className="bg-green-500">Activa</Badge>
-  ) : (
-    <Badge variant="destructive">Inactiva</Badge>
-  );
-};
+    return normalizedState === "Active" ? (
+      <Badge variant="default" className="bg-green-500">
+        Activa
+      </Badge>
+    ) : (
+      <Badge variant="destructive">Inactiva</Badge>
+    );
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Gestión de Promociones</h1>
-          <p className="text-sm text-gray-500">Crea y administra promociones para tus productos</p>
+          <p className="text-sm text-gray-500">
+            Crea y administra promociones para tus productos
+          </p>
         </div>
         <Button onClick={handleCreatePromotion}>
           <Plus className="w-4 h-4 mr-2" />

@@ -29,3 +29,9 @@ export interface Product {
 export interface CartProduct extends Product {
   quantity: number;
 }
+
+export interface ProductSummary {
+  _id: string;
+  reference?: string;
+  description?: string;
+}

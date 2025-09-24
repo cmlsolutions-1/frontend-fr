@@ -1,4 +1,7 @@
 // src/interfaces/promotion.interface.ts
+
+import type { ProductSummary } from './product.interface';
+
 export interface Promotion {
   id: string;
   _id?: string;
@@ -6,7 +9,7 @@ export interface Promotion {
   description?: string;
   percentage: number;
   typePackage: "unidad" | "master" | "inner";
-  products: string[];
+  products: ProductSummary[];
   minimumQuantity: number;
   startDate: string;
   endDate: string;

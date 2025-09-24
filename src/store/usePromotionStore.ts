@@ -3,7 +3,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Promotion } from "@/interfaces/promotion.interface";
-import { mockPromotions } from "@/mocks/mock-promotions";
 import {
   getPromotions,
   createPromotion as createPromotionService,
@@ -41,7 +40,7 @@ export const usePromotionStore = create<PromotionState>()(
           const normalizedPromotions = rawPromotions.map((promo: any) => ({
             ...promo,
             id: promo._id || promo.id, // El backend usa _id
-            products: Array.isArray(promo.products) ? promo.products : [], // ✅ clave
+            products: Array.isArray(promo.products) ? promo.products : [], 
           }));
 
           set({ promotions: normalizedPromotions, loading: false });

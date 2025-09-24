@@ -29,8 +29,6 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
   return headers;
 };
 
-
-
 export const getPromotions = async () => {
   const response = await fetch(`${API_URL}/offer/`, {
     method: "GET",
@@ -51,10 +49,24 @@ export const createPromotion = async (promotionData: any) => {
     body: JSON.stringify(promotionData),
   });
 
-  if (!response.ok) {
-    throw new Error("No se pudo crear la promoción");
-  }
+  console.log("🚀 Status:", response.status);
+  console.log("✅ Response OK:", response.ok);
 
+  // if (!response.ok) {
+  //   throw new Error("No se pudo crear la promoción");
+  // }
+
+  //solo para identificar el error
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("🔴 Error crudo del backend:", errorText);
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.message || "Error desconocido");
+    } catch {
+      throw new Error("Error del servidor: " + errorText);
+    }
+  }
   return await response.json();
 };
 
@@ -76,7 +88,7 @@ export const deletePromotion = async (id: string) => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "DELETE",
     headers: getAuthHeaders(false),
-     body: JSON.stringify({ estado: "Inactivo" }),
+    body: JSON.stringify({ estado: "Inactivo" }),
   });
 
   if (!response.ok) {

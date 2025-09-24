@@ -9,22 +9,26 @@ import { SelectProduct } from '@/components/ui/SelectProduct';
 import { SelectedProductsList } from '@/components/ui/SelectedProductsList';
 import type { Product } from "@/interfaces/product.interface";
 
+interface PromotionFormValues {
+  name: string;
+  percentage: number;
+  typePackage: 'unidad' | 'master';
+  minimumQuantity: number;
+  products: string[];
+  startDate: string;
+  endDate: string;
+  state: 'Active' | 'Inactive';
+  isAll: boolean;
+  description?: string;
+}
+
 interface PromotionFormModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   editingPromotion?: Promotion | null;
-  formData: Omit<Promotion, 'id' | 'createdAt'> & {
-    typePackage: 'unidad' | 'master';
-     products: string[];
-  };
-  setFormData: React.Dispatch<
-    React.SetStateAction<
-      Omit<Promotion, 'id' | 'createdAt'> & {
-        typePackage: 'unidad' | 'master';
-        products: string[];
-      }
-    >
-  >;
+  formData: PromotionFormValues; 
+  setFormData: React.Dispatch<React.SetStateAction<PromotionFormValues>>;
+  
   handleSavePromotion: () => void;
   allProducts: Product[];
 }
@@ -82,7 +86,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSavePromotion}>
+          <Button type="button" onClick={handleSavePromotion}>
             {editingPromotion ? 'Guardar Cambios' : 'Crear Promoción'}
           </Button>
         </>
@@ -228,7 +232,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
             <input
               id="isActive"
               type="checkbox"
-              checked={formData.state === "Activo"}
+              checked={formData.state === "Active"}
               onChange={(e) =>
                 setFormData({
                 ...formData,
