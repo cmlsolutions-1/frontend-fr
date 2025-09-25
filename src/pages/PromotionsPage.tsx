@@ -40,6 +40,7 @@ export default function PromotionsPage() {
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(
     null
   );
+  
 
   const { promotions, loading, loadPromotions } = usePromotionStore();
   const [products, setProducts] = useState<Product[]>([]);
@@ -104,9 +105,15 @@ export default function PromotionsPage() {
       percentage: promotion.percentage,
       typePackage: promotion.typePackage === "inner" ? "unidad" : "master",
       minimumQuantity: promotion.minimumQuantity,
-      products: promotion.products.map((p) => p._id),
-      startDate: promotion.startDate,
-      endDate: promotion.endDate,
+      products: Array.isArray(promotion.products)
+      ? promotion.products.map((p) => p._id)
+      : [],
+      startDate: promotion.startDate
+    ? new Date(promotion.startDate).toISOString().split("T")[0] // muestra "2025-09-17"
+    : "",
+  endDate: promotion.endDate
+    ? new Date(promotion.endDate).toISOString().split("T")[0] // muestra "2025-09-20"
+    : "",
       state:
         promotion.state === "Activo"
           ? "Active"
@@ -161,20 +168,49 @@ export default function PromotionsPage() {
 
   try {
     if (editingPromotion) {
-      const result = await updatePromotion(editingPromotion.id, offerData);
-      usePromotionStore.getState().updatePromotion(editingPromotion.id, result);
+      const promotionId = (editingPromotion as any)._id || (editingPromotion as any).id;
+      if (!promotionId) {
+      console.error("No se encontró ID en la promoción que se intenta editar", editingPromotion);
+      return;
+    }
+      const result = await updatePromotion(promotionId, offerData);
+      const updatedPromo = (result as any).offer ?? result;
+
+      // Normalizar lo que viene del backend
+      const normalizedPromo: Promotion = {
+        ...updatedPromo,
+        id: updatedPromo._id || updatedPromo.id,
+        typePackage: updatedPromo.typePackage === "inner" ? "unidad" : "master",
+        products: updatedPromo.isAll ? [] : updatedPromo.products,
+      };
+
+      // Actualizamos el store
+      usePromotionStore.getState().updatePromotion(promotionId, normalizedPromo);
+
     } else {
       
-      const result = await createPromotion(offerData); 
+      const result = await createPromotion(offerData);
+      const newPromo = (result as any).offer ?? result; 
+
+      //debug
       console.log("🟢 Respuesta backend:", result);
       console.log("🟢 Lo que agrego al store:", result.offer);
-      usePromotionStore.getState().addPromotion(result.offer);
+
+      const normalizedNewPromo: Promotion = {
+      ...newPromo,
+      id: newPromo._id || newPromo.id,
+      typePackage: newPromo.typePackage === "inner" ? "unidad" : "master",
+      products: newPromo.isAll ? [] : newPromo.products,
+    };
+
+
+      usePromotionStore.getState().addPromotion(normalizedNewPromo);
     }
 
     setIsDialogOpen(false);
     resetForm();
   } catch (error) {
-    console.error("❌ Error al guardar oferta:", error);
+    console.error("Error al guardar oferta:", error);
     alert("Hubo un problema al guardar la oferta");
   }
 };

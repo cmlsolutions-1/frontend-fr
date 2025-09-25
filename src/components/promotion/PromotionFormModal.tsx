@@ -196,7 +196,9 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
               onValueChange={handleProductChange}
               products={allProducts} 
             />
-            <SelectedProductsList selectedIds={formData.products} onRemove={removeProduct} />
+            <SelectedProductsList selectedProducts={
+      allProducts.filter((p) => formData.products.includes(p._id)) // 🔥 filtra los productos seleccionados
+    } onRemove={removeProduct} />
           </div>
 
           {/* Fechas */}
