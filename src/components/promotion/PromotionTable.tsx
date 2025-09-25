@@ -21,6 +21,15 @@ interface Props {
   getStatusBadge: (promotion: Promotion) => React.ReactNode;
 }
 
+const formatDate = (dateString: string) => {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(dateString));
+};
+
+
 export const PromotionTable = ({
   promotions,
   onEdit,
@@ -134,7 +143,7 @@ export const PromotionTable = ({
         <td className="px-6 py-4 whitespace-nowrap text-sm">
           <div className="flex items-center gap-1">
             <CalendarDays />
-            {promotion.startDate} - {promotion.endDate}
+            {formatDate(promotion.startDate)} - {formatDate(promotion.endDate)}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">

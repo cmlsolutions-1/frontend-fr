@@ -130,14 +130,20 @@ export default function PromotionsPage() {
     return;
   }
 
+  const allProductIds = products.map((p) => p._id);
+
   const offerData = {
     name: formData.name,
     percentage: Number(formData.percentage),
     startDate: new Date(formData.startDate).toISOString(),
     endDate: new Date(formData.endDate).toISOString(),
     typePackage: formData.typePackage === "unidad" ? "inner" : "master",
-    isAll: formData.products.length === 0,
-    products: formData.products.length > 0 ? formData.products : [],
+    isAll: formData.products.length === 0 ||
+    formData.products.length === allProductIds.length,
+    products: formData.products.length === 0 ||
+    formData.products.length === allProductIds.length
+      ? []
+      : formData.products,
     state: formData.state,
     minimumQuantity:
       formData.typePackage === "master" ? 1 : formData.minimumQuantity,
@@ -151,13 +157,18 @@ export default function PromotionsPage() {
     offerData.percentage
   );
 
+  
+
   try {
     if (editingPromotion) {
       const result = await updatePromotion(editingPromotion.id, offerData);
       usePromotionStore.getState().updatePromotion(editingPromotion.id, result);
     } else {
-      const result = await createPromotion(offerData); // ✅ Solo una vez al backend
-      usePromotionStore.getState().addPromotion(result); // ✅ Ya no vuelve a llamar al backend
+      
+      const result = await createPromotion(offerData); 
+      console.log("🟢 Respuesta backend:", result);
+      console.log("🟢 Lo que agrego al store:", result.offer);
+      usePromotionStore.getState().addPromotion(result.offer);
     }
 
     setIsDialogOpen(false);

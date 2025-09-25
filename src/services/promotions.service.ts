@@ -52,11 +52,7 @@ export const createPromotion = async (promotionData: any) => {
   console.log("🚀 Status:", response.status);
   console.log("✅ Response OK:", response.ok);
 
-  // if (!response.ok) {
-  //   throw new Error("No se pudo crear la promoción");
-  // }
-
-  //solo para identificar el error
+  
   if (!response.ok) {
     const errorText = await response.text();
     console.error("🔴 Error crudo del backend:", errorText);
