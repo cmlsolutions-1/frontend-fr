@@ -141,8 +141,8 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
                     variant="secondary"
                     className="text-xs"
                   >
-                    {product?.detalle ||
-                                product?.referencia ||
+                    {product?.referencia ||
+                                product?.detalle ||
                                 product?._id ||
                                 "Sin referencia"}
                   </Badge>

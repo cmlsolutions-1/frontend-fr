@@ -44,8 +44,10 @@ export default function PromotionsPage() {
 
   const { promotions, loading, loadPromotions } = usePromotionStore();
   const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingModal, setLoadingModal] = useState(false);
 
-  // Cargar promociones desde backend
+  // Cargar promociones y productos desde backend una sola vez
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -55,8 +57,10 @@ export default function PromotionsPage() {
 
         const productList = await getProducts();
         setProducts(productList);
+        setLoadingProducts(false);
       } catch (error) {
-        console.error("❌ Error cargando datos:", error);
+        console.error("Error cargando datos:", error);
+        setLoadingProducts(false);
         alert("No se pudieron cargar productos o promociones");
       }
     };
@@ -94,19 +98,30 @@ export default function PromotionsPage() {
   };
 
   const handleCreatePromotion = () => {
+    // Verificar que los productos estén cargados antes de abrir el modal
+    if (loadingProducts) {
+      alert("Cargando productos, espera un momento...");
+      return;
+    }
     resetForm();
     setIsDialogOpen(true);
   };
 
   const handleEditPromotion = (promotion: Promotion) => {
+    // Verificar que los productos estén cargados antes de abrir el modal
+    if (loadingProducts) {
+      alert("Cargando productos, espera un momento...");
+      return;
+    }
+
     setEditingPromotion(promotion);
     setFormData({
       name: promotion.name,
       percentage: promotion.percentage,
-      typePackage: promotion.typePackage === "inner" ? "unidad" : "master",
+      typePackage: promotion.typePackage === "inner" || promotion.typePackage === "unidad" ? "unidad" : "master",
       minimumQuantity: promotion.minimumQuantity,
       products: Array.isArray(promotion.products)
-      ? promotion.products.map((p) => p._id)
+      ? promotion.products.map((p: any) => typeof p === 'string' ? p : p._id)
       : [],
       startDate: promotion.startDate
     ? new Date(promotion.startDate).toISOString().split("T")[0] // muestra "2025-09-17"
@@ -145,26 +160,15 @@ export default function PromotionsPage() {
     startDate: new Date(formData.startDate).toISOString(),
     endDate: new Date(formData.endDate).toISOString(),
     typePackage: formData.typePackage === "unidad" ? "inner" : "master",
-    isAll: formData.products.length === 0 ||
-    formData.products.length === allProductIds.length,
-    products: formData.products.length === 0 ||
-    formData.products.length === allProductIds.length
-      ? []
-      : formData.products,
+    isAll: formData.isAll,
+    products: formData.isAll ? [] : formData.products,
     state: formData.state,
     minimumQuantity:
       formData.typePackage === "master" ? 1 : formData.minimumQuantity,
   };
 
   console.log("🚀 Payload que se enviará al backend:", offerData);
-  console.log(
-    "📊 Tipo de percentage:",
-    typeof offerData.percentage,
-    "Valor:",
-    offerData.percentage
-  );
-
-  
+   
 
   try {
     if (editingPromotion) {
@@ -193,8 +197,8 @@ export default function PromotionsPage() {
       const newPromo = (result as any).offer ?? result; 
 
       //debug
-      console.log("🟢 Respuesta backend:", result);
-      console.log("🟢 Lo que agrego al store:", result.offer);
+      console.log("Respuesta backend:", result);
+      console.log("Lo que agrego al store:", result.offer);
 
       const normalizedNewPromo: Promotion = {
       ...newPromo,
@@ -257,6 +261,17 @@ export default function PromotionsPage() {
     );
   };
 
+  if (loadingProducts) {
+    return (
+      <div className="container mx-auto p-6 flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -266,9 +281,9 @@ export default function PromotionsPage() {
             Crea y administra promociones para tus productos
           </p>
         </div>
-        <Button onClick={handleCreatePromotion}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nueva Promoción
+        <Button onClick={handleCreatePromotion} className="flex items-center gap-2">
+          <Plus className="w-2 h-4" />
+          {loadingProducts ? "Cargando..." : "Nueva Promoción"}
         </Button>
       </div>
 

@@ -76,7 +76,7 @@ export const getProductById = async (_id: string): Promise<Product> => {
     
     const response = await fetch(`${API_URL}/products/${_id}`, {
       method: "GET",
-      headers: getAuthHeaders(), // ✅ SIEMPRE enviar token
+      headers: getAuthHeaders(), 
     });
 
     console.log("📥 Producto response status:", response.status);

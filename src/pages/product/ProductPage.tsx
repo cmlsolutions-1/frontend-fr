@@ -141,7 +141,7 @@ export const ProductPage = () => {
 
       {/* Detalles */}
       <div className="col-span-1 px-5">
-        <StockLabel slug={product._id} />
+        <StockLabel stock={product.stock} />
 
         <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
           {product.referencia}

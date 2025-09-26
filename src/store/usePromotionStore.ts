@@ -56,18 +56,13 @@ export const usePromotionStore = create<PromotionState>()(
         }));
       },
 
-      updatePromotion: async (id, updatedFields) => {
-        try {
-          const updatedPromotion = await updatePromotionService(id, updatedFields);
-          set((state) => ({
-            promotions: state.promotions.map((promo) =>
-              promo.id === id ? updatedPromotion : promo
-            ),
-          }));
-        } catch (error) {
-          set({ error: "No se pudo actualizar la promoción" });
-        }
-      },
+      updatePromotion: (id, updatedPromotion) => {
+      set((state) => ({
+        promotions: state.promotions.map((promo) =>
+          promo.id === id ? { ...promo, ...updatedPromotion } : promo
+        ),
+      }));
+    },
 
       deletePromotion: async (id) => {
         try {

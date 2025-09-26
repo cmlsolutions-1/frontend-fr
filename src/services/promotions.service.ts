@@ -73,22 +73,32 @@ export const updatePromotion = async (id: string, promotionData: any) => {
     body: JSON.stringify(promotionData),
   });
 
-  if (!response.ok) {
-    throw new Error("No se pudo actualizar la promoción");
+    if (!response.ok) {
+    // Capturar el error real del backend
+    const errorText = await response.text();
+    console.error("Error actualización:", errorText);
+  try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.message || "Error desconocido");
+    } catch {
+      throw new Error("Error del servidor: " + errorText);
+    }
   }
-
+  
   return await response.json();
 };
 
 export const deletePromotion = async (id: string) => {
-  const response = await fetch(`${API_URL}/${id}`, {
+  // Asumiendo que el endpoint correcto es /offer/:id
+  const response = await fetch(`${API_URL}/offer/${id}`, {
     method: "DELETE",
     headers: getAuthHeaders(false),
-    body: JSON.stringify({ estado: "Inactivo" }),
+    // body: JSON.stringify({ estado: "Inactivo" }), // Esto no debería ir en DELETE
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo eliminar la promoción");
+    const errorText = await response.text();
+    throw new Error("No se pudo eliminar la promoción: " + errorText);
   }
 
   return await response.json();
