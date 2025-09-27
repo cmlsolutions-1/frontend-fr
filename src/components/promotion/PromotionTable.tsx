@@ -171,12 +171,12 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
           >
             <Edit />
           </button>
-          <button
+          {/* <button
             onClick={() => onDelete(promotion._id ?? promotion.id)}
             className="text-red-600 hover:text-red-900"
           >
             <Trash2 />
-          </button>
+          </button> */}
         </td>
       </tr>
     );

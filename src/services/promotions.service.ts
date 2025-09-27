@@ -103,3 +103,26 @@ export const deletePromotion = async (id: string) => {
 
   return await response.json();
 };
+
+//para traer las promociones activas
+export const getActivePromotions = async () => {
+  const response = await fetch(`${API_URL}/offer`, {
+    method: "GET",
+    headers: getAuthHeaders(false),
+  });
+
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar las promociones");
+  }
+
+  const promotions = await response.json();
+  
+  // Filtrar promociones activas en el frontend
+  const currentDate = new Date();
+  const activePromotions = promotions.filter((promotion: any) => {
+    return promotion.state === "Active" && 
+           new Date(promotion.endDate) >= currentDate;
+  });
+
+  return activePromotions;
+};

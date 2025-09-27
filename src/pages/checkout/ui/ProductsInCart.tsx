@@ -20,7 +20,7 @@ export const ProductsInCart = () => {
     return <p>Loading...</p>
   }
 
-  // ✅ Función para obtener el precio correcto del producto
+  // Función para obtener el precio correcto del producto
   const getProductPrice = (product: CartProduct): number => {
     if (product.precios && product.precios.length > 0) {
       // Usar valorpos primero, luego valor, y finalmente 0 si no hay precios

@@ -10,14 +10,22 @@ import { useCartStore } from "@/store/useCartStore";
 
 
 export const CartPage = () => {
-
-  //esto es backend
-  const { cart, loadCart } = useCartStore();
+  const { cart, setPromotions} = useCartStore();
 
   useEffect(() => {
-    loadCart();
-  }, []);
+    // Cargar promociones activas
+    const fetchPromotions = async () => {
+      try {
+        const { getActivePromotions } = await import("@/services/promotions.service");
+        const activePromotions = await getActivePromotions();
+        setPromotions(activePromotions);
+      } catch (error) {
+        console.error("Error al cargar promociones:", error);
+      }
+    };
 
+    fetchPromotions();
+  }, [setPromotions]);
 
   if (cart.length === 0) {
     return (

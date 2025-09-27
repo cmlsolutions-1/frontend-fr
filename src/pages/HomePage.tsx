@@ -10,6 +10,7 @@ const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // const PRODUCTS_PER_PAGE = 8; // Define cuántos productos mostrar por página
   const PRODUCTS_PER_PAGE = 18;
@@ -24,6 +25,8 @@ const HomePage = () => {
         setTotalPages(Math.ceil(data.length / PRODUCTS_PER_PAGE)); 
       } catch (error) {
         console.error("Error al traer productos:", error);
+      } finally {
+        setLoadingProducts(false); // Finalizar loading
       }
     };
   
@@ -34,6 +37,17 @@ const HomePage = () => {
   const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
   const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
   const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  
+if (loadingProducts && products.length === 0) {
+    return (
+      <div className="container mx-auto p-6 flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

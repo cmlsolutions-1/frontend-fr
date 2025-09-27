@@ -3,13 +3,25 @@ import React, { useState } from "react";
 import html2pdf from "html2pdf.js";
 import { getClientById, getSalesPersonById } from "@/services/client.service";
 
-
 interface OrderFromBackend {
   _id: string;
+  id: string;
   isPaid: boolean;
   subTotal: number;
   tax: number;
   total: number;
+  discounts?: number; // Nuevo campo para descuentos
+  offers?: Array<{ // Nuevo campo para ofertas
+    name: string;
+    percentage: number;
+    typePackage: string;
+    minimumQuantity?: number;
+    product?: {
+      _id: string;
+      reference?: string;
+      description?: string;
+    };
+  }>;
   createdDate: string;
   paymendDate?: string;
   idClient: string;
@@ -45,17 +57,17 @@ export const OrderPDFButton = ({ order }: Props) => {
     setLoading(true);
     
     try {
-      console.log("🔍 Orden recibida:", order);
-      console.log("🆔 ID del cliente:", order.idClient);
-      console.log("👥 ID del vendedor:", order.idSalesPerson);
+      console.log("Orden recibida:", order);
+      console.log("ID del cliente:", order.idClient);
+      console.log("ID del vendedor:", order.idSalesPerson);
       
 
       // Obtener el nombre del vendedor
       let salesPersonName = 'Vendedor N/A';
       if (order.idSalesPerson) {
-        console.log("🚀 Solicitando vendedor con ID:", order.idSalesPerson);
+        console.log("Solicitando vendedor con ID:", order.idSalesPerson);
         const salesPerson = await getSalesPersonById(order.idSalesPerson);
-        console.log("📥 Vendedor recibido:", salesPerson);
+        console.log("Vendedor recibido:", salesPerson);
         if (salesPerson) {
           const name = salesPerson.name || '';
           const lastName = salesPerson.lastName || '';
@@ -77,17 +89,17 @@ export const OrderPDFButton = ({ order }: Props) => {
           const lastName = client.lastName || '';
           clientName = `${name} ${lastName}`.trim() || 'Cliente N/A';
           clientIdToShow = client.id || client._id?.slice(-6) || 'N/A';
-          console.log("👤 Nombre del cliente:", clientName);
-          console.log("🆔 ID del cliente a mostrar:", clientIdToShow);
+          console.log("Nombre del cliente:", clientName);
+          console.log("ID del cliente a mostrar:", clientIdToShow);
         } else {
-          console.log("❌ No se encontró el cliente");
+          console.log("No se encontró el cliente");
           if (order.OrderAddress) {
             clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
           }
           clientIdToShow = order.idClient.slice(-6) || 'N/A';
         }
       } else {
-        console.log("❌ No hay ID de cliente");
+        console.log("No hay ID de cliente");
         if (order.OrderAddress) {
           clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
         }
@@ -104,20 +116,21 @@ export const OrderPDFButton = ({ order }: Props) => {
   };
 
   const generatePDF = (orderData: OrderFromBackend, clientName: string, clientIdToShow: string, salesPersonName: string) => {
-  const element = document.createElement("div");
-  element.style.maxWidth = "800px";
-  element.style.margin = "auto";
-  element.style.padding = "40px";
-  element.style.fontFamily = "'Hanken Grotesk', Arial, sans-serif";
-  element.style.color = "#000000";
-  element.style.backgroundColor = "#ffffff";
-  element.style.boxSizing = "border-box";
+    const element = document.createElement("div");
+    element.style.maxWidth = "800px";
+    element.style.margin = "auto";
+    element.style.padding = "40px";
+    element.style.fontFamily = "'Hanken Grotesk', Arial, sans-serif";
+    element.style.color = "#000000";
+    element.style.backgroundColor = "#ffffff";
+    element.style.boxSizing = "border-box";
 
     // Calcular totales
     const itemsInOrder = orderData.items?.length || 0;
     const subTotal = orderData.subTotal || 0;
     const tax = orderData.tax || 0;
     const total = orderData.total || 0;
+    const discount = orderData.discounts || 0; // Nuevo: descuento aplicado
 
     element.innerHTML = `
     <!-- Encabezado -->
@@ -180,6 +193,22 @@ export const OrderPDFButton = ({ order }: Props) => {
     </div>
     ` : ''}
 
+    <!-- Ofertas Aplicadas -->
+    ${orderData.offers && orderData.offers.length > 0 ? `
+    <div style="margin-bottom: 32px; background: #e8f4f8; padding: 16px; border-radius: 8px; border-left: 4px solid #F2B318;">
+      <h3 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0 0 12px 0;">Ofertas Aplicadas</h3>
+      <div style="font-size: 14px; color: #555;">
+        ${orderData.offers.map(offer => `
+          <div style="margin-bottom: 8px; padding: 8px; background: #ffffff; border-radius: 4px;">
+            <strong style="color: #F2B318;">${offer.name}</strong> - ${offer.percentage}% de descuento
+            ${offer.typePackage === 'inner' && offer.minimumQuantity ? 
+              ` (mínimo ${offer.minimumQuantity} unidades)` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
     <!-- Tabla de Productos -->
     <div style="margin: 32px 0;">
       <h3 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0 0 16px 0;">Productos en la Orden</h3>
@@ -234,8 +263,14 @@ export const OrderPDFButton = ({ order }: Props) => {
           <td style="padding: 6px 0; text-align: right; color: #555;"><strong>Subtotal:</strong></td>
           <td style="padding: 6px 0; text-align: right; color: #000000;">$${subTotal.toLocaleString('es-CO')}</td>
         </tr>
+        ${discount > 0 ? `
         <tr>
-          <td style="padding: 6px 0; text-align: right; color: #555;"><strong>Impuestos (15%):</strong></td>
+          <td style="padding: 6px 0; text-align: right; color: #555;"><strong>Descuento:</strong></td>
+          <td style="padding: 6px 0; text-align: right; color: #d32f2f; font-weight: 600;">-$${discount.toLocaleString('es-CO')}</td>
+        </tr>
+        ` : ''}
+        <tr>
+          <td style="padding: 6px 0; text-align: right; color: #555;"><strong>Impuestos (19%):</strong></td>
           <td style="padding: 6px 0; text-align: right; color: #000000;">$${tax.toLocaleString('es-CO')}</td>
         </tr>
         <tr style="background: #F2B318; color: white;">
@@ -245,31 +280,19 @@ export const OrderPDFButton = ({ order }: Props) => {
       </table>
     </div>
 
-    <!-- Pie de página -->
-<div style="
-  margin-top: 40px; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  text-align: center; 
-  color: #999; 
-  font-size: 12px;
-">
-  <p style="margin: 0;">Gracias por confiar en nosotros</p>
-  <p style="margin: 8px 0 0 0;">Documento generado automáticamente</p>
-  
-  <!-- Logo centrado -->
-  <div style="margin-top: 20px;">
-    <img 
-      src="https://res.cloudinary.com/dra2td6jr/image/upload/v1756990004/Logo_c2lvhf.jpg" 
-      alt="Ferrelectricos Restrepo" 
-      style="width: 180px; height: auto; opacity: 0.9;" 
-    />
+    <!-- Pie de página con estilo para evitar corte -->
+  <div style="page-break-before: always; margin-top: 40px; text-align: center; color: #999; font-size: 12px;">
+    <p style="margin: 0;">Gracias por confiar en nosotros</p>
+    <p style="margin: 8px 0 0 0;">Documento generado automáticamente</p>
+    <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+      <img 
+        src="https://res.cloudinary.com/dra2td6jr/image/upload/v1756990004/Logo_c2lvhf.jpg  " 
+        alt="Ferrelectricos Restrepo" 
+        style="width: 180px; height: auto; opacity: 0.9;" 
+      />
+    </div>
   </div>
-</div>
-    
-  `;
+`;
 
   document.body.appendChild(element);
     

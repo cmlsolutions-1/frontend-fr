@@ -35,17 +35,17 @@ export default function OrdersByIdPage() {
   };
 
   const backRoute = getBackRoute();
-  console.log("🔙 Ruta de vuelta:", backRoute);
+  console.log("Ruta de vuelta:", backRoute);
 
   // Debug para ver qué ID se está recibiendo
-  console.log("🔍 useParams id:", _id);
-  console.log("🔍 typeof id:", typeof _id);
+  console.log("useParams id:", _id);
+  console.log("typeof id:", typeof _id);
   
   useEffect(() => {
-    console.log("🔄 useEffect ejecutado con id:", _id);
+    console.log("useEffect ejecutado con id:", _id);
 
     if (!_id || _id === 'undefined' || _id === 'null') {
-      console.error("❌ ID no válido:", _id);
+      console.error("ID no válido:", _id);
       setError("ID de orden no válido");
       setLoading(false);
       return;
@@ -62,14 +62,14 @@ export default function OrdersByIdPage() {
           setError("Orden no encontrada");
           return;
         }
-        console.log("✅ Orden cargada:", order);
+        console.log("Orden cargada:", order);
         
         setOrder(order);
       } catch (error) {
         console.error("No se pudo cargar la orden", error);
         setError("Error al cargar la orden");
       } finally {
-        setLoading(false); // ✅ Finalizar carga
+        setLoading(false); // Finalizar carga
       }
     };
     
@@ -123,6 +123,7 @@ export default function OrdersByIdPage() {
   const subTotal = order.subTotal || 0;
   const tax = order.tax || 0;
   const total = order.total || 0;
+  const discount = order.discounts || 0;
 
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
@@ -194,8 +195,19 @@ export default function OrdersByIdPage() {
               <span className="text-gray-600">Subtotal</span>
               <span className="text-right font-medium">{currencyFormat(subTotal)}</span>
 
+              {/* Mostrar descuento si existe */}
+              {discount > 0 && (
+                <>
+                  <span className="text-gray-600">Descuento</span>
+                  <span className="text-right font-medium text-red-600">-{currencyFormat(discount)}</span>
+                </>
+              )}
+
+
               <span className="text-gray-600">Iva (19%)</span>
               <span className="text-right font-medium">{currencyFormat(tax)}</span>
+
+
 
               <span className="mt-5 text-2xl font-bold text-gray-900">
                 Total:
@@ -204,6 +216,21 @@ export default function OrdersByIdPage() {
                 {currencyFormat(total)}
               </span>
             </div>
+
+            {/* Mostrar información de ofertas si existen */}
+            {order.offers && order.offers.length > 0 && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-blue-800 mb-2">Ofertas aplicadas:</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {order.offers.map((offer: any, index: number) => (
+                    <li key={index} className="text-sm text-blue-700">
+                      <span className="font-medium">{offer.name}</span> - {offer.percentage}% de descuento
+                      {offer.typePackage === 'inner' && ` (mínimo ${offer.minimumQuantity} unidades)`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Botón de estado */}
             <div className="mt-8">

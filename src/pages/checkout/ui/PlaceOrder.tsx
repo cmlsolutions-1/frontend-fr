@@ -6,7 +6,7 @@ import { useCartStore } from "@/store";
 import { currencyFormat } from "@/utils";
 import { createOrder } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
-import { CartProduct } from "@/interfaces";
+import { CartItem } from "@/interfaces/cart.interface";
 
 
 export const PlaceOrder = () => {
@@ -15,8 +15,9 @@ export const PlaceOrder = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const getSummaryInformation = useCartStore((state) => state.getSummaryInformation);
-  const { itemsInCart, subTotal, tax, total } = getSummaryInformation();
+  
+  const getCartWithOffers = useCartStore((state) => state.getCartWithOffers);
+  const { itemsInCart, subTotal, tax, total, discount } = getCartWithOffers();
   const cart = useCartStore((state) => state.cart);
   const clearCart = useCartStore((state) => state.clearCart);
 
@@ -55,9 +56,9 @@ export const PlaceOrder = () => {
       return;
     }
 
- // Obtener la categoría de precio del cliente (estructura correcta)
+ // Obtener la categoría de precio del cliente
     const clientPriceCategory = user.priceCategory; //Aquí está la categoría de precio
-    console.log("🏷️ Categoría de precio encontrada:", clientPriceCategory);
+    console.log("Categoría de precio encontrada:", clientPriceCategory);
     
     if (!clientPriceCategory) {
       setErrorMessage("No se pudo obtener la categoría de precio del cliente.");
@@ -80,7 +81,7 @@ export const PlaceOrder = () => {
         orderItems: orderItems
       };
 
-      console.log("📦 Payload a enviar:", payload);
+      console.log("Payload a enviar:", payload);
 
       // Crear la orden
       const result = await createOrder(payload);
@@ -94,25 +95,7 @@ export const PlaceOrder = () => {
       // Éxito: Limpiar carrito y redirigir
       clearCart();
       
-      // if (result.order && result.order._id) {
-      //   // Redirigir según el rol del usuario
-      //   const redirectPath = user.role === 'Client' 
-      //     ? `/orders/${result.order._id}`
-      //     : user.role === 'SalesPerson'
-      //     ? `/salesperson/orders/${result.order._id}`
-      //     : `/admin/orders/${result.order._id}`;
-        
-      //   navigate(redirectPath);
-      // } else {
-      //   // Redirigir a la lista de órdenes si no hay ID específico
-      //   const ordersPath = user.role === 'Client' 
-      //     ? '/orders'
-      //     : user.role === 'SalesPerson'
-      //     ? '/salesperson/orders'
-      //     : '/admin/orders';
-        
-      //   navigate(ordersPath);
-      // }
+      
       if (result.order && result.order._id) {
         navigate(`/orders/${result.order._id}`);
       } else {
@@ -149,6 +132,13 @@ export const PlaceOrder = () => {
 
         <span>Subtotal</span>
         <span className="text-right">{currencyFormat(subTotal)}</span>
+
+        {discount > 0 && (
+          <>
+            <span>Descuento</span>
+            <span className="text-right text-red-600">-{currencyFormat(discount)}</span>
+          </>
+        )}
 
         <span>Iva (19%)</span>
         <span className="text-right">{currencyFormat(tax)}</span>
