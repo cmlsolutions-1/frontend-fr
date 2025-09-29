@@ -103,11 +103,10 @@ export const CategoryFilterSidebar = () => {
                   onChange={() => handleCategoryChange(category.id)}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <img
-                  src={category.image}
+                {/* <img
+                  // src={category.image}
                   alt={category.name}
-                  className="w-6 h-6 object-cover rounded-full"
-                />
+                /> */}
                 <span className="text-sm">{category.name}</span>
               </label>
             ))}
