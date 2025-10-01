@@ -67,13 +67,13 @@ export const useCartStore = create<State>()(
           const price = getProductPrice(product);
           const quantity = product.quantity;
 
-          const itemTax = price * 0.19;             // IVA unitario
-          const itemSubTotal = price - itemTax;     // Precio sin IVA
-          const itemTotal = price * quantity;       // Precio con IVA x cantidad
+          const itemTotalWithTax = price * quantity; // Total con IVA
+          const itemSubTotal = itemTotalWithTax / 1.19; // Antes de IVA
+          const itemTax = itemTotalWithTax - itemSubTotal; // IVA
 
-          subTotal += itemSubTotal * quantity;
-          tax += itemTax * quantity;
-          total += itemTotal;
+          subTotal += itemSubTotal;
+          tax += itemTax;
+          total += itemTotalWithTax;
         });
 
         const itemsInCart = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -90,66 +90,74 @@ export const useCartStore = create<State>()(
       getCartWithOffers: () => {
         const { cart, promotions } = get();
 
-        let subTotal = 0;
-        let tax = 0;
-        let total = 0;
-        let discount = 0;
+        // Calcular totales sin descuento
+        let totalWithTax = 0;
+        let totalSubTotal = 0;
+        let totalTax = 0;
 
         // Calcular precios sin descuento
         cart.forEach((product) => {
           const price = getProductPrice(product);
           const quantity = product.quantity;
 
-          const itemTax = price * 0.19;
-          const itemSubTotal = price - itemTax;
-          const itemTotal = price * quantity;
+          const itemTotalWithTax = price * quantity; // Total con IVA
+          const itemSubTotal = itemTotalWithTax / 1.19; // Antes de IVA
+          const itemTax = itemTotalWithTax - itemSubTotal; // IVA
 
-          subTotal += itemSubTotal * quantity;
-          tax += itemTax * quantity;
-          total += itemTotal;
+          totalSubTotal += itemSubTotal;
+          totalTax += itemTax;
+          totalWithTax += itemTotalWithTax;
         });
 
-        // Calcular descuentos aplicables
+        // Calcular descuentos aplicables POR PRODUCTO
+        let totalDiscount = 0;
         const currentDate = new Date();
         
+        // Para cada promoción activa
         promotions.forEach((promotion) => {
           // Verificar que la promoción esté activa
-          const isActive = promotion.state === "Activo" && 
+          const isActive = promotion.state === "Active" && 
                           new Date(promotion.endDate) >= currentDate;
           
           if (!isActive) return;
 
           if (promotion.isAll) {
             // Oferta para todos los productos
-            discount += total * (promotion.percentage / 100);
+            totalDiscount += totalSubTotal * (promotion.percentage / 100);
           } else {
             // Oferta para productos específicos
             const promotionProductIds = promotion.products.map((p: any) => p._id);
             
             cart.forEach((item) => {
               if (promotionProductIds.includes(item._id)) {
+                const price = getProductPrice(item);
+                const quantity = item.quantity;
+                
+                const itemTotalWithTax = price * quantity; // Total con IVA
+                const itemSubTotal = itemTotalWithTax / 1.19; // Antes de IVA
+                
                 if (promotion.typePackage === "inner" || promotion.typePackage === "unidad") {
                   // Oferta por unidad (requiere cantidad mínima)
-                  if (item.quantity >= promotion.minimumQuantity) {
-                    const price = getProductPrice(item);
-                    const itemTotal = price * item.quantity;
-                    discount += itemTotal * (promotion.percentage / 100);
+                  if (quantity >= promotion.minimumQuantity) {
+                    totalDiscount += itemSubTotal * (promotion.percentage / 100);
                   }
                 } else if (promotion.typePackage === "master") {
                   // Oferta por paquete master
-                  const price = getProductPrice(item);
-                  const itemTotal = price * item.quantity;
-                  discount += itemTotal * (promotion.percentage / 100);
+                  totalDiscount += itemSubTotal * (promotion.percentage / 100);
                 }
               }
             });
           }
         });
 
-        // Aplicar descuento al total
-        const finalTotal = total - discount;
-        const finalTax = finalTotal * 0.19;
-        const finalSubTotal = finalTotal - finalTax;
+        // Aplicar descuento al subtotal (antes de IVA)
+        const finalSubTotal = totalSubTotal - totalDiscount;
+
+        // Calcular nuevo IVA basado en el subtotal con descuento
+        const finalTax = finalSubTotal * 0.19;
+        
+        // Calcular total final (subtotal con descuento + nuevo IVA)
+        const finalTotal = finalSubTotal + finalTax;
 
         const itemsInCart = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -158,7 +166,7 @@ export const useCartStore = create<State>()(
           subTotal: finalSubTotal,
           tax: finalTax,
           total: finalTotal,
-          discount,
+          discount: totalDiscount,
           itemsInCart,
         };
       },
@@ -176,7 +184,7 @@ export const useCartStore = create<State>()(
           return;
         }
 
-        // ✅ Si el producto existe, incrementar la cantidad
+        //  Si el producto existe, incrementar la cantidad
         const updatedCartProducts = cart.map((item) => {
           if (item._id === product._id) {
             return { ...item, quantity: item.quantity + product.quantity };

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 import { Title } from "@/components";
 import { ProductsInCart } from "./ui/ProductsInCart";
-import { createOrder } from "@/services/orders.service";
 import { PlaceOrder } from './ui/PlaceOrder';
 
 export default function CheckoutPage() {

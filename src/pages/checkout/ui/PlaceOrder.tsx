@@ -48,7 +48,7 @@ export const PlaceOrder = () => {
       return;
     }
 
-    console.log("👤 Usuario completoooo:", user);
+    console.log(" Usuario completoooo:", user);
 
     if (cart.length === 0) {
       setErrorMessage("El carrito está vacío.");

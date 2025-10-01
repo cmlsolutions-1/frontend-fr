@@ -6,7 +6,7 @@ import React ,{ useEffect } from "react";
 import { Title } from "@/components";
 import { ProductsInCart } from "./ui/ProductsInCart";
 import { OrderSummary } from "./ui/OrderSummary";
-import { useCartStore } from "@/store/useCartStore";
+import { useCartStore } from "@/store/cart/cart-store";
 
 
 export const CartPage = () => {
@@ -21,6 +21,7 @@ export const CartPage = () => {
         setPromotions(activePromotions);
       } catch (error) {
         console.error("Error al cargar promociones:", error);
+        setPromotions([]);
       }
     };
 

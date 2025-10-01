@@ -16,11 +16,12 @@ export const OrderSummary = () => {
   });
 
   const getCartWithOffers = useCartStore((state) => state.getCartWithOffers);
+  const cart = useCartStore((state) => state.cart);
 
   useEffect(() => {
     const cartSummary = getCartWithOffers();
     setSummary(cartSummary);
-  }, [getCartWithOffers]); // Añadir getCartWithOffers como dependencia
+  }, [getCartWithOffers, cart]); // Añadir getCartWithOffers como dependencia
 
   return (
     <div className="grid grid-cols-2">

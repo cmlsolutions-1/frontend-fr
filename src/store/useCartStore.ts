@@ -1,29 +1,19 @@
 // src/store/useCartStore.ts
-import { create } from "zustand";
-import {
-  getCartItems,
-  updateCartItemQuantity as updateCartItemQuantityService,
-  removeCartItem as removeCartItemService,
-} from "@/services/cart.service";
 
-import type { CartItem } from "@/interfaces/cart.interface";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Promotion } from "@/interfaces/promotion.interface";
 
 interface CartState {
-  cart: CartItem[];
-  promotions: Promotion[]; // Añadido para ofertas
+  cart: any[]; // Puedes definir una interfaz específica más adelante
+  promotions: Promotion[];
   loading: boolean;
 
-  // Acciones
-  addToCart: (product: CartItem) => void;
-  updateProductQuantity: (product: CartItem, quantity: number) => void;
-  removeProduct: (product: CartItem) => void;
+  addToCart: (product: any) => void;
+  updateProductQuantity: (productId: string, quantity: number) => void;
+  removeProduct: (productId: string) => void;
   clearCart: () => void;
-  setPromotions: (promotions: Promotion[]) => void; // Añadido
-
-  // Servicios
-  loadCart: () => void;
+  setPromotions: (promotions: Promotion[]) => void;
 
   getSummaryInformation: () => {
     itemsInCart: number;
@@ -32,9 +22,8 @@ interface CartState {
     total: number;
   };
 
-  // Nuevo método para calcular con ofertas
   getCartWithOffers: () => {
-    cart: CartItem[];
+    cart: any[];
     subTotal: number;
     tax: number;
     total: number;
@@ -43,38 +32,20 @@ interface CartState {
   };
 }
 
-// Función para obtener el precio del producto
-const getProductPrice = (product: CartItem): number => {
-  // Ajusta según la estructura real de tu CartItem
-  return product.price || (product.precios && product.precios[0] && (product.precios[0].valorpos || product.precios[0].valor)) || 0;
-};
-
-//inicia backend
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: [],
-      promotions: [], // Inicializar promociones
+      promotions: [],
       loading: false,
 
-      loadCart: async () => {
-        set({ loading: true });
-        try {
-          const data = await getCartItems(); // servicio fetch
-          set({ cart: data, loading: false });
-        } catch (error) {
-          console.warn("Usando carrito local");
-          set({ loading: false });
-        }
-      },
-
-      addToCart: (product) =>
+      addToCart: (product) => {
         set((state) => {
-          const productInCart = state.cart.find((p) => p.id === product.id);
-
+          const productInCart = state.cart.find((p) => p._id === product._id);
+          
           if (productInCart) {
             const updatedCart = state.cart.map((p) =>
-              p.id === product.id
+              p._id === product._id
                 ? { ...p, quantity: productInCart.quantity + 1 }
                 : p
             );
@@ -82,37 +53,34 @@ export const useCartStore = create<CartState>()(
           }
 
           return { cart: [...state.cart, { ...product, quantity: 1 }] };
-        }),
+        });
+      },
 
-      updateProductQuantity: async (product: CartItem, quantity: number) => {
-        const success = await updateCartItemQuantityService(
-          product.id,
-          quantity
-        );
-        if (!success) return;
+      updateProductQuantity: (productId, quantity) => {
+        if (quantity <= 0) {
+          // Si la cantidad es 0 o negativa, remover el producto
+          set((state) => ({
+            cart: state.cart.filter((p) => p._id !== productId),
+          }));
+          return;
+        }
 
         set((state) => ({
           cart: state.cart.map((p) =>
-            p.id === product.id ? { ...p, quantity } : p
+            p._id === productId ? { ...p, quantity } : p
           ),
         }));
       },
 
-      removeProduct: async (product) => {
-        const success = await removeCartItemService(product.id);
-        if (!success) return;
-
+      removeProduct: (productId) => {
         set((state) => ({
-          cart: state.cart.filter((p) => p.id !== product.id),
+          cart: state.cart.filter((p) => p._id !== productId),
         }));
       },
 
       clearCart: () => set({ cart: [] }),
 
-      // Nuevo método para establecer promociones
-      setPromotions: (promotions: Promotion[]) => {
-        set({ promotions });
-      },
+      setPromotions: (promotions) => set({ promotions }),
 
       getSummaryInformation: () => {
         const cart = get().cart;
@@ -123,7 +91,7 @@ export const useCartStore = create<CartState>()(
         let total = 0;
 
         cart.forEach((item) => {
-          const price = getProductPrice(item);
+          const price = item.price || (item.precios && item.precios[0] && (item.precios[0].valorpos || item.precios[0].valor)) || 0;
           const quantity = item.quantity;
 
           const itemTax = price * 0.19;
@@ -138,7 +106,6 @@ export const useCartStore = create<CartState>()(
         return { itemsInCart, subTotal, tax, total };
       },
 
-      // Nuevo método para calcular con ofertas
       getCartWithOffers: () => {
         const { cart, promotions } = get();
 
@@ -149,7 +116,7 @@ export const useCartStore = create<CartState>()(
 
         // Calcular precios sin descuento
         cart.forEach((product) => {
-          const price = getProductPrice(product);
+          const price = product.price || (product.precios && product.precios[0] && (product.precios[0].valorpos || product.precios[0].valor)) || 0;
           const quantity = product.quantity;
 
           const itemTax = price * 0.19;
@@ -165,8 +132,7 @@ export const useCartStore = create<CartState>()(
         const currentDate = new Date();
         
         promotions.forEach((promotion) => {
-          // Verificar que la promoción esté activa
-          const isActive = promotion.state === "Activo" && 
+          const isActive = promotion.state === "Active" && 
                           new Date(promotion.endDate) >= currentDate;
           
           if (!isActive) return;
@@ -179,17 +145,17 @@ export const useCartStore = create<CartState>()(
             const promotionProductIds = promotion.products.map((p: any) => p._id || p.id);
             
             cart.forEach((item) => {
-              if (promotionProductIds.includes(item.id || item._id)) {
+              if (promotionProductIds.includes(item._id)) {
                 if (promotion.typePackage === "inner" || promotion.typePackage === "unidad") {
                   // Oferta por unidad (requiere cantidad mínima)
                   if (item.quantity >= promotion.minimumQuantity) {
-                    const price = getProductPrice(item);
+                    const price = item.price || (item.precios && item.precios[0] && (item.precios[0].valorpos || item.precios[0].valor)) || 0;
                     const itemTotal = price * item.quantity;
                     discount += itemTotal * (promotion.percentage / 100);
                   }
                 } else if (promotion.typePackage === "master") {
                   // Oferta por paquete master
-                  const price = getProductPrice(item);
+                  const price = item.price || (item.precios && item.precios[0] && (item.precios[0].valorpos || item.precios[0].valor)) || 0;
                   const itemTotal = price * item.quantity;
                   discount += itemTotal * (promotion.percentage / 100);
                 }
@@ -220,5 +186,3 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
-
-//termina backend
