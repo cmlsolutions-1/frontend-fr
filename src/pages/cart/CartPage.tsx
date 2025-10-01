@@ -1,6 +1,6 @@
 //src/pages/cart/CartPage.tsx
 
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import React ,{ useEffect } from "react";
 
 import { Title } from "@/components";
@@ -11,6 +11,7 @@ import { useCartStore } from "@/store/cart/cart-store";
 
 export const CartPage = () => {
   const { cart, setPromotions} = useCartStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Cargar promociones activas
@@ -29,16 +30,10 @@ export const CartPage = () => {
   }, [setPromotions]);
 
   if (cart.length === 0) {
-    return (
-      <div className="container mx-auto p-6">
-        <h2>Tu carrito está vacío</h2>
-        <Link to="/homePage" className="underline mt-4 block text-blue-600 hover:text-blue-800">
-          Continúa comprando
-        </Link>
-      </div>
-    );
+    navigate('/empty'); 
+    return null; 
   }
-  //hasta aca backend
+
 
 
   return (

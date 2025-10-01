@@ -7,7 +7,11 @@ import { useCartStore } from "@/store";
 import { ProductImage, QuantitySelector } from "@/components";
 import { CartProduct } from "@/interfaces";
 
-export const ProductsInCart = () => {
+interface Props {
+  readOnly?: boolean; // para modo checkout
+}
+
+export const ProductsInCart: React.FC<Props> = ({ readOnly = false }) => {
   const updateProductQuantity = useCartStore((state) => state.updateProductQuantity);
   const removeProduct = useCartStore((state) => state.removeProduct);
   const [loaded, setLoaded] = useState(false);
@@ -125,18 +129,21 @@ export const ProductsInCart = () => {
 
 
             <QuantitySelector
-              quantity={product.quantity}
-              onQuantityChanged={(quantity) =>
-                updateProductQuantity(product, quantity)
-              }
-            />
+                quantity={product.quantity}
+                onQuantityChanged={(quantity) =>
+                  !readOnly && updateProductQuantity(product, quantity)
+                }
+                readOnly={readOnly}
+              />
 
-            <button
-              onClick={() => removeProduct(product)}
-              className="underline mt-3 font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Remover
-            </button>
+              {!readOnly && (
+                <button
+                  onClick={() => removeProduct(product)}
+                  className="underline mt-3 font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Remover
+                </button>
+              )}
           </div>
         </div>
       );

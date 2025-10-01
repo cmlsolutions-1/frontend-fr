@@ -8,6 +8,7 @@ interface Props {
   min?: number; // Valor mínimo (por defecto 1)
   max?: number; // Valor máximo (opcional)
   step?: number; // Paso para incremento/decremento (por defecto 1)
+  readOnly?: boolean;
 }
 
 export const QuantitySelector = ({ 
@@ -15,7 +16,8 @@ export const QuantitySelector = ({
   onQuantityChanged, 
   min = 1, 
   max,
-  step = 1
+  step = 1,
+  readOnly = false
 }: Props) => {
   const [inputValue, setInputValue] = useState(quantity.toString());
 
@@ -86,8 +88,8 @@ export const QuantitySelector = ({
     <div className="flex items-center">
       <button 
         onClick={handleDecrement}
-        disabled={quantity <= min}
-        className={quantity <= min ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600'}
+        disabled={readOnly || quantity <= min}
+        className={(readOnly || quantity <= min) ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600'}
       >
         <IoRemoveCircleOutline size={30} className="text-gray-600" />
       </button>
@@ -98,16 +100,15 @@ export const QuantitySelector = ({
         onChange={handleInputChange}
         onBlur={handleInputBlur}
         onKeyDown={handleKeyPress}
-        className="w-16 mx-2 px-2 py-1 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        aria-label="Cantidad de producto"
+        disabled={readOnly}
+        className={`w-16 mx-2 px-2 py-1 text-center border border-gray-300 rounded 
+          ${readOnly ? "bg-gray-100 cursor-not-allowed" : "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"}`}
       />
 
       <button 
         onClick={handleIncrement}
-        disabled={max && quantity >= max}
-        className={max && quantity >= max ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600'}
+        disabled={readOnly || (max && quantity >= max)}
+        className={(readOnly || (max && quantity >= max)) ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600'}
       >
         <IoAddCircleOutline size={30} className="text-gray-600" />
       </button>

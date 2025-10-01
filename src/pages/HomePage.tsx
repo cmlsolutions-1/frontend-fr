@@ -1,7 +1,6 @@
 //src/pages/HomePage.tsx
 
 import { useEffect, useState } from "react";
-import { getPaginatedMockProductsWithImages } from "@/mocks/getPaginatedMockProducts";
 import { Pagination, ProductGrid, Title } from "@/components";
 import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSidebar";
 import { getProducts } from "@/services/products.service";

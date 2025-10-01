@@ -1,6 +1,7 @@
 // src/components/filters/CategoryFilterSidebar.tsx
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { mockCategories } from "@/mocks/mock-categories";
 import {
   RiNodeTree,
@@ -13,11 +14,39 @@ export const CategoryFilterSidebar = () => {
   const [showBrandMenu, setShowBrandMenu] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [allBrands, setAllBrands] = useState<{ _id: string; name: string }[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState(false);
   
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Marcas predefinidas
-  const brands = ["ELITE", "DEWALT", "TOTAL", "TRUPER"];
+  // Cargar marcas desde el backend
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setLoadingBrands(true);
+      try {
+        const { getBrands } = await import("@/services/brands.service");
+        const brands = await getBrands();
+        setAllBrands(brands);
+      } catch (error) {
+        console.error("Error al cargar marcas:", error);
+        setAllBrands([]);
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  // Cargar filtros desde la URL al montar el componente
+  useEffect(() => {
+    const categoriesFromUrl = searchParams.get('categories')?.split(',') || [];
+    const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+    
+    setSelectedCategories(categoriesFromUrl);
+    setSelectedBrands(brandsFromUrl);
+  }, [searchParams]);
 
   // Manejar cambio de categoría
   const handleCategoryChange = (categoryId: string) => {
@@ -29,11 +58,11 @@ export const CategoryFilterSidebar = () => {
   };
 
   // Manejar cambio de marca
-  const handleBrandChange = (brand: string) => {
+  const handleBrandChange = (brandId: string) => {
     setSelectedBrands(prev => 
-      prev.includes(brand) 
-        ? prev.filter(b => b !== brand) 
-        : [...prev, brand]
+      prev.includes(brandId) 
+        ? prev.filter(b => b !== brandId) 
+        : [...prev, brandId]
     );
   };
 
@@ -43,29 +72,35 @@ export const CategoryFilterSidebar = () => {
   };
 
   // Verificar si una marca está seleccionada
-  const isBrandSelected = (brand: string) => {
-    return selectedBrands.includes(brand);
+  const isBrandSelected = (brandId: string) => {
+    return selectedBrands.includes(brandId);
   };
 
-  // Navegar a la página de productos filtrados (puedes adaptar según tu estructura)
+  // Aplicar filtros
   const applyFilters = () => {
-    // Aquí puedes implementar la lógica para aplicar los filtros
-    // Por ejemplo, redirigir con parámetros de query o actualizar el estado global
     console.log("Categorías seleccionadas:", selectedCategories);
     console.log("Marcas seleccionadas:", selectedBrands);
     
-    // Ejemplo de navegación con parámetros (ajusta según tu estructura)
+    const params = new URLSearchParams();
+    
     if (selectedCategories.length > 0) {
-      navigate(`/category/${selectedCategories[0]}`); // Tomar la primera categoría seleccionada
-    } else {
-      navigate("/"); // Volver a la página principal si no hay categorías
+      params.set('categories', selectedCategories.join(','));
     }
+    
+    if (selectedBrands.length > 0) {
+      params.set('brands', selectedBrands.join(','));
+    }
+    
+    // Navegar a la página principal con los filtros
+    const queryString = params.toString();
+    navigate(`/homePage${queryString ? '?' + queryString : ''}`);
   };
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
+    navigate('/homePage');
   };
 
   return (
@@ -103,10 +138,6 @@ export const CategoryFilterSidebar = () => {
                   onChange={() => handleCategoryChange(category.id)}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                {/* <img
-                  // src={category.image}
-                  alt={category.name}
-                /> */}
                 <span className="text-sm">{category.name}</span>
               </label>
             ))}
@@ -133,21 +164,27 @@ export const CategoryFilterSidebar = () => {
         </button>
 
         {showBrandMenu && (
-          <div className="mt-2 pl-2 space-y-2">
-            {brands.map((brand) => (
-              <label 
-                key={brand} 
-                className="flex items-center space-x-3 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={isBrandSelected(brand)}
-                  onChange={() => handleBrandChange(brand)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm">{brand}</span>
-              </label>
-            ))}
+          <div className="mt-2 pl-2 space-y-2 max-h-60 overflow-y-auto">
+            {loadingBrands ? (
+              <div className="text-center py-2 text-gray-500">Cargando marcas...</div>
+            ) : allBrands.length > 0 ? (
+              allBrands.map((brand) => (
+                <label 
+                  key={brand._id} 
+                  className="flex items-center space-x-3 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isBrandSelected(brand._id)}
+                    onChange={() => handleBrandChange(brand._id)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm">{brand.name}</span>
+                </label>
+              ))
+            ) : (
+              <div className="text-center py-2 text-gray-500">No hay marcas disponibles</div>
+            )}
           </div>
         )}
       </div>
@@ -193,17 +230,20 @@ export const CategoryFilterSidebar = () => {
                 </span>
               ) : null;
             })}
-            {selectedBrands.map(brand => (
-              <span key={brand} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                {brand}
-                <button 
-                  onClick={() => handleBrandChange(brand)}
-                  className="ml-1 text-blue-600 hover:text-blue-800"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
+            {selectedBrands.map(brandId => {
+              const brand = allBrands.find(b => b._id === brandId);
+              return brand ? (
+                <span key={brandId} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                  {brand.name}
+                  <button 
+                    onClick={() => handleBrandChange(brandId)}
+                    className="ml-1 text-blue-600 hover:text-blue-800"
+                  >
+                    ×
+                  </button>
+                </span>
+              ) : null;
+            })}
           </div>
         </div>
       )}
