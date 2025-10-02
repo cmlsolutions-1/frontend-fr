@@ -1,20 +1,21 @@
 // src/components/filters/CategoryFilterSidebar.tsx
 
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { mockCategories } from "@/mocks/mock-categories";
 import {
   RiNodeTree,
   RiBox3Fill,
   RiArrowRightSLine,
 } from "react-icons/ri";
+import { getBrands } from "@/services/brands.service";
 
 export const CategoryFilterSidebar = () => {
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showBrandMenu, setShowBrandMenu] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [allBrands, setAllBrands] = useState<{ _id: string; name: string }[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]); // Seguimos usando IDs
+  const [allBrands, setAllBrands] = useState<any[]>([]);
   const [loadingBrands, setLoadingBrands] = useState(false);
   
   const navigate = useNavigate();
@@ -25,7 +26,6 @@ export const CategoryFilterSidebar = () => {
     const fetchBrands = async () => {
       setLoadingBrands(true);
       try {
-        const { getBrands } = await import("@/services/brands.service");
         const brands = await getBrands();
         setAllBrands(brands);
       } catch (error) {
@@ -46,7 +46,7 @@ export const CategoryFilterSidebar = () => {
     
     setSelectedCategories(categoriesFromUrl);
     setSelectedBrands(brandsFromUrl);
-  }, [searchParams]);
+  }, []); // Solo una vez al montar
 
   // Manejar cambio de categoría
   const handleCategoryChange = (categoryId: string) => {
@@ -91,16 +91,27 @@ export const CategoryFilterSidebar = () => {
       params.set('brands', selectedBrands.join(','));
     }
     
-    // Navegar a la página principal con los filtros
-    const queryString = params.toString();
-    navigate(`/homePage${queryString ? '?' + queryString : ''}`);
+    // Mantener la búsqueda si existe
+    const currentSearch = searchParams.get('search');
+    if (currentSearch) {
+      params.set('search', currentSearch);
+    }
+    
+    // Siempre mantener la página en 1 al aplicar filtros
+    params.set('page', '1');
+    
+    navigate(`/homePage?${params.toString()}`);
   };
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
-    setSelectedCategories([]);
-    setSelectedBrands([]);
-    navigate('/homePage');
+    const params = new URLSearchParams();
+    // Mantener solo la búsqueda si existe
+    const currentSearch = searchParams.get('search');
+    if (currentSearch) {
+      params.set('search', currentSearch);
+    }
+    navigate(`/homePage?${params.toString()}`);
   };
 
   return (
@@ -170,13 +181,13 @@ export const CategoryFilterSidebar = () => {
             ) : allBrands.length > 0 ? (
               allBrands.map((brand) => (
                 <label 
-                  key={brand._id} 
+                  key={brand.code} 
                   className="flex items-center space-x-3 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
                 >
                   <input
                     type="checkbox"
-                    checked={isBrandSelected(brand._id)}
-                    onChange={() => handleBrandChange(brand._id)}
+                    checked={isBrandSelected(brand.code)}
+                    onChange={() => handleBrandChange(brand.code)}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                   />
                   <span className="text-sm">{brand.name}</span>
@@ -230,13 +241,16 @@ export const CategoryFilterSidebar = () => {
                 </span>
               ) : null;
             })}
-            {selectedBrands.map(brandId => {
-              const brand = allBrands.find(b => b._id === brandId);
+            {selectedBrands.map(brandCode => {
+              const brand = allBrands.find(b => b.code === brandCode); // Buscar por code
               return brand ? (
-                <span key={brandId} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                  {brand.name}
+                <span 
+                  key={brandCode} 
+                  className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                >
+                  {brand.name}   {/* Mostrar el nombre de la marca */}
                   <button 
-                    onClick={() => handleBrandChange(brandId)}
+                    onClick={() => handleBrandChange(brandCode)} // Sigue quitando por code
                     className="ml-1 text-blue-600 hover:text-blue-800"
                   >
                     ×

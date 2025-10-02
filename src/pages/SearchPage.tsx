@@ -1,17 +1,21 @@
 // src/pages/SearchPage.tsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { searchProducts } from '@/services/products.service';
+import { filterProducts } from '@/services/products.service';
 import { Product } from '@/interfaces/product.interface';
-import { ProductGrid, Title } from '@/components';
+import { Pagination, ProductGrid, Title } from '@/components';
 import { CategoryFilterSidebar } from '@/components/filters/CategoryFilterSidebar';
 
 export const SearchPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get('query') || '';
+  const pageFromUrl = parseInt(searchParams.get('page') || '1');
+  
   const [results, setResults] = useState<Product[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,6 +23,7 @@ export const SearchPage = () => {
     const loadSearchResults = async () => {
       if (!query) {
         setResults([]);
+        setTotalPages(1);
         setLoading(false);
         return;
       }
@@ -27,19 +32,37 @@ export const SearchPage = () => {
         setLoading(true);
         setError(null);
         
-        const products = await searchProducts(query);
-        setResults(products);
+        const response = await filterProducts({
+          page: pageFromUrl,
+          limit: 21, // Ajusta según tu preferencia
+          search: query,
+          brands: [],
+          categories: []
+        });
+        
+        setResults(response.products);
+        setTotalPages(response.totalPages);
       } catch (error) {
         console.error("Error al buscar productos:", error);
         setError("Error al cargar los resultados de búsqueda");
         setResults([]);
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
     };
 
     loadSearchResults();
-  }, [query]);
+  }, [query, pageFromUrl]);
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams();
+    params.set('query', query);
+    if (newPage > 1) {
+      params.set('page', newPage.toString());
+    }
+    navigate(`/search?${params.toString()}`);
+  };
 
   if (loading) {
     return (
@@ -63,7 +86,10 @@ export const SearchPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <Title title={`Búsqueda: ${query}`} subtitle={`${results.length} resultados encontrados`} />
+      <Title 
+        title={`Búsqueda: ${query}`} 
+        subtitle={`${results.length} resultados encontrados`} 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Columna izquierda - Filtro de categorías */}
@@ -71,17 +97,24 @@ export const SearchPage = () => {
           <CategoryFilterSidebar />
         </div>
 
-      {/* Columna derecha - Resultados de búsqueda */}
-      <div className="md:col-span-3">
-      {results.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500">No se encontraron productos.</p>
-        </div>
-      ) : (
+        {/* Columna derecha - Resultados de búsqueda */}
         <div className="md:col-span-3">
-            <ProductGrid products={results} />
-        </div>
-      )}
+          {results.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-gray-500">No se encontraron productos.</p>
+            </div>
+          ) : (
+            <>
+              <ProductGrid products={results} />
+              {totalPages > 1 && (
+                <Pagination
+                  totalPages={totalPages}
+                  currentPage={pageFromUrl}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

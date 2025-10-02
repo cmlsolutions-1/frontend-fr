@@ -1,48 +1,112 @@
 //src/pages/HomePage.tsx
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Pagination, ProductGrid, Title } from "@/components";
 import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSidebar";
-import { getProducts } from "@/services/products.service";
+import { filterProducts } from "@/services/products.service";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  // const PRODUCTS_PER_PAGE = 8; // Define cuántos productos mostrar por página
-  const PRODUCTS_PER_PAGE = 18;
+  const PRODUCTS_PER_PAGE = 21;
+
+  // Obtener parámetros de la URL
+  const categories = searchParams.get('categories')?.split(',') || [];
+  const brands = searchParams.get('brands')?.split(',') || [];
+  const search = searchParams.get('search') || '';
+  const pageFromUrl = parseInt(searchParams.get('page') || '1');
+
   
   
+  // Cargar productos con filtros - usar una variable de control para evitar recargas innecesarias
   useEffect(() => {
-    const fetchProducts = async () => {
+    let isMounted = true; // Variable para controlar si el componente sigue montado
+
+    const fetchFilteredProducts = async () => {
+      if (!isMounted) return; // Si no está montado, no hacer nada
+      
+      setLoadingProducts(true);
+      setError(null);
+      
       try {
-        const data = await getProducts();
-        setProducts(data);
-        // Total de páginas calculado en base a los productos
-        setTotalPages(Math.ceil(data.length / PRODUCTS_PER_PAGE)); 
-      } catch (error) {
-        console.error("Error al traer productos:", error);
+        const response = await filterProducts({
+          page: pageFromUrl,
+          limit: PRODUCTS_PER_PAGE,
+          search,
+          brands,
+          categories
+        });
+        
+        if (isMounted) { // Solo actualizar si sigue montado
+          setProducts(response.products);
+          setTotalPages(response.totalPages);
+        }
+      } catch (err) {
+        console.error("Error al filtrar productos:", err);
+        if (isMounted) { // Solo actualizar si sigue montado
+          setError("Error al cargar los productos");
+          setProducts([]);
+        }
       } finally {
-        setLoadingProducts(false); // Finalizar loading
+        if (isMounted) { // Solo actualizar si sigue montado
+          setLoadingProducts(false);
+        }
       }
     };
-  
-    fetchProducts();
-  }, [currentPage]);
 
-// Productos que se deben mostrar en la página actual
-  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
-  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
-  
-if (loadingProducts && products.length === 0) {
+    fetchFilteredProducts();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [categories.join(','), brands.join(','), search, pageFromUrl]); // Convertir arrays a strings para la dependencia
+
+  // Manejar cambio de página
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams();
+    
+    if (categories.length > 0) {
+      params.set('categories', categories.join(','));
+    }
+    
+    if (brands.length > 0) {
+      params.set('brands', brands.join(','));
+    }
+    
+    if (search) {
+      params.set('search', search);
+    }
+    
+    if (newPage > 1) {
+      params.set('page', newPage.toString());
+    }
+    
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  if (loadingProducts && products.length === 0) {
     return (
       <div className="container mx-auto p-6 flex justify-center items-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-red-50 text-red-700 p-4 rounded-md">
+          <p>{error}</p>
         </div>
       </div>
     );
@@ -61,14 +125,29 @@ if (loadingProducts && products.length === 0) {
           <CategoryFilterSidebar />
         </div>
 
-        {/* Columna derecha - Contenido */}
+        {/* Columna derecha - Productos */}
         <div className="md:col-span-3">
-          <ProductGrid products={currentProducts} />
-          <Pagination 
-            totalPages={totalPages} 
-            currentPage={currentPage} 
-            onPageChange={setCurrentPage} 
-          />
+          {loadingProducts ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Cargando productos...</p>
+              </div>
+            </div>
+          ) : products.length === 0 ? (
+            <p className="text-center text-gray-600">
+              No se encontraron productos con los filtros seleccionados.
+            </p>
+          ) : (
+            <>
+              <ProductGrid products={products} />
+              <Pagination
+                totalPages={totalPages}
+                currentPage={pageFromUrl}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

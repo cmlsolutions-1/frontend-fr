@@ -29,13 +29,15 @@ const getToken = () => {
 };
 
 // Función para obtener headers con token (REQUERIDO PARA TODAS LAS RUTAS)
-const getAuthHeaders = () => {
+const getAuthHeaders = (includeContentType: boolean = true) => {
   const token = getToken();
   
-  // ✅ Siempre incluir Content-Type y Authorization
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json"
-  };
+  // Siempre incluir Content-Type y Authorization
+  const headers: Record<string, string> = {};
+  
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
   
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -44,6 +46,53 @@ const getAuthHeaders = () => {
   }
   
   return headers;
+};
+
+
+
+// Nuevo endpoint para filtrar productos
+export const filterProducts = async (params: {
+  page: number;
+  limit: number;
+  search?: string;
+  brands?: string[];
+  categories?: string[];
+}) => {
+  const { page, limit, search = '', brands = [], categories = [] } = params;
+  
+  try {
+    const url = new URL(`${API_URL}/products/filter`);
+    url.searchParams.set('page', page.toString());
+    url.searchParams.set('limit', limit.toString());
+    url.searchParams.set('search', search);
+
+    const requestBody = {
+      brands,
+      categories
+    };
+
+    console.log("🔍 Enviando filtro al backend:", requestBody);
+    
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: getAuthHeaders(true),
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error en filtrado:", errorText);
+      throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Productos filtrados recibidos:", data.total, "total, página", data.page);
+    
+    return data;
+  } catch (error) {
+    console.error("Error al filtrar productos:", error);
+    throw error;
+  }
 };
 
 
@@ -115,6 +164,8 @@ export const getProductById = async (_id: string): Promise<Product> => {
     throw error;
   }
 };
+
+
 
 
 // Función para buscar productos
