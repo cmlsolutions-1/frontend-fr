@@ -52,13 +52,15 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
   }
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-xl font-bold">Promociones Activas</h2>
         <p className="text-sm text-gray-500">
           Gestiona todas tus promociones desde aquí
         </p>
       </div>
-      <div className="p-6">
+
+      <div className="p-6 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

@@ -82,14 +82,22 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           : 'Completa los detalles para crear una nueva promoción'
       }
       footer={
-        <>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:justify-end">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto"
+            >
             Cancelar
           </Button>
-          <Button type="button" onClick={handleSavePromotion}>
+          <Button 
+          type="button" 
+          onClick={handleSavePromotion}
+          className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white"
+          >
             {editingPromotion ? 'Guardar Cambios' : 'Crear Promoción'}
           </Button>
-        </>
+        </div>
       }
     >
       <div className="py-4">

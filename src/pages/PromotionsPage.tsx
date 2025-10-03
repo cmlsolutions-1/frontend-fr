@@ -273,29 +273,33 @@ export default function PromotionsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Gestión de Promociones</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Promociones</h1>
           <p className="text-sm text-gray-500">
             Crea y administra promociones para tus productos
           </p>
         </div>
-        <Button onClick={handleCreatePromotion} className="flex items-center gap-2">
+        <Button onClick={handleCreatePromotion} 
+          className="flex items-center gap-2 w-full sm:w-auto justify-center">
           <Plus className="w-2 h-4" />
           {loadingProducts ? "Cargando..." : "Nueva Promoción"}
         </Button>
       </div>
 
       {/* Tabla de promociones */}
-      <PromotionTable
-        promotions={promotions}
-        products={products}
-        onEdit={handleEditPromotion}
-        onDelete={handleDeletePromotion}
-        isPromotionExpired={isPromotionExpired}
-        getStatusBadge={getStatusBadge}
-      />
+      <div className="overflow-x-auto rounded-lg shadow-sm">
+        <PromotionTable
+          promotions={promotions}
+          products={products}
+          onEdit={handleEditPromotion}
+          onDelete={handleDeletePromotion}
+          isPromotionExpired={isPromotionExpired}
+          getStatusBadge={getStatusBadge}
+        />
+      </div>
 
       {/* Modal del formulario */}
       <PromotionFormModal

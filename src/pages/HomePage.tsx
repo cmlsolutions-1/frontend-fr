@@ -14,7 +14,7 @@ const HomePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const PRODUCTS_PER_PAGE = 21;
+  const PRODUCTS_PER_PAGE = 51;
 
   // Obtener parámetros de la URL
   const categories = searchParams.get('categories')?.split(',') || [];
