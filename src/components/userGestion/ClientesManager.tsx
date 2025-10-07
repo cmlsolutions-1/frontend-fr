@@ -140,7 +140,7 @@ export default function ClientesManager({
   
 
  
-    // ✅ Cargar clientes según el rol del usuario
+    // Cargar clientes según el rol del usuario
     useEffect(() => {
       const loadClients = async () => {
         setLoading(true);
@@ -149,28 +149,28 @@ export default function ClientesManager({
         try {
           let clientsData: Cliente[] = [];
           
-          // ✅ Verificar rol del usuario
+          //  Verificar rol del usuario
           if (user?.role === "Admin") {
-            // ✅ Administrador: cargar todos los clientes
-            console.log("👑 Usuario Admin: cargando todos los clientes");
+            // Administrador: cargar todos los clientes
+            console.log(" Usuario Admin: cargando todos los clientes");
             clientsData = await getAllClients();
           } else if (user?.role === "SalesPerson" && user._id) {
-            // ✅ Vendedor: cargar solo sus clientes
+            //  Vendedor: cargar solo sus clientes
             console.log("👤 Usuario Vendedor: cargando clientes asignados");
             clientsData = await getClientsBySalesPerson(user._id);
           } else {
-            // ✅ Cliente regular o sin rol: cargar desde localStorage
+            //  Cliente regular o sin rol: cargar desde localStorage
             console.log("👥 Usuario regular: cargando desde localStorage");
             clientsData = loadClientesFromLocalStorage();
           }
   
-          console.log("📥 Clientes cargados:", clientsData.length);
+          console.log("Clientes cargados:", clientsData.length);
           setClientes(clientsData);
         } catch (err) {
           console.error("❌ Error al cargar clientes:", err);
           setError(err instanceof Error ? err.message : "No se pudieron cargar los clientes");
           
-          // ✅ Fallback a localStorage
+          // Fallback a localStorage
           try {
             const localClients = loadClientesFromLocalStorage();
             setClientes(localClients);
@@ -184,16 +184,16 @@ export default function ClientesManager({
       };
   
       loadClients();
-    }, [user, selectedVendedorId]); // ✅ Recargar cuando cambie el usuario o vendedor seleccionado
+    }, [user, selectedVendedorId]); // Recargar cuando cambie el usuario o vendedor seleccionado
   
-    // ✅ Filtrar clientes según vendedor seleccionado (para Admin)
+    // Filtrar clientes según vendedor seleccionado (para Admin)
     useEffect(() => {
       if (!selectedVendedorId) {
         setFilteredClientes(clientes);
         return;
       }
   
-      // ✅ Solo aplicar filtro para Admin
+      // Solo aplicar filtro para Admin
       if (user?.role === "Admin") {
         const filtered = clientes.filter((c) => c.salesPersonId === selectedVendedorId);
         setFilteredClientes(filtered);
@@ -202,7 +202,7 @@ export default function ClientesManager({
       }
     }, [clientes, selectedVendedorId, user?.role]);
   
-    // ✅ Filtrar por búsqueda
+    //  Filtrar por búsqueda
     useEffect(() => {
       if (!searchTerm) {
         setFilteredClientes(clientes);

@@ -8,6 +8,7 @@ import { currencyFormat } from "@/utils";
 import { OrderStatus, Title } from "@/components";
 import { OrderStatusButton } from "@/components/orders/OrderStatusButton";
 import { useAuthStore } from '@/store/auth-store';
+import { ArrowLeft } from "lucide-react";
 
 export default function OrdersByIdPage() {
   const { _id } = useParams<{ _id: string }>();
@@ -248,9 +249,10 @@ export default function OrdersByIdPage() {
 
             <Link
               to={backRoute}
-              className="mt-6 btn-primary w-full block text-center text-sm font-light px-6 py-3 text-blue-600 hover:text-blue-800 underline border border-blue-600 rounded hover:bg-blue-50 transition-colors"
+              className="mt-6 btn-primary w-full block text-center text-sm font-light px-6 py-3 text-green-700 hover:text-white underline border border-green-500 rounded hover:bg-green-500 transition-colors"
             >
-              ← Volver a órdenes
+              {/* <ArrowLeft className="w-4 h-4 mr-2" /> */}
+               Volver a Órdenes
             </Link>
           </div>
         </div>

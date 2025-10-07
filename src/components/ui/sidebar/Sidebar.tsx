@@ -118,8 +118,7 @@ export const Sidebar = () => {
         {isSalesPerson && (
           <>
             {/* Line Separator */}
-            <div className="w-full h-px bg-gray-200 my-10" />
-            <hr className="my-4 border-gray-300" />
+            
 
             <Link to="/salesPerson/user-salesPerson" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />

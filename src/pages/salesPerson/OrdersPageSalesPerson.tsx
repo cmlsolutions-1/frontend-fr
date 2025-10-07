@@ -64,8 +64,8 @@ export default function OrdersPageSalesPerson() {
       <h2 className="text-xl font-bold mb-4">Pedidos Clientes</h2>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead className="bg-gray-100">
+        <table className="min-w-full border bg-white">
+          <thead className="bg-gray-200">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Nro. Pedido
