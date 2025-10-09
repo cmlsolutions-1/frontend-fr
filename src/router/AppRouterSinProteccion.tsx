@@ -44,146 +44,41 @@ export const AppRouter = () => {
         {/* Ruta pública */}
         <Route path="/" element={<LoginPage />} />
 
-        {/* Rutas Admin */}
+        {/* Rutas protegidas */}
         <Route
-          path="/admin/orders"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <ShopLayout>
-                  <OrdersPageAdmin />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/admin/user-management"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <ShopLayout>
-                  <UserManagement />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/promociones"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <ShopLayout>
-                  <PromotionsPage />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        {/* Rutas SalesPerson */}
-        <Route
-          path="/salesPerson/user-salesPerson"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["SalesPerson"]}>
-                <ShopLayout>
-                  <UserSalesPerson currentSellerId={user?._id ?? ""} />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/salesPerson/orders"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["SalesPerson"]}>
-                <ShopLayout>
-                  <OrdersPageSalesPerson />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        {/* Rutas Client */}
-
-        <Route
-            path="/cart/*"
-            element={
-            <RoleProtectedRoute allowedRoles={["Client"]}>
-              <CartPage />
-            </RoleProtectedRoute>
-                  }
-                />
-
-                <Route  
-                      path="/checkout"
-                          element={
-                            <RoleProtectedRoute allowedRoles={["Client"]}>
-                              <CheckoutPage />
-                            </RoleProtectedRoute>
-                          }
-                        />
-
-        <Route
-          path="/orders"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Client"]}>
-                <ShopLayout>
-                  <OrdersPage />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/promocionesActivas"
-          element={
-            <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Client"]}>
-                <ShopLayout>
-                  <ListPromotionsClients />
-                </ShopLayout>
-              </RoleProtectedRoute>
-            </PrivateRoute>
-          }
-        />
-
-        {/* Rutas Publicas */}
-
-        <Route
-          path="/homePage/*"
+          path="/categories/*"
           element={
             <PrivateRoute>
               <ShopLayout>
-                <HomePage />
+                <CategoriesPage />
               </ShopLayout>
             </PrivateRoute>
           }
         />
-
         <Route
-            path="/product/:_id"
-                  element={
-                <PrivateRoute>
-                <ShopLayout>
-                <ProductPage />
-                </ShopLayout>
-              </PrivateRoute>
-            }
-          />
-        
-
-        
-
+          path="/cart/*"
+          element={
+            <PrivateRoute>
+              <CartPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <CheckoutPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orders/:_id"
+          element={
+            <PrivateRoute>
+              <OrdersByIdPage />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/empty"
           element={
@@ -194,7 +89,36 @@ export const AppRouter = () => {
             </PrivateRoute>
           }
         />
-        
+        <Route
+          path="/category/:category"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <CategoryByPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/homePage/*"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <HomePage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/product/:_id"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <ProductPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/404"
           element={
@@ -203,7 +127,119 @@ export const AppRouter = () => {
             </PrivateRoute>
           }
         />
-        
+        {/* <Route path="/" element={<LoginPage />} /> */}
+        <Route
+          path="/contenedor/:id"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <ContenedorPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/contenedor"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <AdminContenedorPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/proximosContenedores"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <ProximosContenedoresPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersPageAdmin />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/salesPerson/orders"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersPageSalesPerson />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/user-management"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <UserManagement />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/salesPerson/user-salesPerson"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <UserSalesPerson currentSellerId={user?._id ?? ""} />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/orders/:id"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <OrdersByIdPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/promociones"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <PromotionsPage />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/promocionesActivas"
+          element={
+            <PrivateRoute>
+              <ShopLayout>
+                <ListPromotionsClients />
+              </ShopLayout>
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/search"
           element={

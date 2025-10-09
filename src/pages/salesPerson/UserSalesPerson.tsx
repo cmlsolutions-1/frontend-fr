@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Mail, PhoneOutgoing, MapPin } from "lucide-react";
+import { Mail, PhoneOutgoing, MapPin,BadgeDollarSign,CheckCircle, XCircle } from "lucide-react";
 import { getClientsBySalesPerson } from "@/services/client.salesPerson";
 import type { Cliente, Email, Phone, Role } from "@/interfaces/user.interface";
 
@@ -44,7 +44,14 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
       : ["Sin dirección"],
     city: item.city ?? "",
     role: (item.role as Role) ?? "Client",
-    priceCategoryId: item.priceCategoryId ?? "",
+    priceCategoryId: item.priceCategory?._id ?? item.priceCategoryId ?? "",
+    priceCategory: item.priceCategory
+      ? {
+          _id: item.priceCategory._id ?? "",
+          code: item.priceCategory.code ?? "",
+          name: item.priceCategory.name ?? "Sin categoría",
+        }
+      : undefined,
     salesPersonId: item.salesPersonId ?? currentSellerId,
     clients: item.clients ?? [],
     state:
@@ -57,7 +64,7 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
 };
 
 
-  // 🧠 Cargar clientes del vendedor actual
+  // Cargar clientes del vendedor actual
   useEffect(() => {
     const loadClientes = async () => {
       if (!currentSellerId) {
@@ -145,24 +152,36 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
                       </div>
 
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <Badge
-                          variant={
-                            cliente.state === "activo"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {cliente.state || "Sin estado"}
-                        </Badge>
-                        {/* <Badge
-                          variant={
-                            priceCategory === "VIP"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {priceCategory}
-                        </Badge> */}
+                      {/* Estado del cliente */}
+                      <Badge
+                        variant={
+                          cliente.state === "activo" ? "default" : "secondary"
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        {cliente.state === "activo" ? (
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-red-500" />
+                        )}
+                        <span className="capitalize">{cliente.state || "Sin estado"}</span>
+                      </Badge>
+
+                         {/* Categoría de precio */}
+                        {cliente.priceCategory && (
+                          
+                          <Badge
+                            variant={
+                              cliente.priceCategory.name?.toLowerCase().includes("vip")
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="flex items-center gap-1"
+                          >
+                            <BadgeDollarSign className="w-4 h-4 text-gray-500" />
+                            {cliente.priceCategory.name || "Sin categoría"}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -34,7 +34,15 @@ export interface User {
   state?: "activo" | "inactivo";
 }
 
+export interface PriceCategory {
+  _id: string;
+  code: string;
+  name: string;
+}
+
 // === VENDEDOR ===
 export interface Vendedor extends User {}
-export interface Cliente extends User {}
+export interface Cliente extends User {
+  priceCategory?: PriceCategory;
+}
 
