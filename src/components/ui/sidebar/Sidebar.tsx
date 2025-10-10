@@ -141,6 +141,14 @@ export const Sidebar = () => {
               <IoTicketOutline size={30} />
               <span className="ml-3 text-lg">Mis Pedidos</span>
             </Link>
+            <Link
+              to="/promocionesActivas"
+              onClick={() => closeMenu()}
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
+            >
+              <BiSolidOffer size={30} />
+              <span className="ml-3 text-lg">Promociones Activas</span>
+            </Link>
 
           </>
         )}

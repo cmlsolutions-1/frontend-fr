@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { FaBoxOpen } from "react-icons/fa";
 import {
   FaRegCalendarCheck as CalendarDays,
   FaEdit as Edit,
@@ -87,6 +88,12 @@ export const PromotionTableClient: React.FC<PromotionTableClientProps> = ({
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
+                Cantidad Requerida
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Vigencia activa hasta
               </th>
             </tr>
@@ -146,6 +153,12 @@ export const PromotionTableClient: React.FC<PromotionTableClientProps> = ({
             )}
           </div>
         </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+          <FaBoxOpen className="text-emerald-600" />
+          {promotion.minimumQuantity} ({promotion.typePackage})
+        </div>
+      </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm">
           <div className="flex items-center gap-1">
             <CalendarDays />

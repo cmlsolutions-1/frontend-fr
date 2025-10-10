@@ -148,7 +148,7 @@ export const AppRouter = () => {
           path="/promocionesActivas"
           element={
             <PrivateRoute>
-              <RoleProtectedRoute allowedRoles={["Client"]}>
+              <RoleProtectedRoute allowedRoles={["Client","SalesPerson"]}>
                 <ShopLayout>
                   <ListPromotionsClients />
                 </ShopLayout>
@@ -180,9 +180,14 @@ export const AppRouter = () => {
               </PrivateRoute>
             }
           />
-        
-
-        
+          <Route
+                    path="/orders/:_id"
+                    element={
+                      <PrivateRoute>
+                        <OrdersByIdPage />
+                      </PrivateRoute>
+                    }
+                  />       
 
         <Route
           path="/empty"

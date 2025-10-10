@@ -5,6 +5,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Pagination, ProductGrid, Title } from "@/components";
 import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSidebar";
 import { filterProducts } from "@/services/products.service";
+import { ArrowUp } from "lucide-react";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
@@ -22,8 +23,24 @@ const HomePage = () => {
   const search = searchParams.get('search') || '';
   const pageFromUrl = parseInt(searchParams.get('page') || '1');
 
+  //boton flotante para subir al inicio
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   
-  
+  // Detectar scroll para mostrar el botón para subir arriba
+useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > window.innerHeight / 2);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Función para volver arriba
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Cargar productos con filtros - usar una variable de control para evitar recargas innecesarias
   useEffect(() => {
     let isMounted = true; // Variable para controlar si el componente sigue montado
@@ -89,6 +106,8 @@ const HomePage = () => {
     }
     
     navigate(`?${params.toString()}`, { replace: true });
+    // Subir al inicio de la página
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (loadingProducts && products.length === 0) {
@@ -113,6 +132,7 @@ const HomePage = () => {
   }
 
   return (
+    <>
     <div className="container mx-auto px-4 py-6 space-y-6">
       <Title
         title="Distribucciones Ferrelectricos Restrepo"
@@ -146,11 +166,24 @@ const HomePage = () => {
                 currentPage={pageFromUrl}
                 onPageChange={handlePageChange}
               />
+              
             </>
           )}
         </div>
       </div>
     </div>
+
+    {/* 🔼 Botón flotante para volver arriba */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform transform hover:scale-110 z-50"
+          aria-label="Volver al inicio"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
+    </>
   );
 };
 
