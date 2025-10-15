@@ -8,6 +8,9 @@ import { filterProducts } from "@/services/products.service";
 import { ArrowUp } from "lucide-react";
 
 const HomePage = () => {
+
+  console.log('HomePage rendering');
+
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -28,18 +31,44 @@ const HomePage = () => {
 
   
   // Detectar scroll para mostrar el botón para subir arriba
-useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > window.innerHeight / 2);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+   // Detectar scroll para mostrar el botón para subir arriba
+  useEffect(() => {
+    
+   const scrollableElement = document.getElementById('main-content');
+    
+    
+    if (!scrollableElement) return;
 
-  // Función para volver arriba
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+   const handleScroll = () => {
+      
+   const scrollY = scrollableElement.scrollTop;
+   setShowScrollTop(scrollY > 50);
+   };
+
+    
+   scrollableElement.addEventListener("scroll", handleScroll);
+   
+   // Comprobación inicial
+   handleScroll();
+
+   // Limpia el listener del contenedor
+   return () => {
+   scrollableElement.removeEventListener("scroll", handleScroll);
+   };
+   }, []);
+   
+   // Función para volver arriba
+   const scrollToTop = () => {
+    
+    const scrollableElement = document.getElementById('main-content');
+    if (scrollableElement) {
+        scrollableElement.scrollTo({ 
+    top: 0, 
+   behavior: "smooth" 
+   });
+    }
+   };
+
 
   // Cargar productos con filtros - usar una variable de control para evitar recargas innecesarias
   useEffect(() => {
@@ -173,11 +202,11 @@ useEffect(() => {
       </div>
     </div>
 
-    {/* 🔼 Botón flotante para volver arriba */}
-      {showScrollTop && (
+    {/* Botón flotante para volver arriba */}
+          {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform transform hover:scale-110 z-50"
+          className="fixed bottom-6 right-6 bg-[#F4C048] hover:bg-[#f1b212] text-white p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 opacity-90 hover:opacity-100 z-[9999]"
           aria-label="Volver al inicio"
         >
           <ArrowUp className="w-5 h-5" />

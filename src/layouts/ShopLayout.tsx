@@ -13,7 +13,8 @@ interface Props {
 
 export const ShopLayout: React.FC<Props> = ({ children }) => {
   return (
-    <main className="min-h-screen">
+    <main id="main-content" 
+      className="h-screen overflow-y-auto">
       <TopMenu />
       <Sidebar />
       {/* <CategoryHeader/> */}
