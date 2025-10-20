@@ -34,7 +34,7 @@ export const ProductGridItem = ({ product }: Props) => {
   //Función para obtener el precio correcto según la categoría del cliente
   const getClientProductPrice = (product: Product): number => {
     if (!product.precios || product.precios.length === 0) return 0;
-    //console.log("👉 Precio mostrado:", productPrice);
+  
 
     // Si no hay usuario autenticado, mostrar el primer precio disponible
     if (!user || !user.priceCategory) {
@@ -108,7 +108,7 @@ export const ProductGridItem = ({ product }: Props) => {
         />
       </Link>
       {/* Contenido */}
-      <div className="p-4 flex flex-col justify-between flex-1">
+      <div className="p-4 flex flex-col justify-between flex-1 ">
         <Link
           className="text-sm font-medium text-gray-800 hover:text-blue-600 truncate"
           to={`/product/${product._id}`}

@@ -124,7 +124,7 @@ export const ProductPage = () => {
   const masterPackage = product.packages?.find((p) => p.typePackage === "Master");
 
   return (
-    <div className="mt-5 mb-20 grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-3 mt-[110px]">
       {/* Slideshow */}
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow

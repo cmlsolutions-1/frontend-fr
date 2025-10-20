@@ -99,7 +99,14 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
         city: item.city ?? '',
         password: '', // Nunca debería estar en localStorage
         role: item.role === 'Client' ? 'Client' : 'Client', // Asegurar rol
-        priceCategory: item.priceCategory ?? '',
+        priceCategoryId: item.priceCategory?._id ?? item.priceCategoryId ?? "",
+        priceCategory: item.priceCategory
+          ? {
+              _id: item.priceCategory._id ?? "",
+              code: item.priceCategory.code ?? "",
+              name: item.priceCategory.name ?? "Sin categoría",
+            }
+          : undefined,
         salesPerson: item.salesPerson ?? item.idSalesPerson ?? '', // Probar ambas formas
         state: item.state === 'Active' ? 'activo' :
                item.state === 'Inactive' ? 'inactivo' :
@@ -156,18 +163,18 @@ export default function ClientesManager({
             clientsData = await getAllClients();
           } else if (user?.role === "SalesPerson" && user._id) {
             //  Vendedor: cargar solo sus clientes
-            console.log("👤 Usuario Vendedor: cargando clientes asignados");
+            console.log(" Usuario Vendedor: cargando clientes asignados");
             clientsData = await getClientsBySalesPerson(user._id);
           } else {
             //  Cliente regular o sin rol: cargar desde localStorage
-            console.log("👥 Usuario regular: cargando desde localStorage");
+            console.log(" Usuario regular: cargando desde localStorage");
             clientsData = loadClientesFromLocalStorage();
           }
   
           console.log("Clientes cargados:", clientsData.length);
           setClientes(clientsData);
         } catch (err) {
-          console.error("❌ Error al cargar clientes:", err);
+          console.error(" Error al cargar clientes:", err);
           setError(err instanceof Error ? err.message : "No se pudieron cargar los clientes");
           
           // Fallback a localStorage
@@ -326,7 +333,7 @@ export default function ClientesManager({
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 ">
       <div className="max-w-7xl mx-auto">
         {/* Encabezado */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -378,7 +385,7 @@ export default function ClientesManager({
               cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
             const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";
             const address = cliente.address?.[0] || "Sin dirección";
-            const priceCategory = cliente.priceCategoryId || "Sin categoría";
+            const priceCategoryName = cliente.priceCategory?.name || "Sin categoría";
 
             return (
               <Card
@@ -405,11 +412,12 @@ export default function ClientesManager({
                       </Badge>
                       <Badge
                         variant={
-                          priceCategory === "VIP" ? "default" : "secondary"
+                          priceCategoryName.toLowerCase().includes("vip")
+                            ? "default"
+                            : "secondary"
                         }
-                        
                       >
-                        {priceCategory}
+                        {priceCategoryName}
                       </Badge>
                     </div>
                     </div>

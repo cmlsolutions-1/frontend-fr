@@ -16,3 +16,5 @@ export const ProductGrid = ({ products }: Props) => {
     </div>
   );
 };
+
+

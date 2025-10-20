@@ -162,17 +162,19 @@ const HomePage = () => {
 
   return (
     <>
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6 mt-[80px]">
       <Title
         title="Distribucciones Ferrelectricos Restrepo"
         subtitle="Todos los productos"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Columna izquierda - Filtros */}
-        <div className="md:col-span-1">
-          <CategoryFilterSidebar />
-        </div>
+        {/* Columna izquierda - Filtros fijos */}
+          <div className="md:col-span-1">
+            <div className="sticky top-[100px]">
+              <CategoryFilterSidebar />
+            </div>
+          </div>
 
         {/* Columna derecha - Productos */}
         <div className="md:col-span-3">

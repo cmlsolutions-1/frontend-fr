@@ -71,7 +71,7 @@ export default function OrdersPage() {
   //TERMINA BACKEND
 
   return (
-    <div className="px-4 sm:px-8 py-4">
+    <div className="px-4 sm:px-8 py-4 mt-[100px]">
       <h2 className="text-xl font-bold mb-4">Historial Pedidos</h2>
 
       <div className="overflow-x-auto">

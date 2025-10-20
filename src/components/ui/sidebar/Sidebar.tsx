@@ -39,24 +39,27 @@ export const Sidebar = () => {
 
   return (
     <div>
-      {/* Background black */}
+      {/* Overlay oscuro con desenfoque*/}
       {isSideMenuOpen && (
-        <div className="fixed top-0 left-0 w-screen h-screen z-10 bg-black opacity-30" />
+        
+        <div 
+        onClick={closeMenu}
+        className="fixed top-0 left-0 w-screen h-screen z-[60] bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300" />
       )}
 
       {/* Blur */}
-      {isSideMenuOpen && (
+      {/* {isSideMenuOpen && (
         <div
           onClick={closeMenu}
           className="fixed top-0 left-0 w-screen h-screen z-10 bg-black bg-opacity-30 backdrop-blur-sm"
         />
-      )}
+      )} */}
 
       {/* Sidemenu */}
       <nav
         className={clsx(
-          "fixed right-0 top-0 h-screen bg-white z-20 shadow-2xl transform transition-transform duration-300",
-            "w-full max-w-xs sm:max-w-sm md:max-w-md flex flex-col justify-between", // Responsivo
+          "fixed right-0 top-0 h-screen bg-white shadow-2xl transform transition-transform duration-300 z-[70]",
+          "w-full max-w-xs sm:max-w-sm md:max-w-md flex flex-col justify-between",
           {
             "translate-x-full": !isSideMenuOpen,
             "translate-x-0": isSideMenuOpen,

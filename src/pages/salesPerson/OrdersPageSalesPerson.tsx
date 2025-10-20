@@ -60,7 +60,7 @@ export default function OrdersPageSalesPerson() {
   //TERMINA BACKEND
 
   return (
-    <div className="px-4 sm:px-8 py-4">
+    <div className="px-4 sm:px-8 py-4 mt-[100px]">
       <h2 className="text-xl font-bold mb-4">Pedidos Clientes</h2>
 
       <div className="overflow-x-auto">
