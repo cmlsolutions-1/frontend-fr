@@ -104,9 +104,9 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
           ? {
               _id: item.priceCategory._id ?? "",
               code: item.priceCategory.code ?? "",
-              name: item.priceCategory.name ?? "Sin categoría",
+              name: item.priceCategory.name ?? "Sin categoría", // Asegura un nombre si viene vacío
             }
-          : undefined,
+          : { _id: "", code: "", name: "Sin categoría" },
         salesPerson: item.salesPerson ?? item.idSalesPerson ?? '', // Probar ambas formas
         state: item.state === 'Active' ? 'activo' :
                item.state === 'Inactive' ? 'inactivo' :
@@ -182,7 +182,7 @@ export default function ClientesManager({
             const localClients = loadClientesFromLocalStorage();
             setClientes(localClients);
           } catch (fallbackError) {
-            console.error("❌ Error en fallback:", fallbackError);
+            console.error(" Error en fallback:", fallbackError);
             setClientes([]);
           }
         } finally {

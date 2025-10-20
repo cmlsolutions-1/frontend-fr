@@ -136,7 +136,15 @@ const HomePage = () => {
     
     navigate(`?${params.toString()}`, { replace: true });
     // Subir al inicio de la página
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      const scrollableElement = document.getElementById('main-content');
+      if (scrollableElement) {
+        scrollableElement.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        // En caso de que el contenedor no exista, hacer scroll global
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 100);
   };
 
   if (loadingProducts && products.length === 0) {

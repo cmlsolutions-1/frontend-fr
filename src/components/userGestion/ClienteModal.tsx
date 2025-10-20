@@ -96,7 +96,7 @@ export default function ClienteModal({
     return value.toString();
   };
 
-    // ✅ Extraer priceCategory: Priorizar priceCategoryId en raíz, luego extra
+    // Extraer priceCategory: Priorizar priceCategoryId en raíz, luego extra
   let priceCategoryId = "";
   if (clientData.priceCategoryId) {
     priceCategoryId = extractId(clientData.priceCategoryId);
@@ -106,7 +106,7 @@ export default function ClienteModal({
     priceCategoryId = extractId(clientData.priceCategory);
   }
 
-    // ✅ Extraer salesPerson - MANEJAR AMBOS FORMATOS  
+    //  Extraer salesPerson - MANEJAR AMBOS FORMATOS  
     let salesPersonId = "";
   if (clientData.salesPersonId) {
     salesPersonId = extractId(clientData.salesPersonId);
@@ -235,10 +235,21 @@ export default function ClienteModal({
     if (!formData.city) newErrors.city = "La ciudad es requerida";
     if (!formData.priceCategoryId)
       newErrors.priceCategoryId = "La categoría de precio es requerida";
-    if (!formData.password.trim())
-      newErrors.password = "La contraseña es requerida";
-    if (formData.password.length < 6)
-      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+    
+    // --- VALIDACIÓN DE CONTRASEÑA MODIFICADA ---
+    if (!cliente?._id && !cliente?.id) { // Si es nuevo cliente
+      if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
+      else if (formData.password.length < 6)
+        newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+    } else { // Si es edición
+      // Solo validar si se ingresó algo y es muy corto
+      if (formData.password && formData.password.trim() && formData.password.length < 6) {
+        newErrors.password = "La nueva contraseña debe tener al menos 6 caracteres";
+      }
+      // Si formData.password está vacío o solo espacios, y es edición, NO se agrega error
+    }
+    // --- FIN VALIDACIÓN DE CONTRASEÑA ---
+    
     if (!formData.salesPersonId)
       newErrors.salesPersonId = "Debe asignar un vendedor";
 

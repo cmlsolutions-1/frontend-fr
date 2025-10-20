@@ -52,7 +52,7 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
     );
   }
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden mt-[20px]">
+    <div className="bg-white shadow-md rounded-lg overflow-hidden ">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-xl font-bold">Promociones Activas</h2>

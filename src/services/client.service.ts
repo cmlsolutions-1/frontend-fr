@@ -432,21 +432,21 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
   }
 };
 
-// ✅ Obtener TODOS los clientes (solo para Admin)
+//  Obtener TODOS los clientes (solo para Admin)
 export const getAllClients = async (): Promise<Cliente[]> => {
   try {
     console.log("👥 Solicitando todos los clientes (modo Admin)");
     
     const response = await fetch(`${API_URL}/users/client`, {
       method: "GET",
-      headers: getAuthHeaders(), // ✅ Enviar token
+      headers: getAuthHeaders(), //  Enviar token
     });
 
-    console.log("📥 Response status (getAllClients):", response.status);
+    console.log(" Response status (getAllClients):", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("❌ Error al obtener todos los clientes:", errorText);
+      console.error(" Error al obtener todos los clientes:", errorText);
       
       if (response.status === 401) {
         throw new Error("No autorizado. Solo administradores pueden acceder a esta función.");
@@ -476,6 +476,7 @@ export const getAllClients = async (): Promise<Cliente[]> => {
           password: "", // ✅ Nunca devolver la contraseña
           role: item.role || "Client",
           priceCategoryId: item.priceCategoryId || "",
+          priceCategory: item.priceCategory || null,
           salesPersonId: item.salesPersonId || "",
           state: item.state === "Active" ? "activo" : 
                  item.state === "Inactive" ? "inactivo" : 
