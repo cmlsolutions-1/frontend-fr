@@ -31,6 +31,7 @@ import OrdersPageSalesPerson from "@/pages/salesPerson/OrdersPageSalesPerson";
 import ListPromotionsClients from "@/pages/ListPromotionsClients";
 
 import { RoleProtectedRoute } from "./RoleProtectedRoute";
+import BancoImagenes from "@/pages/BancoImagenes";
 
 
 //CheckoutPage
@@ -65,6 +66,19 @@ export const AppRouter = () => {
               <RoleProtectedRoute allowedRoles={["Admin"]}>
                 <ShopLayout>
                   <UserManagement />
+                </ShopLayout>
+              </RoleProtectedRoute>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/bancoImagenes"
+          element={
+            <PrivateRoute>
+              <RoleProtectedRoute allowedRoles={["Admin"]}>
+                <ShopLayout>
+                  <BancoImagenes />
                 </ShopLayout>
               </RoleProtectedRoute>
             </PrivateRoute>

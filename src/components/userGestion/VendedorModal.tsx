@@ -65,28 +65,47 @@ export default function VendedorModal({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+
+    console.log("validateForm - formData:", formData);
+
     if (!formData.id.trim()) newErrors.id = "El ID es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
     if (!formData.lastName.trim())
       newErrors.lastName = "El apellido es requerido";
 
-    const email = formData.emails[0]?.EmailAddres;
-    if (!formData.emails?.[0]?.EmailAddres?.trim()) {
-      setErrors({ ...errors, email: "El email es obligatorio" });
-      return;
+    const emailValue = formData.emails?.[0]?.EmailAddres?.trim() || formData.emails?.[0]?.EmailAddress?.trim();
+    console.log("validateForm - emailValue:", emailValue); // Log del valor del email
+    console.log("validateForm - !emailValue:", !emailValue); // Log del resultado de la condición
+
+    if (!emailValue) {
+      console.log("validateForm - Asignando error de email"); // Log si entra en la condición
+      newErrors.email = "El email es requerido";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      console.log("validateForm - Asignando error de formato de email"); 
+      // Opcional: Validar formato del email
+      newErrors.email = "Email inválido";
     }
+
+    console.log("validateForm - newErrors antes de setErrors:", newErrors); // Log del objeto de errores antes de guardarlo
 
     const phone = formData.phones[0]?.NumberPhone;
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
     if (!formData.city) newErrors.city = "La ciudad es requerida";
-    if (!formData.priceCategoryId)
-      newErrors.priceCategory = "La categoría de precio es requerida";
-    if (!formData.password.trim())
-      newErrors.password = "La contraseña es requerida";
-
+    
+    if (!vendedor?._id && !vendedor?.id) { // Si es nuevo vendedor
+      if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
+      else if (formData.password.length < 6)
+        newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+    } else { // Si es edición
+      if (formData.password && formData.password.trim() && formData.password.length < 6) {
+        newErrors.password = "La nueva contraseña debe tener al menos 6 caracteres";
+      }
+      // Si formData.password está vacío y es edición, NO se agrega error
+    }
+    // --- FIN VALIDACIÓN DE CONTRASEÑA ---
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0; // Retorna true si no hay errores
   };
 
   const handleChange = <K extends keyof Vendedor>(
@@ -105,32 +124,29 @@ export default function VendedorModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validación mejorada del email
-    if (
-      !formData.emails ||
-      formData.emails.length === 0 ||
-      !formData.emails[0].EmailAddres
-    ) {
-      setErrors((prev) => ({ ...prev, email: "El email es requerido" }));
-      return;
+    // --- VALIDACIÓN PRINCIPAL ---
+    if (!validateForm()) {
+      console.log("❌ Validación del formulario fallida. Errores:", errors);
+      return; // Detener la ejecución si hay errores
     }
+    // --- FIN VALIDACIÓN ---
 
-    // Asegurar que el email esté en minúsculas y sin espacios
-    const cleanedEmails = formData.emails.map((email) => ({
-      EmailAddres: email.EmailAddres.trim().toLowerCase(),
-      IsPrincipal: email.IsPrincipal,
-    }));
-
-    // Preparar datos finales con el formato exacto
-    const vendedorToSave: Vendedor = {
-      ...formData,
-      id: formData.id || crypto.randomUUID(),
-      emails: [
+    // Asegurar que el email esté en minúsculas y sin espacios (solo si no está vacío, lo cual ya validamos)
+    const cleanedEmails = formData.emails?.[0] ? [
         {
-          EmailAddres: formData.emails[0].EmailAddres.trim(),
+          EmailAddres: (formData.emails[0].EmailAddres || formData.emails[0].EmailAddress)?.trim().toLowerCase() || "",
           IsPrincipal: true,
         },
-      ],
+      ] : []; // Si está vacío (aunque validateForm debería haberlo impedido), usar array vacío o el original
+
+    // Preparar datos finales con el formato exacto
+    // Asegúrate de incluir _id si es edición, para que updateVendedor lo use
+    const vendedorToSave: Vendedor = {
+      // Incluir _id y id originales si es edición
+      ...(vendedor && (vendedor._id || vendedor.id) && { _id: vendedor._id, id: vendedor.id }),
+      ...formData,
+      id: formData.id || crypto.randomUUID(), // Usar id existente o generar uno nuevo
+      emails: cleanedEmails,
       phones: [
         {
           NumberPhone:
@@ -144,12 +160,18 @@ export default function VendedorModal({
     };
 
     setLoading(true);
+    setApiError(null); // Limpiar errores anteriores
     try {
       await onSave(vendedorToSave);
       onClose();
     } catch (error) {
-      console.error("Error completo:", error);
-    setApiError(error.message);
+      console.error("Error completo en handleSubmit:", error);
+      // Asumiendo que `onSave` (en VendedoresManager) lanza el error correctamente
+      setApiError(
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al guardar el vendedor."
+      );
     } finally {
       setLoading(false);
     }
@@ -287,21 +309,6 @@ export default function VendedorModal({
               <p className="text-red-500 text-sm">{errors.city}</p>
             )}
           </div>
-
-          {/* Categoría de precio */}
-          {/* <div className="space-y-2">
-            <Label>Categoría de precio *</Label>
-            <Input
-              id="priceCategory"
-              name="priceCategory"
-              value={formData.priceCategory}
-              onChange={(e) => handleChange("priceCategory", e.target.value)}
-              className={errors.priceCategory ? "border-red-500" : ""}
-            />
-            {errors.priceCategory && (
-              <p className="text-red-500 text-sm">{errors.priceCategory}</p>
-            )}
-          </div> */}
 
           {/* Estado */}
           <div className="space-y-2">

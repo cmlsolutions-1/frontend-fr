@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { user, token } = await loginRequest(email, password);
 
-          set({ user, token }); // ✅ persist guarda esto automáticamente
+          set({ user, token }); // persist guarda esto automáticamente
           return true;
         } catch (err) {
           console.error("Login fallido", err);
@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        set({ user: null, token: null }); // ✅ persist borra del storage
+        set({ user: null, token: null }); //  persist borra del storage
       },
 
       restoreSession: async () => {
@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "auth-storage", // 🔑 clave en localStorage
+      name: "auth-storage", //  clave en localStorage
       partialize: (state) => ({ token: state.token, user: state.user }), // solo guarda estos
     }
   )

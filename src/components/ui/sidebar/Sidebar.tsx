@@ -13,6 +13,8 @@ import {
   IoLogoBuffer,
 } from "react-icons/io5";
 import { BiSolidOffer } from "react-icons/bi";
+import { CiImageOn } from "react-icons/ci";
+import { RiDiscountPercentLine } from "react-icons/ri";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useUIStore } from "@/store/ui/ui-store";
@@ -121,7 +123,7 @@ export const Sidebar = () => {
               onClick={() => closeMenu()}
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
-              <BiSolidOffer size={30} />
+              <RiDiscountPercentLine size={30} />
               <span className="ml-3 text-lg">Promociones Activas</span>
             </Link>
 
@@ -194,13 +196,18 @@ export const Sidebar = () => {
               onClick={() => closeMenu()}
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
-              <BiSolidOffer size={30} />
+              <RiDiscountPercentLine size={30} />
               <span className="ml-3 text-lg">Gestion Promociones</span>
             </Link>
 
             <Link to="/admin/user-management" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <IoPeopleOutline size={30} />
               <span className="ml-3 text-lg">Gestión de Usuarios</span>
+            </Link>
+
+            <Link to="/admin/bancoImagenes" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
+              <CiImageOn size={30} />
+              <span className="ml-3 text-lg">Banco de imágenes</span>
             </Link>
 
           </>

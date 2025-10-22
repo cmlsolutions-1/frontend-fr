@@ -42,7 +42,7 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   } else {
-    console.warn("⚠️ No se encontró token - las rutas protegidas fallarán");
+    console.warn(" No se encontró token - las rutas protegidas fallarán");
   }
   
   return headers;
@@ -79,7 +79,9 @@ export const filterProducts = async (params: {
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) {
+    //antiguo código
+
+    /* if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Error en filtrado:", errorText);
       throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
@@ -93,7 +95,35 @@ export const filterProducts = async (params: {
     console.error("Error al filtrar productos:", error);
     throw error;
   }
+}; */
+
+if (!response.ok) {
+      // --- AÑADIR VERIFICACIÓN DE 401 ---
+      if (response.status === 401) {
+         const errorText = await response.text(); // O await response.json() si el backend devuelve JSON
+         console.error("❌ 401 Unauthorized en filterProducts:", errorText);
+         const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
+         (authError as any).isAuthError = true; // Marcar como error de autenticación
+         (authError as any).status = 401;
+         throw authError;
+      }
+      // --- FIN VERIFICACIÓN DE 401 ---
+
+      const errorText = await response.text();
+      console.error("❌ Error en filtrado:", errorText);
+      throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Productos filtrados recibidos:", data.total, "total, página", data.page);
+
+    return data;
+  } catch (error) {
+    console.error("Error al filtrar productos:", error);
+    throw error;
+  }
 };
+
 
 
 // Obtener productos (sin paginación por ahora)
@@ -107,8 +137,30 @@ export const getProducts = async (): Promise<Product[]> => {
 
     console.log("📥 Productos response status:", response.status);
 
-    if (!response.ok) {
+    /* if (!response.ok) {
       
+      throw new Error("No se pudieron cargar los productos");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error al traer productos:", error);
+    throw error;
+  }
+}; */
+
+ if (!response.ok) {
+      // --- AÑADIR VERIFICACIÓN DE 401 ---
+      if (response.status === 401) {
+         const errorText = await response.text(); // O await response.json() si el backend devuelve JSON
+         console.error("❌ 401 Unauthorized en getProducts:", errorText);
+         const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
+         (authError as any).isAuthError = true; // Marcar como error de autenticación
+         (authError as any).status = 401;
+         throw authError;
+      }
+      // --- FIN VERIFICACIÓN DE 401 ---
+
       throw new Error("No se pudieron cargar los productos");
     }
 
@@ -119,6 +171,10 @@ export const getProducts = async (): Promise<Product[]> => {
   }
 };
 
+
+
+
+
 export const getProductById = async (_id: string): Promise<Product> => {
   try {
     console.log("🔎 Solicitando producto por ID:", _id);
@@ -128,15 +184,21 @@ export const getProductById = async (_id: string): Promise<Product> => {
       headers: getAuthHeaders(), 
     });
 
-    console.log("📥 Producto response status:", response.status);
+    console.log(" Producto response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Error en la API:", errorText);
-      
+
+      // --- AÑADIR VERIFICACIÓN DE 401 ---
       if (response.status === 401) {
-        throw new Error("No autorizado. Por favor inicie sesión nuevamente.");
+         console.error("❌ 401 Unauthorized en getProductById:", errorText);
+         const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
+         (authError as any).isAuthError = true; // Marcar como error de autenticación
+         (authError as any).status = 401;
+         throw authError;
       }
+      // --- FIN VERIFICACIÓN DE 401 ---
       
       if (response.status === 404) {
         throw new Error("Producto no encontrado.");

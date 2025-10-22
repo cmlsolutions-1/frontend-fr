@@ -6,6 +6,8 @@ import { Pagination, ProductGrid, Title } from "@/components";
 import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSidebar";
 import { filterProducts } from "@/services/products.service";
 import { ArrowUp } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
+import React from 'react';
 
 const HomePage = () => {
 
@@ -17,6 +19,7 @@ const HomePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
 
   const PRODUCTS_PER_PAGE = 51;
 
@@ -95,10 +98,26 @@ const HomePage = () => {
         }
       } catch (err) {
         console.error("Error al filtrar productos:", err);
-        if (isMounted) { // Solo actualizar si sigue montado
-          setError("Error al cargar los productos");
-          setProducts([]);
+
+        
+        if (isMounted) {
+          // Verificar si es un error de autenticación
+          if (err.isAuthError) { // <-- Verificar la propiedad isAuthError
+            // --- Manejar error de autenticación ---
+            console.log("Error de autenticación detectado en HomePage.");
+            logout(); // Limpiar estado de autenticación
+            localStorage.removeItem("authToken"); // Limpiar token si es necesario
+            localStorage.removeItem("user");      // Limpiar user si es necesario
+             setError("auth_expired"); // Usar un código de error personalizado
+          } else {
+            // --- Manejar otros errores ---
+            setError("Error al cargar los productos. Por favor, intenta más tarde.");
+            setProducts([]);
+          }
         }
+
+
+
       } finally {
         if (isMounted) { // Solo actualizar si sigue montado
           setLoadingProducts(false);
@@ -112,7 +131,7 @@ const HomePage = () => {
     return () => {
       isMounted = false;
     };
-  }, [categories.join(','), brands.join(','), search, pageFromUrl]); // Convertir arrays a strings para la dependencia
+  }, [categories.join(','), brands.join(','), search, pageFromUrl, logout, navigate]); // Convertir arrays a strings para la dependencia
 
   // Manejar cambio de página
   const handlePageChange = (newPage: number) => {
@@ -149,7 +168,7 @@ const HomePage = () => {
 
   if (loadingProducts && products.length === 0) {
     return (
-      <div className="container mx-auto p-6 flex justify-center items-center h-64">
+      <div className="container mx-auto p-6 flex justify-center items-center h-64 ">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando productos...</p>
@@ -159,13 +178,34 @@ const HomePage = () => {
   }
 
   if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="bg-red-50 text-red-700 p-4 rounded-md">
-          <p>{error}</p>
+    // --- Mostrar mensaje personalizado para error de autenticación ---
+    if (error === "auth_expired") { // <-- Verificar el código de error personalizado
+      return (
+        <div className="container mx-auto p-6 mt-[90px]">
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+            <p className="text-yellow-700">
+              Tu sesión ha expirado. Por favor,{" "}
+              <button
+                onClick={() => navigate('/login')} // Manejar clic para redirigir
+                className="text-blue-600 hover:underline font-medium"
+              >
+                vuelve a iniciar sesión
+              </button>
+              .
+            </p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      // --- Mostrar mensaje genérico para otros errores ---
+      return (
+        <div className="container mx-auto p-6 mt-[90px]">
+          <div className="bg-red-50 text-red-700 p-4 rounded-md">
+            <p>{error}</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
