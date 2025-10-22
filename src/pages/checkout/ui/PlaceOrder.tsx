@@ -172,8 +172,8 @@ export const PlaceOrder = () => {
             <IoIosInformationCircle className="w-4 h-4 text-yellow-600" /> {/* Icono con color amarillo más oscuro */}
              {/* Etiqueta opcional para resaltar la importancia */}
           </span>
-          {" "}Importante: Esta es una Pre-Factura. Los impuestos aplicables se calcularán y 
-          añadirán durante la gestión final del pedido, según las regulaciones vigentes.
+          {" "}Importante: Esta es una Pre-Factura. El valor final puede variar según la responsabilidad tributaria del cliente. 
+          Impuestos y retenciones se reflejarán en la Factura Electrónica.
         </p>
       </div>
 

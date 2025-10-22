@@ -1,9 +1,10 @@
 // src/components/ui/ProductSearchDropdown.tsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 🔁 Agrega useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { searchProducts } from '@/services/products.service';
 import type { Product } from '@/interfaces/product.interface';
 import { IoSearchOutline } from 'react-icons/io5';
+
 
 interface Props {
   onClose?: () => void;
@@ -15,6 +16,8 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // ✅ Para navegar al presionar Enter
+
+  
 
   useEffect(() => {
     const searchProductsDebounced = async () => {
@@ -45,7 +48,8 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (searchTerm.trim()) {
-        navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+        //navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+        navigate(`/homePage?search=${encodeURIComponent(searchTerm)}`);
         setShowResults(false);
         if (onClose) onClose();
       }
@@ -57,7 +61,7 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
     if (onClose) onClose();
   };
 
-  // ✅ Función para formatear el texto de búsqueda
+  // Función para formatear el texto de búsqueda
   const formatProductText = (product: Product): string => {
     const reference = product.referencia || '';
     const detail = product.detalle || '';
@@ -66,6 +70,13 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
     const shortDetail = detail.length > 50 ? detail.substring(0, 50) + '...' : detail;
     
     return reference ? `${reference} - ${shortDetail}` : shortDetail;
+  };
+
+  // En el renderizado de los resultados, también cambia Link por navigate
+  const handleResultClick = (productId: string) => {
+     navigate(`/product/${productId}`); // Navegar directamente al producto
+     setShowResults(false);
+     if (onClose) onClose();
   };
 
   return (
@@ -92,14 +103,13 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
           <ul>
             {results.map((product) => (
               <li key={product._id}>
-                <Link
-                  to={`/product/${product._id}`}
-                  onClick={handleClickOutside}
+                <div
+                  onClick={() => handleResultClick(product._id)}
                   className="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
                 >
                   <span className="font-medium">{product.detalle}</span>
                   <span className="ml-auto text-xs text-gray-500">ID: {product._id}</span>
-                </Link>
+                </div>
               </li>
             ))}
           </ul>

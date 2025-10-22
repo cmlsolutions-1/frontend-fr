@@ -100,7 +100,7 @@ export const CategoryFilterSidebar = () => {
     // Siempre mantener la página en 1 al aplicar filtros
     params.set('page', '1');
     
-    navigate(`/homePage?${params.toString()}`);
+    navigate(`?${params.toString()}`);
   };
 
   // Limpiar todos los filtros
@@ -115,8 +115,8 @@ export const CategoryFilterSidebar = () => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm">
-      <h3 className="font-medium text-gray-800 mb-3">Filtrar por:</h3>
+    <div className="bg-white p-4 rounded-lg shadow-sm h-[calc(100vh-150px)] max-h-[600px] overflow-y-auto">
+      <h3 className="font-medium text-gray-800 mb-3 sticky top-0 bg-white z-10">Filtrar por:</h3>
 
       {/* Line Separator */}
       <div className="w-full h-px bg-gray-200 my-4" />
@@ -224,7 +224,7 @@ export const CategoryFilterSidebar = () => {
 
       {/* Filtros aplicados */}
       {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
-        <div className="mt-4 p-3 bg-yellow-50 rounded-md">
+        <div className="mt-4 p-3 bg-yellow-50 rounded-md sticky bottom-0 z-10">
           <h4 className="font-medium text-gray-700 mb-2">Filtros aplicados:</h4>
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map(categoryId => {
