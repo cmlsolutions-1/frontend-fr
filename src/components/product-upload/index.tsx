@@ -150,7 +150,7 @@ export default function ProductUpload() {
             />
 
             <div className="flex flex-col items-center justify-center gap-4 text-center">
-              <div className="rounded-full bg-secondary p-4">
+              <div className="rounded-full bg-gray-200 p-4">
                 <Upload className="h-8 w-8 text-muted-foreground" />
               </div>
               <div className="space-y-2">
@@ -166,8 +166,9 @@ export default function ProductUpload() {
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
+                className="mt-2 flex items-center gap-2 hover:bg-gray-400 hover:text-gray-800"
               >
-                <ImageIcon className="mr-2 h-4 w-4" />
+                <ImageIcon className="h-4 w-4" />
                 Examinar Archivos
               </Button>
             </div>
@@ -216,7 +217,7 @@ export default function ProductUpload() {
             }
             size="lg"
             className={cn(
-              "w-full transition-all",
+              "w-full transition-all flex items-center justify-center gap-2",
               uploadSuccess && "bg-success hover:bg-success" // Asegúrate de que 'bg-success' y 'text-success-foreground' estén definidos en tu CSS/Tailwind
             )}
           >

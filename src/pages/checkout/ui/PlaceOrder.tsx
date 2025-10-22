@@ -7,7 +7,7 @@ import { currencyFormat } from "@/utils";
 import { createOrder } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
 import { CartItem } from "@/interfaces/cart.interface";
-
+import { IoIosInformationCircle } from "react-icons/io";
 
 export const PlaceOrder = () => {
   const navigate = useNavigate();
@@ -163,6 +163,19 @@ export const PlaceOrder = () => {
             </a>
           </span>
         </p>
+
+      
+      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md"> {/* Contenedor con fondo y borde amarillo claro */}
+        <p className="text-xs text-yellow-800 font-medium"> {/* Texto en color amarillo oscuro para contraste */}
+          <span className="inline-flex items-center gap-1.5"> {/* Contenedor para alinear icono y texto */}
+            {/* Icono de información opcional */}
+            <IoIosInformationCircle className="w-4 h-4 text-yellow-600" /> {/* Icono con color amarillo más oscuro */}
+             {/* Etiqueta opcional para resaltar la importancia */}
+          </span>
+          {" "}Importante: Esta es una Pre-Factura. Los impuestos aplicables se calcularán y 
+          añadirán durante la gestión final del pedido, según las regulaciones vigentes.
+        </p>
+      </div>
 
         {errorMessage && (
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
