@@ -5,11 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { Upload, X, Check, Loader2, ImageIcon } from "lucide-react";
-// Ajusta esta importación según tu configuración de utilidades de clases
-// Si usas una función como `cn` de `clsx` y `tailwind-merge`, descomenta la siguiente línea
-// import { cn } from "@/lib/utils";
+import { uploadImages } from "@/services/bancoImagenes.service";
 
-// O define `cn` si no la usas y solo necesitas condicionales simples
+
 function cn(...inputs: (string | boolean | undefined)[]) {
   return inputs.filter(Boolean).join(' ');
 }
@@ -80,6 +78,8 @@ export default function ProductUpload() {
     setUploadSuccess(false);
   }, []);
 
+
+
   const handleUpload = async () => {
     if (images.length === 0) return;
 
@@ -87,23 +87,19 @@ export default function ProductUpload() {
     setUploadSuccess(false);
 
     try {
-      // --- AQUÍ VA LA LÓGICA REAL DE SUBIDA AL BACKEND ---
-      // Por ejemplo:
-      // const formData = new FormData();
-      // images.forEach((img, index) => {
-      //   formData.append('images', img.file);
-      // });
-      // await fetch('TU_ENDPOINT_DE_SUBIDA', {
-      //   method: 'POST',
-      //   body: formData,
-      //   // headers: getAuthHeaders(), // Si requiere autenticación
-      // });
+      // --- LÓGICA REAL DE SUBIDA AL BACKEND ---
+      // Extraer los archivos del estado
+      const filesToUpload = images.map(img => img.file);
 
-      // Simulación de carga (reemplaza con tu lógica real)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Llamar a la función del servicio
+      const uploadResponse = await uploadImages(filesToUpload);
 
       setIsUploading(false);
       setUploadSuccess(true);
+
+      // --- LIMPIAR IMÁGENES DESPUÉS DE SUBIR ---
+      setImages([]); // Limpia el estado de imágenes seleccionadas
+      // --- FIN LIMPIEZA ---
 
       // Limpiar éxito después de 3 segundos
       setTimeout(() => {
@@ -113,7 +109,7 @@ export default function ProductUpload() {
       console.error("Error al subir imágenes:", error);
       setIsUploading(false);
       // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje
-      alert("Ocurrió un error al subir las imágenes. Por favor, intenta de nuevo.");
+      alert(`Ocurrió un error al subir las imágenes: ${error instanceof Error ? error.message : "Error desconocido"}`);
     }
   };
 
