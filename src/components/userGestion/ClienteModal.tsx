@@ -20,9 +20,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { Cliente, Vendedor, Role } from "@/interfaces/user.interface";
+import { Cliente, Vendedor, Role, City, Department } from "@/interfaces/user.interface";
 import { getPriceCategories } from "@/services/priceCategory.service";
 import { ChevronDown, UserRound } from "lucide-react";
+import { getDepartments, getCitiesByDepartment } from "@/services/client.service";
+
 
 
 interface ClienteModalProps {
@@ -40,7 +42,10 @@ export default function ClienteModal({
   cliente,
   vendedores,
 }: ClienteModalProps) {
-  const [formData, setFormData] = useState<Cliente>({
+
+  type ExtendedCliente = Cliente & { departmentId: string; cityId: string };
+
+  const [formData, setFormData] = useState<ExtendedCliente>({
     id: "",
     name: "",
     lastName: "",
@@ -48,44 +53,58 @@ export default function ClienteModal({
     emails: [{ EmailAddres: "", IsPrincipal: true }],
     phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
-    city: "",
+    city: "", 
+    departmentId: "", 
+    cityId: "",       
     role: "Client",
     priceCategoryId: "",
     salesPersonId: "",
     state: "activo",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof Cliente, string>>>(
-    {}
-  );
+  // Cambiar tipo de errores para incluir departmentId y cityId
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // --- ESTADOS PARA DEPARTAMENTOS Y CIUDADES ---
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [cities, setCities] = useState<{_id: string; name: string}[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  // --- FIN ESTADOS ---
 
   // es de la lista de precios de categoria
   const [priceCategories, setPriceCategories] = useState<{id: string; name: string}[]>([]);
 
+  // Cargar departamentos y categorías al montar el modal
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getPriceCategories();
-        setPriceCategories(data);
-      } catch (err) {
-        console.error("No se pudieron cargar categorías de precios", err);
-      }
-    };
-    fetchData();
-  }, []);
+    if (isOpen) {
+      const fetchData = async () => {
+        setLoadingDepartments(true);
+        try {
+          const [deptData, pcData] = await Promise.all([
+            getDepartments(),
+            getPriceCategories()
+          ]);
+          setDepartments(deptData);
+          setPriceCategories(pcData);
+        } catch (err) {
+          console.error("Error al cargar departamentos o categorías de precios", err);
+          setDepartments([]);
+          setPriceCategories([]);
+        } finally {
+          setLoadingDepartments(false);
+        }
+      };
+      fetchData();
+    }
+  }, [isOpen]);
+
   
   // ✅ Función para normalizar los datos del cliente del backend
-  const normalizeClientData = (clientData: any): Cliente => {
+  const normalizeClientData = (clientData: any): ExtendedCliente => {
     console.log("🔄 Normalizando cliente:", clientData);
-
-    // ✅ DEBUG ESPECÍFICO para todos los campos posibles
-    console.log("🔍 salesPersonId:", clientData.salesPersonId);
-    console.log("🔍 priceCategoryId:", clientData.priceCategoryId);
-    console.log("🔍 extra.salesPerson:", clientData.extra?.salesPerson);
-    console.log("🔍 extra.priceCategoryId:", clientData.extra?.priceCategoryId);
-    console.log("🔍 extra object:", clientData.extra);
 
     // ✅ Función helper para extraer IDs de diferentes formatos
     const extractId = (value: any): string => {
@@ -95,6 +114,20 @@ export default function ClienteModal({
     if (value.id) return value.id.toString();
     return value.toString();
   };
+
+  // Extraer cityId y departmentId del objeto city del backend
+    let cityId = "";
+    let departmentId = "";
+    if (typeof clientData.city === 'object' && clientData.city && clientData.city._id) {
+       cityId = clientData.city._id;
+       if (clientData.city.department && typeof clientData.city.department === 'object' && clientData.city.department._id) {
+          departmentId = clientData.city.department._id;
+       }
+    } else if (typeof clientData.city === 'string') {
+       // Si city es solo un string, asumimos es el ID de la ciudad
+       cityId = clientData.city;
+       // departmentId no se puede extraer si solo tenemos el ID de la ciudad
+    }
 
     // Extraer priceCategory: Priorizar priceCategoryId en raíz, luego extra
   let priceCategoryId = "";
@@ -119,7 +152,10 @@ export default function ClienteModal({
     console.log("✅ PriceCategory extraído:", priceCategoryId);
     console.log("✅ SalesPerson extraído:", salesPersonId);
 
-    // ✅ Extraer email correctamente (manejar diferentes formatos)
+    console.log("✅ City ID extraído:", cityId);
+    console.log("✅ Department ID extraído:", departmentId);
+
+    //  Extraer email correctamente (manejar diferentes formatos)
     let emails: Cliente['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
   if (clientData.emails && Array.isArray(clientData.emails) && clientData.emails.length > 0) {
     const firstEmail = clientData.emails[0];
@@ -131,7 +167,7 @@ export default function ClienteModal({
     emails = [{ EmailAddres: clientData.email, IsPrincipal: true }];
   }
 
-    // ✅ Extraer teléfono correctamente
+    //  Extraer teléfono correctamente
      let phones: Cliente['phones'] = [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }];
   if (clientData.phones && Array.isArray(clientData.phones) && clientData.phones.length > 0) {
     const firstPhone = clientData.phones[0];
@@ -144,7 +180,7 @@ export default function ClienteModal({
     phones = [{ NumberPhone: clientData.phone, Indicative: "+57", IsPrincipal: true }];
   }
 
-    // ✅ Extraer dirección correctamente
+    // Extraer dirección correctamente
     let address: string[] = [""];
   if (Array.isArray(clientData.address)) {
     address = clientData.address;
@@ -152,70 +188,117 @@ export default function ClienteModal({
     address = [clientData.address];
   }
 
-  // ✅ City
-  const city = clientData.cityId || clientData.city || "";
 
-    // ✅ Normalizar estado
+    // Normalizar estado
     const state = clientData.state === "Active" ? "activo" : 
                   clientData.state === "Inactive" ? "inactivo" : 
                   clientData.state || "activo";
 
-    const normalizedClient: Cliente = {
-    _id: clientData._id || "",
-    id: clientData.id || "",
-    name: clientData.name || "",
-    lastName: clientData.lastName || "",
-    password: "", // Nunca mostrar contraseña
-    emails,
-    phones,
-    address,
-    city,
-    role: clientData.role || "Client",
-    priceCategoryId,    
-    salesPersonId,         
-    state,
-  };
+    const normalizedClient: ExtendedCliente = {
+      _id: clientData._id || "",
+      id: clientData.id || "",
+      name: clientData.name || "",
+      lastName: clientData.lastName || "",
+      password: "", // Nunca mostrar contraseña
+      emails,
+      phones,
+      address,
+      city: clientData.city || "", // Mantener el valor original para enviarlo si no se modifica
+      departmentId, // Campo interno
+      cityId,       // Campo interno
+      role: clientData.role || "Client",
+      priceCategoryId,
+      salesPersonId,
+      state,
+    };
 
-  console.log("✅ Cliente normalizado completo:", normalizedClient);
+
+  console.log("Cliente normalizado completo (ExtendedCliente):", normalizedClient);
   return normalizedClient;
 };
 
 
   useEffect(() => {
-    console.log("🔄 useEffect - cliente recibido:", cliente);
-    console.log("🔄 useEffect - isOpen:", isOpen);
+    if (cliente && isOpen) {
+      // ✅ Normalizar los datos del cliente (ahora devuelve ExtendedCliente)
+      const normalizedClient = normalizeClientData(cliente);
+      setFormData(normalizedClient);
 
+      // Si se cargó un departmentId, cargar también sus ciudades
+      if (normalizedClient.departmentId) {
+         const loadCitiesForLoadedDept = async () => {
+            setLoadingCities(true);
+            try {
+               const cityList = await getCitiesByDepartment(normalizedClient.departmentId);
+               // Mapear solo _id y name para el Select
+               setCities(cityList.map(c => ({ _id: c._id, name: c.name })));
+            } catch (err) {
+               console.error("Error al cargar ciudades del departamento existente:", err);
+               setCities([]);
+            } finally {
+               setLoadingCities(false);
+            }
+         };
+         loadCitiesForLoadedDept();
+      }
 
-  if (cliente && isOpen) {
-    // ✅ Normalizar los datos del cliente
-    const normalizedClient = normalizeClientData(cliente);
-    setFormData(normalizedClient);
+    } else if (isOpen) { // Solo resetear si el modal se está abriendo para nuevo cliente
+      setFormData({
+        id: "",
+        name: "",
+        lastName: "",
+        password: "",
+        emails: [{ EmailAddres: "", IsPrincipal: true }],
+        phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
+        address: [""],
+        city: "",
+        departmentId: "",
+        cityId: "",
+        role: "Client",
+        priceCategoryId: "",
+        salesPersonId: "",
+        state: "activo",
+      });
+      setCities([]); // Limpiar ciudades al resetear
+    }
 
-  } else {
-    // ✅ Resetear formulario para nuevo cliente
-    setFormData({
-      id: "",
-      name: "",
-      lastName: "",
-      password: "",
-      emails: [{ EmailAddres: "", IsPrincipal: true }],
-      phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
-      address: [""],
-      city: "",
-      role: "Client",
-      priceCategoryId: "",
-      salesPersonId: "",
-      state: "activo",
-    });
-  }
+    setErrors({});
+    setApiError(null);
+  }, [cliente, isOpen]);
 
-  setErrors({});
-  setApiError(null);
-}, [cliente, isOpen]);
+  // --- AGREGAR useEffect PARA CARGAR CIUDADES CUANDO CAMBIA EL DEPARTAMENTO ---
+  useEffect(() => {
+    const loadCities = async () => {
+      if (formData.departmentId) {
+        setLoadingCities(true);
+        try {
+          const cityList = await getCitiesByDepartment(formData.departmentId);
+          // Mapear solo _id y name para el Select
+          setCities(cityList.map(c => ({ _id: c._id, name: c.name })));
+          // Limpiar cityId si el departamento cambia y la ciudad ya no es válida
+          if (!cityList.some(c => c._id === formData.cityId)) {
+             setFormData(prev => ({ ...prev, cityId: "" }));
+          }
+        } catch (err) {
+          console.error("Error al cargar ciudades:", err);
+          setCities([]);
+          setFormData(prev => ({ ...prev, cityId: "" })); // Limpiar ciudad si falla
+        } finally {
+          setLoadingCities(false);
+        }
+      } else {
+        setCities([]); // Limpiar ciudades si no hay departamento
+        setFormData(prev => ({ ...prev, cityId: "" })); // Limpiar ciudad
+      }
+    };
 
+    loadCities();
+  }, [formData.departmentId]);
+  // --- FIN AGREGADO ---
 
+// --- ACTUALIZAR validateForm ---
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof Cliente, string>> = {};
+     const newErrors: Partial<Record<string, string>> = {};
 
     if (!formData.id.trim()) newErrors.id = "la cedula es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
@@ -232,7 +315,10 @@ export default function ClienteModal({
     else if (!/^[0-9]{7,15}$/.test(phone))
       newErrors.phones = "Teléfono inválido";
 
-    if (!formData.city) newErrors.city = "La ciudad es requerida";
+    // --- VALIDACIÓN DE CIUDAD (AHORA cityId) ---
+    if (!formData.cityId) newErrors.cityId = "La ciudad es requerida";
+    // --- FIN VALIDACIÓN ---
+
     if (!formData.priceCategoryId)
       newErrors.priceCategoryId = "La categoría de precio es requerida";
     
@@ -257,19 +343,19 @@ export default function ClienteModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = <K extends keyof Cliente>(
+  const handleChange = <K extends keyof ExtendedCliente>(
     field: K,
-    value: Cliente[K]
+    value: ExtendedCliente[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     
 
     // Limpiar error del campo
-    if (errors[field]) {
+    if (errors[field as string]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[field];
+        delete newErrors[field as string];
         return newErrors;
       });
     }
@@ -284,9 +370,12 @@ export default function ClienteModal({
 
     try {
       // ✅ Preparar datos para enviar al backend con nombres correctos
+      // Mapear ExtendedCliente a Cliente, excluyendo los campos internos
+      const { departmentId, cityId, ...clienteParaGuardar } = formData;
       const clientToSave: Cliente = {
-        ...formData,
-        state: formData.state || "activo",
+        ...clienteParaGuardar,
+        city: cityId, // Usar cityId como el valor de city
+        state: clienteParaGuardar.state || "activo",
       };
 
       console.log("📤 Guardando cliente:", clientToSave);
@@ -435,18 +524,111 @@ export default function ClienteModal({
             />
           </div>
 
-          {/* Ciudad */}
-          <div className="space-y-2">
-            <Label>Ciudad *</Label>
-            <Input
-              value={formData.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              className={errors.city ? "border-red-500" : ""}
-            />
-            {errors.city && (
-              <p className="text-red-500 text-sm">{errors.city}</p>
+          {/* Departamento */}
+          <div className="space-y-2 relative z-50">
+            <Label>Departamento *</Label>
+            <Select
+              value={formData.departmentId}
+              onValueChange={(value) => handleChange("departmentId", value)}
+            >
+              <SelectTrigger
+                className={`mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 
+                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm 
+                ${errors.departmentId ? "border border-red-500" : ""}`}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}
+              >
+                <div className="flex items-center gap-3 pr-6">
+                  <SelectValue placeholder="Seleccionar departamento" />
+                </div>
+              </SelectTrigger>
+
+              <SelectContent
+                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "80px" }}
+              >
+                <SelectScrollUpButton />
+                {loadingDepartments ? (
+                  <SelectItem value="__loading_dept__" disabled>
+                    Cargando...
+                  </SelectItem>
+                ) : (
+                  departments.map((dept) => (
+                    <SelectItem
+                      key={dept._id}
+                      value={dept._id}
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                    >
+                      {dept.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectScrollDownButton />
+              </SelectContent>
+            </Select>
+
+            {errors.departmentId && (
+              <p className="text-red-500 text-sm">{errors.departmentId}</p>
             )}
           </div>
+
+          {/* Ciudad */}
+          <div className="space-y-2 relative z-50">
+            <Label>Ciudad *</Label>
+            <Select
+              value={formData.cityId}
+              onValueChange={(value) => handleChange("cityId", value)}
+              disabled={!formData.departmentId || loadingCities}
+            >
+              <SelectTrigger
+                className={`mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 
+                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm 
+                ${errors.cityId ? "border border-red-500" : ""}`}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}
+              >
+                <div className="flex items-center gap-3 pr-6">
+                  <SelectValue
+                    placeholder={
+                      !formData.departmentId
+                        ? "Seleccione un departamento"
+                        : "Seleccionar ciudad"
+                    }
+                  />
+                </div>
+              </SelectTrigger>
+
+              <SelectContent
+                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "80px" }}
+              >
+                <SelectScrollUpButton />
+                {loadingCities ? (
+                  <SelectItem value="__loading_city__" disabled>
+                    Cargando ciudades...
+                  </SelectItem>
+                ) : cities.length === 0 ? (
+                  <SelectItem value="__no_cities__" disabled>
+                    No hay ciudades disponibles
+                  </SelectItem>
+                ) : (
+                  cities.map((city) => (
+                    <SelectItem
+                      key={city._id}
+                      value={city._id}
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                    >
+                      {city.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectScrollDownButton />
+              </SelectContent>
+            </Select>
+
+            {errors.cityId && (
+              <p className="text-red-500 text-sm">{errors.cityId}</p>
+            )}
+          </div>
+
 
           {/* Categoría de Precio */}
         <div className="space-y-2 relative z-50">

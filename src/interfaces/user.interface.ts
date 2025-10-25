@@ -16,6 +16,21 @@ export interface Phone {
   IsPrincipal: boolean;
 }
 
+// === DEPARTMENT ===
+export interface Department {
+  _id: string;
+  name: string;
+  id?: string;
+}
+
+// === CITY ===
+export interface City {
+  _id: string;
+  department: Department; 
+  name: string;
+  id?: string; 
+}
+
 // === USER BASE ===
 export interface User {
   _id?: string;
@@ -26,7 +41,7 @@ export interface User {
   emails: Email[];
   phones: Phone[];
   address: string[];        
-  city: string;
+  city: string | City;
   role: Role;
   priceCategoryId: string;
   salesPersonId?: string; 

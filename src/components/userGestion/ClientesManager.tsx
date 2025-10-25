@@ -453,6 +453,18 @@ export default function ClientesManager({
                         : `${phoneIndicative} ${phoneNumber}`}
                     </span>
                   </div>
+                  {/* Aca va el departamento */}
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    <span className="truncate">{address}</span>
+                  </div>
+                  
+                  {/* Aca va la ciudad */}
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    <span className="truncate">{address}</span>
+                  </div>
+                  {/* Aca va la direccion */}
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-gray-500" />
                     <span className="truncate">{address}</span>

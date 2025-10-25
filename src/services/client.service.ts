@@ -1,3 +1,5 @@
+//src/services/client.service.ts
+
 import type { Cliente } from "@/interfaces/user.interface";
 
 import { UpdateUserDto } from "@/interfaces/update-user";
@@ -77,10 +79,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     role: "Client",
     priceCategory: cliente.priceCategoryId,
     salesPerson: cliente.salesPersonId, // ID del vendedor asociado
-    // state: "Active", // Siempre Active al crear
-    // emailVerified: false,
-    // emailValidated: false,
-    // clients: []
+
   };
 
   console.log("Payload a enviar:", JSON.stringify(payload, null, 2));
@@ -129,9 +128,6 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     } else {
       // Si no hay datos útiles, crea uno básico basado en el payload o lanza un error
       console.warn("Respuesta inesperada del backend:", responseData);
-      // Puedes lanzar un error o devolver un objeto parcial
-      // throw new Error("Respuesta inesperada del servidor al crear el cliente.");
-      // O asumir que fue exitoso y devolver un objeto básico
       createdClientData = {
         ...cliente, // Conserva datos locales
         id: responseData?.id || cliente.id || crypto.randomUUID(), // Usa ID del backend si existe
@@ -139,9 +135,6 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
       };
     }
 
-    // Mapear 'state' del backend ('Active'/'Inactive') a 'state' del frontend ('activo'/'inactivo')
-    // Asegúrate de que 'state' en tu interfaz Cliente sea "activo" | "inactivo" | "Active" | "Inactive"
-    // o ajusta el mapeo según sea necesario.
     const mappedState =
       createdClientData.state === "Active"
         ? "activo"
@@ -180,8 +173,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
 
 // src/services/client.service.ts
 export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
-  // Validaciones básicas para la actualización
-  // Priorizar _id para la actualización, pero fallback a id si _id no está
+
   const clientIdToUpdate = cliente._id || cliente.id;
   if (!clientIdToUpdate) {
     throw new Error(
@@ -233,12 +225,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   if (cliente.priceCategoryId)
     payloadToSend.priceCategory = cliente.priceCategoryId;
 
-  // Campo CRÍTICO para la actualización: idSalesPerson (no salesPerson)
-  // Asumimos que cliente.salesPerson ya contiene el _id del vendedor
+
   payloadToSend.salesPerson = cliente.salesPersonId;
 
-  // Si necesitas actualizar el estado, descomenta la siguiente línea
-  // payloadToSend.state = cliente.state === "activo" ? "Active" : "Inactive";
 
   console.log(
     "Payload a enviar para ACTUALIZAR (usando _id):",
@@ -252,10 +241,6 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       headers: getAuthHeaders(),
       body: JSON.stringify(payloadToSend),
     });
-
-    // ... (resto del manejo de respuesta e igualación de objeto, igual que antes) ...
-    // (El código para manejar la respuesta y mapear el objeto resultante Cliente
-    //  no cambia, ya que se basa en los datos devueltos por el backend)
 
     let responseData;
     try {
@@ -462,7 +447,7 @@ export const getAllClients = async (): Promise<Cliente[]> => {
     const data = await response.json();
     console.log("✅ Todos los clientes recibidos:", data.length);
 
-    // ✅ Mapear los datos al formato del frontend
+    // Mapear los datos al formato del frontend
     return Array.isArray(data) 
       ? data.map((item: any) => ({
           _id: item._id || item.id,
@@ -493,5 +478,66 @@ export const getAllClients = async (): Promise<Cliente[]> => {
     }
     
     throw error instanceof Error ? error : new Error("Error desconocido al obtener clientes.");
+  }
+};
+
+
+interface Department {
+  _id: string;
+  name: string;
+  __v: number;
+}
+
+interface City {
+  _id: string;
+  department: string; // ID del departamento
+  name: string;
+  __v: number;
+}
+
+// Obtener todos los departamentos
+export const getDepartments = async (): Promise<Department[]> => {
+  try {
+    const response = await fetch(`${API_URL}/users/departments`, {
+      method: "GET",
+      headers: getAuthHeaders(false), // No se necesita Content-Type para GET
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al obtener departamentos: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data; // Asumiendo que el backend devuelve un array de departamentos
+  } catch (error) {
+    console.error("Error al cargar departamentos:", error);
+    throw error;
+  }
+};
+
+// Obtener ciudades por ID de departamento
+export const getCitiesByDepartment = async (departmentId: string): Promise<City[]> => {
+  try {
+    if (!departmentId) {
+      console.warn("No se proporcionó un ID de departamento para cargar ciudades.");
+      return [];
+    }
+
+    const response = await fetch(`${API_URL}/users/cities/${departmentId}`, {
+      method: "GET",
+      headers: getAuthHeaders(false), // No se necesita Content-Type para GET
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al obtener ciudades: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data; // Asumiendo que el backend devuelve un array de ciudades
+  } catch (error) {
+    console.error("Error al cargar ciudades:", error);
+    throw error;
   }
 };
