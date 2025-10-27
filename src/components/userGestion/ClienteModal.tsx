@@ -72,41 +72,86 @@ export default function ClienteModal({
   const [cities, setCities] = useState<{_id: string; name: string}[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
+  //  Saber si el modal está en modo edición
+  const isEditing = !!cliente?._id;
   // --- FIN ESTADOS ---
 
   // es de la lista de precios de categoria
   const [priceCategories, setPriceCategories] = useState<{id: string; name: string}[]>([]);
 
-  // Cargar departamentos y categorías al montar el modal
+  // Cargar departamentos y categorías una sola vez al montar el componente
   useEffect(() => {
-    if (isOpen) {
-      const fetchData = async () => {
-        setLoadingDepartments(true);
-        try {
-          const [deptData, pcData] = await Promise.all([
-            getDepartments(),
-            getPriceCategories()
-          ]);
+    let isMounted = true; // Bandera para evitar actualizaciones si el componente se desmonta
+
+    const fetchData = async () => {
+      setLoadingDepartments(true);
+      try {
+        const [deptData, pcData] = await Promise.all([
+          getDepartments(),
+          getPriceCategories(),
+        ]);
+        if (isMounted) { // Solo actualizar si sigue montado
           setDepartments(deptData);
           setPriceCategories(pcData);
-        } catch (err) {
+        }
+      } catch (err) {
+        if (isMounted) { // Solo actualizar si sigue montado
           console.error("Error al cargar departamentos o categorías de precios", err);
           setDepartments([]);
           setPriceCategories([]);
-        } finally {
+        }
+      } finally {
+        if (isMounted) { // Solo actualizar si sigue montado
           setLoadingDepartments(false);
         }
-      };
-      fetchData();
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Montar solo una vez
+
+  // --- NUEVO: useEffect para cargar ciudades cuando cambia formData.departmentId ---
+  useEffect(() => {
+    if (!formData.departmentId) {
+      setCities([]);
+      // Si se limpia el departamento, limpiar también la ciudad
+      if (formData.cityId) {
+          setFormData((prev) => ({ ...prev, cityId: "" }));
+      }
+      return;
     }
-  }, [isOpen]);
+
+    const loadCities = async () => {
+      setLoadingCities(true);
+      try {
+        const cityList = await getCitiesByDepartment(formData.departmentId);
+        const normalizedCities = cityList.map((c) => ({ _id: c._id, name: c.name }));
+        setCities(normalizedCities);
+
+      } catch (err) {
+        console.error("Error al cargar ciudades:", err);
+        setCities([]);
+        // Opcional: Limpiar cityId si falla la carga
+        setFormData((prev) => ({ ...prev, cityId: "" }));
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    loadCities();
+  }, [formData.departmentId]);
+  // --- FIN NUEVO ---
 
   
-  // ✅ Función para normalizar los datos del cliente del backend
+  //  Función para normalizar los datos del cliente del backend
   const normalizeClientData = (clientData: any): ExtendedCliente => {
     console.log("🔄 Normalizando cliente:", clientData);
 
-    // ✅ Función helper para extraer IDs de diferentes formatos
+    // Función helper para extraer IDs de diferentes formatos
     const extractId = (value: any): string => {
     if (!value) return "";
     if (typeof value === 'string') return value;
@@ -149,11 +194,11 @@ export default function ClienteModal({
     salesPersonId = extractId(clientData.salesPerson);
   }
 
-    console.log("✅ PriceCategory extraído:", priceCategoryId);
-    console.log("✅ SalesPerson extraído:", salesPersonId);
+    console.log("PriceCategory extraído:", priceCategoryId);
+    console.log("SalesPerson extraído:", salesPersonId);
 
-    console.log("✅ City ID extraído:", cityId);
-    console.log("✅ Department ID extraído:", departmentId);
+    console.log("City ID extraído:", cityId);
+    console.log("Department ID extraído:", departmentId);
 
     //  Extraer email correctamente (manejar diferentes formatos)
     let emails: Cliente['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
@@ -218,83 +263,40 @@ export default function ClienteModal({
 };
 
 
+  // useEffect para manejar apertura/cierre del modal y carga de cliente
   useEffect(() => {
-    if (cliente && isOpen) {
-      // ✅ Normalizar los datos del cliente (ahora devuelve ExtendedCliente)
-      const normalizedClient = normalizeClientData(cliente);
-      setFormData(normalizedClient);
-
-      // Si se cargó un departmentId, cargar también sus ciudades
-      if (normalizedClient.departmentId) {
-         const loadCitiesForLoadedDept = async () => {
-            setLoadingCities(true);
-            try {
-               const cityList = await getCitiesByDepartment(normalizedClient.departmentId);
-               // Mapear solo _id y name para el Select
-               setCities(cityList.map(c => ({ _id: c._id, name: c.name })));
-            } catch (err) {
-               console.error("Error al cargar ciudades del departamento existente:", err);
-               setCities([]);
-            } finally {
-               setLoadingCities(false);
-            }
-         };
-         loadCitiesForLoadedDept();
-      }
-
-    } else if (isOpen) { // Solo resetear si el modal se está abriendo para nuevo cliente
-      setFormData({
-        id: "",
-        name: "",
-        lastName: "",
-        password: "",
-        emails: [{ EmailAddres: "", IsPrincipal: true }],
-        phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
-        address: [""],
-        city: "",
-        departmentId: "",
-        cityId: "",
-        role: "Client",
-        priceCategoryId: "",
-        salesPersonId: "",
-        state: "activo",
-      });
-      setCities([]); // Limpiar ciudades al resetear
-    }
-
-    setErrors({});
-    setApiError(null);
-  }, [cliente, isOpen]);
-
-  // --- AGREGAR useEffect PARA CARGAR CIUDADES CUANDO CAMBIA EL DEPARTAMENTO ---
-  useEffect(() => {
-    const loadCities = async () => {
-      if (formData.departmentId) {
-        setLoadingCities(true);
-        try {
-          const cityList = await getCitiesByDepartment(formData.departmentId);
-          // Mapear solo _id y name para el Select
-          setCities(cityList.map(c => ({ _id: c._id, name: c.name })));
-          // Limpiar cityId si el departamento cambia y la ciudad ya no es válida
-          if (!cityList.some(c => c._id === formData.cityId)) {
-             setFormData(prev => ({ ...prev, cityId: "" }));
-          }
-        } catch (err) {
-          console.error("Error al cargar ciudades:", err);
-          setCities([]);
-          setFormData(prev => ({ ...prev, cityId: "" })); // Limpiar ciudad si falla
-        } finally {
-          setLoadingCities(false);
-        }
+    if (isOpen) {
+      if (isEditing && cliente) {
+        // ✅ Normalizar los datos del cliente (ahora devuelve ExtendedCliente)
+        const normalizedClient = normalizeClientData(cliente);
+        // Cargar datos en formData. El useEffect de departmentId se encargará de cargar ciudades.
+        setFormData(normalizedClient);
       } else {
-        setCities([]); // Limpiar ciudades si no hay departamento
-        setFormData(prev => ({ ...prev, cityId: "" })); // Limpiar ciudad
+        // Solo resetear campos específicos, mantener departmentId y cityId vacíos
+        setFormData((prev) => ({
+          ...prev,
+          id: "",
+          name: "",
+          lastName: "",
+          password: "",
+          emails: [{ EmailAddres: "", IsPrincipal: true }],
+          phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
+          address: [""],
+          city: "",
+          departmentId: "", // <-- Limpiar departamento
+          cityId: "",       // <-- Limpiar ciudad
+          priceCategoryId: "",
+          salesPersonId: "",
+          state: "activo",
+        }));
+        setCities([]); // Limpiar ciudades al resetear
       }
-    };
+      setErrors({});
+      setApiError(null);
+    }
+    // No dependencias específicas aquí, se ejecuta cuando isOpen cambia
+  }, [isOpen, cliente]); // Añadir cliente a las dependencias para que se actualice si cambia el cliente mientras está abierto
 
-    loadCities();
-  }, [formData.departmentId]);
-  // --- FIN AGREGADO ---
 
 // --- ACTUALIZAR validateForm ---
   const validateForm = (): boolean => {
@@ -590,7 +592,11 @@ export default function ClienteModal({
                     placeholder={
                       !formData.departmentId
                         ? "Seleccione un departamento"
-                        : "Seleccionar ciudad"
+                        : loadingCities // <-- Añadir esta condición
+                        ? "Cargando ciudades..." // Mostrar mientras se cargan las ciudades del depto
+                        : cities.length === 0 // <-- Añadir esta condición
+                        ? "No hay ciudades disponibles" // Si se cargaron, pero no hay ninguna
+                        : "Seleccionar ciudad" // Placeholder normal si hay ciudades
                     }
                   />
                 </div>

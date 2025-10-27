@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Plus, Edit, Trash2, Mail, MapPin, PhoneOutgoing } from "lucide-react";
+import { Plus, Edit, Trash2, Mail, MapPinned, PhoneOutgoing, Map,MapPinHouse} from "lucide-react";
 import ClienteModal from "@/components/userGestion/ClienteModal";
 import { Cliente, Email, Phone, Vendedor } from "@/interfaces/user.interface";
 import {
@@ -14,6 +14,8 @@ import { getClientsBySalesPerson } from "@/services/client.salesPerson";
 import { IoSearchOutline } from "react-icons/io5";
 import { ProductSearchDropdown } from "../ui/ProductSearchDropdown";
 import { ClientSearch } from "../ui/ClientSearch";
+
+
 
 interface ClientesManagerProps {
   searchTerm: string;
@@ -87,6 +89,40 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
         normalizedPhones = [{ NumberPhone: item.phone, Indicative: '+57', IsPrincipal: true }];
       }
 
+      // --- Normalizar city ---
+      // Asumiendo que el localStorage puede tener city como string (ID) o como objeto { _id, name, department: { ... } }
+      let normalizedCity: Cliente['city'] = '';
+      let extractedCityId = '';
+      let extractedDepartmentId = '';
+
+      if (typeof item.city === 'string') {
+        // Caso: city es solo el ID como string
+        normalizedCity = item.city;
+        extractedCityId = item.city;
+      } else if (typeof item.city === 'object' && item.city !== null) {
+        // Caso: city es un objeto
+        const cityObj = item.city;
+        if (cityObj._id) {
+          extractedCityId = cityObj._id;
+          // Intentar extraer departmentId del objeto city
+          if (cityObj.department && typeof cityObj.department === 'object' && cityObj.department._id) {
+             extractedDepartmentId = cityObj.department._id;
+          } else if (typeof cityObj.departmentId === 'string') {
+             // En caso de que el departamento esté como ID directamente en city
+             extractedDepartmentId = cityObj.departmentId;
+          }
+          // Mantener el objeto completo como city, o solo el ID como string, dependiendo de lo que esperes
+          // Para consistencia con el backend, podrías dejarlo como string (el ID)
+          normalizedCity = extractedCityId; // O como objeto { _id: cityObj._id, name: cityObj.name, ... }
+        } else {
+           // Si el objeto city no tiene _id, no es una ciudad válida, dejar como ''
+           normalizedCity = '';
+        }
+      } else {
+        // Caso: city es null, undefined, o un tipo inesperado
+        normalizedCity = '';
+      }
+
       // --- Devolver un objeto que cumpla con la interfaz Cliente ---
       return {
         _id: item._id ?? '', // Si viene
@@ -96,7 +132,7 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
         emails: normalizedEmails,
         phones: normalizedPhones,
         address: Array.isArray(item.address) ? item.address : (item.address ? [item.address] : ['']),
-        city: item.city ?? '',
+        city: normalizedCity,
         password: '', // Nunca debería estar en localStorage
         role: item.role === 'Client' ? 'Client' : 'Client', // Asegurar rol
         priceCategoryId: item.priceCategory?._id ?? item.priceCategoryId ?? "",
@@ -291,22 +327,35 @@ export default function ClientesManager({
         payloadToSend
       );
 
-      let updatedCliente: Cliente;
-
+      // No necesitas almacenar el resultado de save/update aquí si vas a recargar
       if (editingCliente) {
         console.log("Editando cliente existente. Payload:", payloadToSend);
-        updatedCliente = await updateClient(payloadToSend);
+        await updateClient(payloadToSend); // Espera a que finalice
       } else {
         console.log("Creando nuevo cliente. Payload:", payloadToSend);
-        updatedCliente = await saveClient(payloadToSend);
+        await saveClient(payloadToSend); // Espera a que finalice
       }
 
-      const updatedClientes = editingCliente
-        ? clientes.map((c) => (c.id === editingCliente.id ? updatedCliente : c))
-        : [...clientes, updatedCliente];
+      // --- FORZAR RECARGA DE CLIENTES ---
+      // En lugar de actualizar localmente, recargar la lista completa
+      // Esto asegura que se obtengan los datos más recientes del backend
+      // y se reflejen correctamente en la UI
+      if (user?.role === "Admin") {
+        const clientsData = await getAllClients();
+        setClientes(clientsData);
+        saveClientesToLocalStorage(clientsData); // Opcional: actualizar localStorage si es relevante para Admin
+      } else if (user?.role === "SalesPerson" && user._id) {
+        const clientsData = await getClientsBySalesPerson(user._id);
+        setClientes(clientsData);
+        saveClientesToLocalStorage(clientsData); // Opcional: actualizar localStorage si es relevante para SalesPerson
+      } else {
+        // Si se usa localStorage, actualizarlo
+        const localClients = loadClientesFromLocalStorage();
+        // Y recargar desde localStorage
+        setClientes(localClients);
+      }
+      // --- FIN FORZAR RECARGA ---
 
-      setClientes(updatedClientes);
-      saveClientesToLocalStorage(updatedClientes);
       setIsModalOpen(false);
     } catch (err: any) {
       console.error("Error al guardar cliente:", err);
@@ -387,6 +436,24 @@ export default function ClientesManager({
             const address = cliente.address?.[0] || "Sin dirección";
             const priceCategoryName = cliente.priceCategory?.name || "Sin categoría";
 
+              // --- Extraer Departamento y Ciudad ---
+            let departamento = "Sin departamento";
+            let ciudad = "Sin ciudad";
+
+            if (typeof cliente.city === 'object' && cliente.city && cliente.city._id) {
+               // Si city es un objeto, extraer nombre de ciudad y departamento
+               ciudad = cliente.city.name || "Sin ciudad";
+               if (cliente.city.department && typeof cliente.city.department === 'object' && cliente.city.department.name) {
+                  departamento = cliente.city.department.name;
+               }
+            } else if (typeof cliente.city === 'string' && cliente.city) {
+               // Si city es solo un string (ID o nombre), asumir es el nombre de la ciudad
+               // No podemos saber el departamento sin hacer otra llamada
+               ciudad = cliente.city;
+               // departamento sigue siendo "Sin departamento"
+            }
+            // --- FIN EXTRACCIÓN ---
+
             return (
               <Card
                 key={cliente.id}
@@ -453,20 +520,21 @@ export default function ClientesManager({
                         : `${phoneIndicative} ${phoneNumber}`}
                     </span>
                   </div>
-                  {/* Aca va el departamento */}
+                  {/* Departamento */}
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="truncate">{address}</span>
+                    <Map className="w-4 h-4 text-gray-500" />
+                    <span className="truncate">{departamento}</span>
                   </div>
-                  
-                  {/* Aca va la ciudad */}
+
+                  {/* Ciudad */}
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="truncate">{address}</span>
+                    <MapPinned className="w-4 h-4 text-gray-500" />
+                    <span className="truncate">{ciudad}</span>
                   </div>
-                  {/* Aca va la direccion */}
+
+                  {/* Dirección */}
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
+                    <MapPinHouse className="w-4 h-4 text-gray-500" />
                     <span className="truncate">{address}</span>
                   </div>
                 </CardContent>
