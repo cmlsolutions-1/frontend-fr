@@ -79,6 +79,10 @@ export default function ClienteModal({
   // es de la lista de precios de categoria
   const [priceCategories, setPriceCategories] = useState<{id: string; name: string}[]>([]);
 
+  // --- NUEVO: Estado temporal para el Select de Ciudad ---
+  const [selectCityId, setSelectCityId] = useState<string>("");
+  // --- FIN NUEVO ---
+
   // Cargar departamentos y categorías una sola vez al montar el componente
   useEffect(() => {
     let isMounted = true; // Bandera para evitar actualizaciones si el componente se desmonta
@@ -145,6 +149,24 @@ export default function ClienteModal({
     loadCities();
   }, [formData.departmentId]);
   // --- FIN NUEVO ---
+
+  // --- NUEVO: useEffect para sincronizar selectCityId con formData.cityId solo si está en la lista de ciudades cargadas ---
+useEffect(() => {
+  if (!loadingCities && cities.length > 0 && formData.cityId) {
+    const cityExists = cities.some((c) => c._id === formData.cityId);
+
+    if (cityExists) {
+      // Solo actualizar el estado del Select si la ciudad está disponible
+      setSelectCityId(formData.cityId);
+    } else {
+      // Si no está, limpiar el Select
+      setSelectCityId("");
+    }
+  } else if (loadingCities || cities.length === 0) {
+    // Si las ciudades aún se están cargando o están vacías, limpiar el Select temporal
+    setSelectCityId("");
+  }
+}, [formData.cityId, cities, loadingCities]);
 
   
   //  Función para normalizar los datos del cliente del backend
@@ -577,8 +599,13 @@ export default function ClienteModal({
           <div className="space-y-2 relative z-50">
             <Label>Ciudad *</Label>
             <Select
-              value={formData.cityId}
-              onValueChange={(value) => handleChange("cityId", value)}
+              value={selectCityId} // <-- AQUÍ ESTÁ EL CAMBIO
+              onValueChange={(value) => {
+                 // Actualiza también formData.cityId cuando cambia el Select
+                 handleChange("cityId", value);
+                 // Y el estado temporal
+                 setSelectCityId(value);
+              }}
               disabled={!formData.departmentId || loadingCities}
             >
               <SelectTrigger
@@ -589,14 +616,17 @@ export default function ClienteModal({
               >
                 <div className="flex items-center gap-3 pr-6">
                   <SelectValue
+                    // 👇 Cambia la condición para usar selectCityId
                     placeholder={
                       !formData.departmentId
                         ? "Seleccione un departamento"
-                        : loadingCities // <-- Añadir esta condición
-                        ? "Cargando ciudades..." // Mostrar mientras se cargan las ciudades del depto
-                        : cities.length === 0 // <-- Añadir esta condición
-                        ? "No hay ciudades disponibles" // Si se cargaron, pero no hay ninguna
-                        : "Seleccionar ciudad" // Placeholder normal si hay ciudades
+                        : loadingCities
+                        ? "Cargando ciudades..."
+                        : cities.length === 0
+                        ? "No hay ciudades disponibles"
+                        : !selectCityId // <-- AQUÍ ESTÁ EL CAMBIO
+                        ? "Seleccionar ciudad"
+                        : "Ciudad seleccionada" // O puedes mostrar el nombre si lo tienes en otro estado
                     }
                   />
                 </div>
