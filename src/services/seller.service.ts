@@ -3,7 +3,7 @@ import type { Vendedor } from "@/interfaces/user.interface";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ✅ Obtener el token
+// Obtener el token
 const getToken = () => {
   try {
     const authData = localStorage.getItem('auth-storage');
@@ -16,7 +16,7 @@ const getToken = () => {
   }
 };
 
-// ✅ Función para obtener headers con token
+// Función para obtener headers con token
 const getAuthHeaders = (includeContentType: boolean = true) => {
   const token = getToken();
   const headers: Record<string, string> = {};
@@ -55,7 +55,7 @@ export const getVendedores = async (): Promise<Vendedor[]> => {
         emails: item.emails || [], // Mantener estructura original
         phones: item.phones || [], // Mantener estructura original
         address: Array.isArray(item.address) ? item.address : [],
-        city: item.cityId,
+        city: item.cityId || item.city || "",
         role: item.role,
         priceCategoryId: "", 
         state: item.state === "Active" ? "activo" : "inactivo",
@@ -264,7 +264,7 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
       // Mapear phones si vienen en la respuesta
       phones: updatedSellerData.phone || updatedSellerData.phones || vendedor.phones || [], // Default a array vacío
       address: updatedSellerData.address || vendedor.address || [],
-      city: updatedSellerData.city || vendedor.city || '',
+      city: updatedSellerData.cityId || updatedSellerData.city || vendedor.city || '',
       password: "", // Nunca devolver la contraseña
       role: updatedSellerData.role || vendedor.role || "SalesPerson", // Default a SalesPerson
       priceCategoryId: updatedSellerData.priceCategory || vendedor.priceCategoryId || "",

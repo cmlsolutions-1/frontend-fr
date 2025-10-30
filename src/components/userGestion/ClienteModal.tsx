@@ -289,7 +289,7 @@ useEffect(() => {
   useEffect(() => {
     if (isOpen) {
       if (isEditing && cliente) {
-        // ✅ Normalizar los datos del cliente (ahora devuelve ExtendedCliente)
+        // Normalizar los datos del cliente (ahora devuelve ExtendedCliente)
         const normalizedClient = normalizeClientData(cliente);
         // Cargar datos en formData. El useEffect de departmentId se encargará de cargar ciudades.
         setFormData(normalizedClient);
@@ -393,8 +393,6 @@ useEffect(() => {
     setApiError(null);
 
     try {
-      // ✅ Preparar datos para enviar al backend con nombres correctos
-      // Mapear ExtendedCliente a Cliente, excluyendo los campos internos
       const { departmentId, cityId, ...clienteParaGuardar } = formData;
       const clientToSave: Cliente = {
         ...clienteParaGuardar,

@@ -89,16 +89,32 @@ export default function VendedoresManager() {
         vendedorFinal = await updateVendedor(vendedorParaActualizar);
         // --- Fin del cambio ---
       } else {
+         console.log("Creando vendedor con datos:", vendedorData); // Log antes de crear
         vendedorFinal = await createVendedor(vendedorData);
         if (!vendedorFinal.emails) vendedorFinal.emails = [];
         if (!vendedorFinal.phones) vendedorFinal.phones = [];
       }
 
+      // --- Actualización del estado de la lista ---
       setVendedores((prev) => {
-        const yaExiste = prev.some((v) => v.id === vendedorFinal.id);
-        return yaExiste
-          ? prev.map((v) => (v.id === vendedorFinal.id ? vendedorFinal : v))
-          : [...prev, vendedorFinal];
+        // Buscar por _id o id, ambos podrían estar presentes o faltar en distintos objetos
+        console.log("Estado anterior de vendedores:", prev); // Log estado anterior
+        console.log("Vendedor a agregar/actualizar:", vendedorFinal); // Log vendedor a procesar
+
+        const index = prev.findIndex(v => v._id === vendedorFinal._id || (v.id && v.id === vendedorFinal.id));
+
+        console.log("Índice encontrado para actualización:", index);
+
+        if (index !== -1) {
+          // Si se encontró, es una actualización
+          const updatedList = [...prev];
+          updatedList[index] = vendedorFinal;
+          console.log("Lista después de actualización:", updatedList);
+          return updatedList;
+        } else {
+          // Si no se encontró, es una creación
+          return [...prev, vendedorFinal];
+        }
       });
 
       setIsModalOpen(false);

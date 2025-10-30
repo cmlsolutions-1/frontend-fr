@@ -7,6 +7,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectScrollDownButton, 
+  SelectScrollUpButton,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/SelectUsers";
@@ -17,7 +19,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { Vendedor } from "@/interfaces/user.interface";
+import { Vendedor, City, Department } from "@/interfaces/user.interface";
+import { getDepartments, getCitiesByDepartment } from "@/services/client.service";
 
 interface VendedorModalProps {
   isOpen: boolean;
@@ -32,7 +35,11 @@ export default function VendedorModal({
   onSave,
   vendedor,
 }: VendedorModalProps) {
-  const initialFormState: Vendedor = {
+
+  type ExtendedVendedor = Vendedor & { departmentId: string; cityId: string };
+
+
+  const initialFormState: ExtendedVendedor = {
     id: "",
     name: "",
     lastName: "",
@@ -40,28 +47,226 @@ export default function VendedorModal({
     emails: [{ EmailAddres: "", IsPrincipal: true }],
     phones: [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }],
     address: [""],
-    city: "",
+    city: "", 
+    departmentId: "",
     role: "SalesPerson",
     priceCategoryId: "",
     state: "activo",
     salesPersonId: "",
     clients: [],
+    cityId: "",     
   };
 
-  const [formData, setFormData] = useState<Vendedor>(initialFormState);
+
+  const [formData, setFormData] = useState<ExtendedVendedor>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+   // --- ESTADOS PARA DEPARTAMENTOS Y CIUDADES ---
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [cities, setCities] = useState<{_id: string; name: string}[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  // --- FIN ESTADOS ---
+
+  const [selectCityId, setSelectCityId] = useState<string>("");
+
+
+  // Cargar departamentos una sola vez al montar el componente
   useEffect(() => {
-    if (vendedor) {
-      setFormData(vendedor);
-    } else {
-      setFormData(initialFormState);
+    let isMounted = true; // Bandera para evitar actualizaciones si el componente se desmonta
+
+    const fetchDepartments = async () => {
+      setLoadingDepartments(true);
+      try {
+        const deptData = await getDepartments();
+        if (isMounted) { // Solo actualizar si sigue montado
+          setDepartments(deptData);
+        }
+      } catch (err) {
+        if (isMounted) { // Solo actualizar si sigue montado
+          console.error("Error al cargar departamentos:", err);
+          setDepartments([]);
+        }
+      } finally {
+        if (isMounted) { // Solo actualizar si sigue montado
+          setLoadingDepartments(false);
+        }
+      }
+    };
+
+    fetchDepartments();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Montar solo una vez
+
+  // --- NUEVO: useEffect para cargar ciudades cuando cambia formData.departmentId ---
+  useEffect(() => {
+    if (!formData.departmentId) {
+      setCities([]);
+      // Si se limpia el departamento, limpiar también la ciudad
+      if (formData.cityId) {
+          setFormData((prev) => ({ ...prev, cityId: "" }));
+      }
+      return;
     }
-    setErrors({});
-    setApiError(null);
-  }, [vendedor, isOpen]);
+
+    const loadCities = async () => {
+      setLoadingCities(true);
+      try {
+        const cityList = await getCitiesByDepartment(formData.departmentId);
+        const normalizedCities = cityList.map((c) => ({ _id: c._id, name: c.name }));
+        setCities(normalizedCities);
+      } catch (err) {
+        console.error("Error al cargar ciudades:", err);
+        setCities([]);
+        // Opcional: Limpiar cityId si falla la carga
+        setFormData((prev) => ({ ...prev, cityId: "" }));
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    loadCities();
+  }, [formData.departmentId]);
+
+  // --- FIN NUEVO ---
+
+
+  // --- NUEVO: useEffect para sincronizar selectCityId con formData.cityId solo si está en la lista de ciudades cargadas ---
+  useEffect(() => {
+    if (!loadingCities && cities.length > 0 && formData.cityId) {
+      const cityExists = cities.some((c) => c._id === formData.cityId);
+
+      if (cityExists) {
+        // Solo actualizar el estado del Select si la ciudad está disponible
+        setSelectCityId(formData.cityId);
+      } else {
+        // Si no está, limpiar el Select
+        setSelectCityId("");
+      }
+    } else if (loadingCities || cities.length === 0) {
+      // Si las ciudades aún se están cargando o están vacías, limpiar el Select temporal
+      setSelectCityId("");
+    }
+  }, [formData.cityId, cities, loadingCities]);
+  // --- FIN NUEVO ---
+
+
+  // useEffect para manejar apertura/cierre del modal y carga de vendedor
+  useEffect(() => {
+    if (isOpen) {
+      if (vendedor) {
+        // ✅ Normalizar los datos del vendedor (extraer departmentId y cityId)
+        const normalizedVendedor = normalizeVendedorData(vendedor);
+        // Cargar datos en formData. El useEffect de departmentId se encargará de cargar ciudades.
+        setFormData(normalizedVendedor);
+      } else {
+        // Solo resetear campos específicos
+        setFormData(initialFormState);
+        setCities([]); // Limpiar ciudades al resetear
+      }
+      setErrors({});
+      setApiError(null);
+    }
+    // No dependencias específicas aquí, se ejecuta cuando isOpen cambia
+  }, [isOpen, vendedor]); // Añadir vendedor a las dependencias
+
+// --- FUNCIÓN PARA NORMALIZAR DATOS DEL VENDEDOR ---
+  const normalizeVendedorData = (vendedorData: any): ExtendedVendedor => {
+    console.log("🔄 Normalizando vendedor:", vendedorData);
+
+    // Función helper para extraer IDs de diferentes formatos
+    const extractId = (value: any): string => {
+      if (!value) return "";
+      if (typeof value === 'string') return value;
+      if (value._id) return value._id.toString();
+      if (value.id) return value.id.toString();
+      return value.toString();
+    };
+
+    // Extraer cityId y departmentId del objeto city del backend (si aplica)
+    let cityId = "";
+    let departmentId = "";
+    if (typeof vendedorData.city === 'object' && vendedorData.city && vendedorData.city._id) {
+       cityId = vendedorData.city._id;
+       if (vendedorData.city.department && typeof vendedorData.city.department === 'object' && vendedorData.city.department._id) {
+          departmentId = vendedorData.city.department._id;
+       }
+    } else if (typeof vendedorData.city === 'string') {
+       // Si city es solo un string, asumimos es el ID de la ciudad
+       cityId = vendedorData.city;
+       // departmentId no se puede extraer si solo tenemos el ID de la ciudad
+    }
+
+    //  Extraer email correctamente (manejar diferentes formatos)
+    let emails: Vendedor['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
+    if (vendedorData.emails && Array.isArray(vendedorData.emails) && vendedorData.emails.length > 0) {
+      const firstEmail = vendedorData.emails[0];
+      emails = [{
+        EmailAddres: firstEmail.EmailAddress || firstEmail.EmailAddres || "",
+        IsPrincipal: firstEmail.IsPrincipal ?? firstEmail.isPrincipal ?? true
+      }];
+    } else if (vendedorData.email) {
+      emails = [{ EmailAddres: vendedorData.email, IsPrincipal: true }];
+    }
+
+    //  Extraer teléfono correctamente
+    let phones: Vendedor['phones'] = [{ NumberPhone: "", Indicative: "+57", IsPrincipal: true }];
+    if (vendedorData.phones && Array.isArray(vendedorData.phones) && vendedorData.phones.length > 0) {
+      const firstPhone = vendedorData.phones[0];
+      phones = [{
+        NumberPhone: firstPhone.NumberPhone || "",
+        Indicative: firstPhone.Indicative || "+57",
+        IsPrincipal: firstPhone.IsPrincipal ?? firstPhone.isPrincipal ?? true
+      }];
+    } else if (vendedorData.phone) {
+      phones = [{ NumberPhone: vendedorData.phone, Indicative: "+57", IsPrincipal: true }];
+    }
+
+    // Extraer dirección correctamente
+    let address: string[] = [""];
+    if (Array.isArray(vendedorData.address)) {
+      address = vendedorData.address;
+    } else if (vendedorData.address) {
+      address = [vendedorData.address];
+    }
+
+    // Normalizar estado
+    const state = vendedorData.state === "Active" ? "activo" :
+                  vendedorData.state === "Inactive" ? "inactivo" :
+                  vendedorData.state || "activo";
+
+    const normalizedVendedor: ExtendedVendedor = {
+      _id: vendedorData._id || "",
+      id: vendedorData.id || "",
+      name: vendedorData.name || "",
+      lastName: vendedorData.lastName || "",
+      password: "", // Nunca mostrar contraseña
+      emails,
+      phones,
+      address,
+      city: vendedorData.city || "", // Mantener el valor original para enviarlo si no se modifica
+      departmentId, // Campo interno
+      cityId,       // Campo interno
+      role: vendedorData.role || "SalesPerson",
+      priceCategoryId: vendedorData.priceCategoryId || "",
+      salesPersonId: vendedorData.salesPersonId || "",
+      state,
+      clients: vendedorData.clients || [], // Asegurar que clients sea un array
+    };
+
+    console.log("Vendedor normalizado completo (ExtendedVendedor):", normalizedVendedor);
+    return normalizedVendedor;
+  };
+  // --- FIN FUNCIÓN ---
+
+
+
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -91,7 +296,7 @@ export default function VendedorModal({
     const phone = formData.phones[0]?.NumberPhone;
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
-    if (!formData.city) newErrors.city = "La ciudad es requerida";
+    if (!formData.cityId) newErrors.cityId = "La ciudad es requerida";
     
     if (!vendedor?._id && !vendedor?.id) { // Si es nuevo vendedor
       if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
@@ -108,15 +313,16 @@ export default function VendedorModal({
     return Object.keys(newErrors).length === 0; // Retorna true si no hay errores
   };
 
-  const handleChange = <K extends keyof Vendedor>(
+  const handleChange = <K extends keyof ExtendedVendedor>(
     field: K,
-    value: Vendedor[K]
+    value: ExtendedVendedor[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
+    if (errors[field as string]) {
       setErrors((prev) => {
-        const { [field]: _, ...rest } = prev;
-        return rest;
+        const newErrors = { ...prev };
+        delete newErrors[field as string];
+        return newErrors;
       });
     }
   };
@@ -139,12 +345,14 @@ export default function VendedorModal({
         },
       ] : []; // Si está vacío (aunque validateForm debería haberlo impedido), usar array vacío o el original
 
+      const { departmentId, cityId, ...vendedorParaGuardar } = formData; // Excluir campos internos
+
     // Preparar datos finales con el formato exacto
     // Asegúrate de incluir _id si es edición, para que updateVendedor lo use
     const vendedorToSave: Vendedor = {
       // Incluir _id y id originales si es edición
       ...(vendedor && (vendedor._id || vendedor.id) && { _id: vendedor._id, id: vendedor.id }),
-      ...formData,
+      ...vendedorParaGuardar, // Incluir el resto de formData sin los campos internos
       id: formData.id || crypto.randomUUID(), // Usar id existente o generar uno nuevo
       emails: cleanedEmails,
       phones: [
@@ -156,6 +364,7 @@ export default function VendedorModal({
         },
       ],
       address: [formData.address[0] || ""],
+      city: cityId, // Usar cityId como el valor de city
       state: formData.state || "activo",
     };
 
@@ -295,18 +504,120 @@ export default function VendedorModal({
             />
           </div>
 
+          {/* Departamento */}
+          <div className="space-y-2 relative z-50">
+            <Label>Departamento *</Label>
+            <Select
+              value={formData.departmentId}
+              onValueChange={(value) => handleChange("departmentId", value)}
+            >
+              <SelectTrigger
+                className={`mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 
+                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm 
+                ${errors.departmentId ? "border border-red-500" : ""}`}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}
+              >
+                <div className="flex items-center gap-3 pr-6">
+                  <SelectValue placeholder="Seleccionar departamento" />
+                </div>
+              </SelectTrigger>
+
+              <SelectContent
+                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "80px" }}
+              >
+                <SelectScrollUpButton />
+                {loadingDepartments ? (
+                  <SelectItem value="__loading_dept__" disabled>
+                    Cargando...
+                  </SelectItem>
+                ) : (
+                  departments.map((dept) => (
+                    <SelectItem
+                      key={dept._id}
+                      value={dept._id}
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                    >
+                      {dept.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectScrollDownButton />
+              </SelectContent>
+            </Select>
+
+            {errors.departmentId && (
+              <p className="text-red-500 text-sm">{errors.departmentId}</p>
+            )}
+          </div>
+
           {/* Ciudad */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative z-50">
             <Label>Ciudad *</Label>
-            <Input
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              className={errors.city ? "border-red-500" : ""}
-            />
-            {errors.city && (
-              <p className="text-red-500 text-sm">{errors.city}</p>
+            <Select
+              value={selectCityId} // <-- AQUÍ ESTÁ EL CAMBIO
+              onValueChange={(value) => {
+                 // Actualiza también formData.cityId cuando cambia el Select
+                 handleChange("cityId", value);
+                 // Y el estado temporal
+                 setSelectCityId(value);
+              }}
+              disabled={!formData.departmentId || loadingCities}
+            >
+              <SelectTrigger
+                className={`mt-2 block w-full cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 
+                focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm 
+                ${errors.cityId ? "border border-red-500" : ""}`}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}
+              >
+                <div className="flex items-center gap-3 pr-6">
+                  <SelectValue
+                    // 👇 Cambia la condición para usar selectCityId
+                    placeholder={
+                      !formData.departmentId
+                        ? "Seleccione un departamento"
+                        : loadingCities
+                        ? "Cargando ciudades..."
+                        : cities.length === 0
+                        ? "No hay ciudades disponibles"
+                        : !selectCityId // <-- AQUÍ ESTÁ EL CAMBIO
+                        ? "Seleccionar ciudad"
+                        : "Ciudad seleccionada" // O puedes mostrar el nombre si lo tienes en otro estado
+                    }
+                  />
+                </div>
+              </SelectTrigger>
+
+              <SelectContent
+                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "80px" }}
+              >
+                <SelectScrollUpButton />
+                {loadingCities ? (
+                  <SelectItem value="__loading_city__" disabled>
+                    Cargando ciudades...
+                  </SelectItem>
+                ) : cities.length === 0 ? (
+                  <SelectItem value="__no_cities__" disabled>
+                    No hay ciudades disponibles
+                  </SelectItem>
+                ) : (
+                  cities.map((city) => (
+                    <SelectItem
+                      key={city._id}
+                      value={city._id}
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                    >
+                      {city.name}
+                    </SelectItem>
+                  ))
+                )}
+                <SelectScrollDownButton />
+              </SelectContent>
+            </Select>
+
+            {errors.cityId && (
+              <p className="text-red-500 text-sm">{errors.cityId}</p>
             )}
           </div>
 
