@@ -37,7 +37,7 @@ import { RoleProtectedRoute } from "./RoleProtectedRoute";
 
 export const AppRouter = () => {
   const { user } = useAuthStore();
-  console.log(" user en AppRoutes:", user);
+
   return (
     <BrowserRouter>
       <Routes>

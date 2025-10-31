@@ -25,7 +25,7 @@ export default function OrdersPageAdmin() {
         const data = await getOrdersByUser();
         setOrders(data.orders || []);
       } catch (error) {
-        console.error("Error al traer órdenes:", error);
+
       } finally {
         setLoading(false);
       }

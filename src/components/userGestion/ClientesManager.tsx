@@ -154,7 +154,7 @@ const loadClientesFromLocalStorage = (): Cliente[] => {
 
     return normalizedData;
   } catch (err) {
-    console.error("Error al cargar/normalizar desde localStorage:", err);
+
     return []; // Devolver array vacío en caso de error
   }
 };
@@ -164,7 +164,7 @@ const saveClientesToLocalStorage = (clientes: Cliente[]) => {
   try {
     localStorage.setItem("clientes", JSON.stringify(clientes));
   } catch (err) {
-    console.error("Error al guardar en localStorage:", err);
+
   }
 };
 
@@ -194,23 +194,21 @@ export default function ClientesManager({
           
           //  Verificar rol del usuario
           if (user?.role === "Admin") {
-            // Administrador: cargar todos los clientes
-            console.log(" Usuario Admin: cargando todos los clientes");
+
             clientsData = await getAllClients();
           } else if (user?.role === "SalesPerson" && user._id) {
             //  Vendedor: cargar solo sus clientes
-            console.log(" Usuario Vendedor: cargando clientes asignados");
+
             clientsData = await getClientsBySalesPerson(user._id);
           } else {
             //  Cliente regular o sin rol: cargar desde localStorage
-            console.log(" Usuario regular: cargando desde localStorage");
+
             clientsData = loadClientesFromLocalStorage();
           }
-  
-          console.log("Clientes cargados:", clientsData.length);
+
           setClientes(clientsData);
         } catch (err) {
-          console.error(" Error al cargar clientes:", err);
+
           setError(err instanceof Error ? err.message : "No se pudieron cargar los clientes");
           
           // Fallback a localStorage
@@ -218,7 +216,7 @@ export default function ClientesManager({
             const localClients = loadClientesFromLocalStorage();
             setClientes(localClients);
           } catch (fallbackError) {
-            console.error(" Error en fallback:", fallbackError);
+
             setClientes([]);
           }
         } finally {
@@ -287,59 +285,45 @@ export default function ClientesManager({
       setClientes(updated);
       saveClientesToLocalStorage(updated);
     } catch (err) {
-      console.error("Error al eliminar cliente:", err);
+
       alert("No se pudo eliminar el cliente. Intente nuevamente.");
     }
   };
 
   const handleSaveCliente = async (clienteData: Cliente) => {
     try {
-      console.log("handleSaveCliente recibió:", clienteData);
-      console.log("Lista de vendedores disponibles:", vendedores);
+
 
       const vendedor = vendedores.find((v) => {
         const match = v._id === clienteData.salesPersonId;
-        console.log(
-          `Comparando v._id (${v._id}) con clienteData.salesPerson (${clienteData.salesPersonId}): ${match}`
-        );
         return match;
       });
 
-      console.log("clienteData.salesPerson:", clienteData.salesPersonId);
-      console.log("vendedores:", vendedores);
+
 
       if (!vendedor) {
         const errorMsg = `Vendedor no encontrado para _id: '${clienteData.salesPersonId}'. Verifica la selección o la lista de vendedores.`;
-        console.error(errorMsg);
+
         alert(errorMsg);
         return;
       }
 
-      console.log("Vendedor encontrado:", vendedor);
+
 
       const payloadToSend: Cliente = {
         ...clienteData,
         salesPersonId: clienteData.salesPersonId, // lo que espera el backend
         id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
       };
-      console.log(
-        "Payload a enviar (ya sea para crear o actualizar):",
-        payloadToSend
-      );
 
       // No necesitas almacenar el resultado de save/update aquí si vas a recargar
       if (editingCliente) {
-        console.log("Editando cliente existente. Payload:", payloadToSend);
+
         await updateClient(payloadToSend); // Espera a que finalice
       } else {
-        console.log("Creando nuevo cliente. Payload:", payloadToSend);
         await saveClient(payloadToSend); // Espera a que finalice
       }
 
-      // --- FORZAR RECARGA DE CLIENTES ---
-      // En lugar de actualizar localmente, recargar la lista completa
-      // Esto asegura que se obtengan los datos más recientes del backend
-      // y se reflejen correctamente en la UI
       if (user?.role === "Admin") {
         const clientsData = await getAllClients();
         setClientes(clientsData);
@@ -358,7 +342,6 @@ export default function ClientesManager({
 
       setIsModalOpen(false);
     } catch (err: any) {
-      console.error("Error al guardar cliente:", err);
       alert(
         err.message || "No se pudo guardar el cliente. Intente nuevamente."
       );

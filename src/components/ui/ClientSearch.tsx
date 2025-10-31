@@ -43,7 +43,6 @@ export const ClientSearch: React.FC<Props> = ({ clientes, onResults }) => {
 
         onResults(results);
       } catch (err) {
-        console.error("Error en búsqueda:", err);
         onResults([]);
       } finally {
         setLoading(false);

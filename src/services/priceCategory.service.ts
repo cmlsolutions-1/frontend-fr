@@ -5,7 +5,7 @@ const getToken = () => {
   try {
     const authData = localStorage.getItem('auth-storage');
     if (!authData) {
-      console.log("❌ No hay auth-storage en localStorage");
+
       return null;
     }
     
@@ -13,19 +13,19 @@ const getToken = () => {
     const token = parsed.state?.token || null;
     
     if (token) {
-      console.log("✅ Token encontrado:", `${token.substring(0, 20)}...`);
+
     } else {
-      console.log("❌ Token no encontrado en la estructura");
+
     }
     
     return token;
   } catch (error) {
-    console.error("❌ Error al obtener token:", error);
+
     return null;
   }
 };
 
-// ✅ Función para obtener headers con token
+
 const getAuthHeaders = (includeContentType: boolean = true) => {
   const token = getToken();
   const headers: Record<string, string> = {};
@@ -37,7 +37,7 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   } else {
-    console.warn("⚠️ No se encontró token para ruta protegida");
+
   }
   
   return headers;
@@ -63,7 +63,7 @@ export const getPriceCategories = async () => {
       name: p.name,
     }));
   } catch (error) {
-    console.error("Error cargando categorías de precios:", error);
+
     throw error;
   }
 };

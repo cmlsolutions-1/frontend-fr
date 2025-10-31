@@ -112,9 +112,7 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
           <tbody className="bg-white divide-y divide-gray-200">
             
             {promotions.map((promotion, index) => {
-               console.log("Promotion individual:", promotion);
-              console.log("Products de esta promo:", promotion.products);
-              
+             
 
               return (
 
@@ -138,7 +136,6 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
                     <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
                   ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
                     promotion.products.map((prod: any, idx: number ) => {
-                       console.log("Product en el map:", prod);
                        const product =
                             typeof prod === "string"
                               ? products.find((p) => p._id === prod)

@@ -8,7 +8,7 @@ const getToken = () => {
   try {
     const authData = localStorage.getItem('auth-storage');
     if (!authData) {
-      console.log("❌ No hay auth-storage en localStorage");
+
       return null;
     }
     
@@ -16,14 +16,14 @@ const getToken = () => {
     const token = parsed.state?.token || parsed.token || null;
     
     if (token) {
-      console.log("✅ Token encontrado:", `${token.substring(0, 20)}...`);
+
     } else {
-      console.log("❌ Token no encontrado en la estructura");
+
     }
     
     return token;
   } catch (error) {
-    console.error("❌ Error al obtener token:", error);
+
     return null;
   }
 };
@@ -42,7 +42,7 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   } else {
-    console.warn(" No se encontró token - las rutas protegidas fallarán");
+
   }
   
   return headers;
@@ -71,7 +71,6 @@ export const filterProducts = async (params: {
       categories
     };
 
-    console.log("🔍 Enviando filtro al backend:", requestBody);
     
     const response = await fetch(url.toString(), {
       method: "POST",
@@ -79,29 +78,13 @@ export const filterProducts = async (params: {
       body: JSON.stringify(requestBody),
     });
 
-    //antiguo código
-
-    /* if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ Error en filtrado:", errorText);
-      throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("✅ Productos filtrados recibidos:", data.total, "total, página", data.page);
-    
-    return data;
-  } catch (error) {
-    console.error("Error al filtrar productos:", error);
-    throw error;
-  }
-}; */
+   
 
 if (!response.ok) {
       // --- AÑADIR VERIFICACIÓN DE 401 ---
       if (response.status === 401) {
          const errorText = await response.text(); // O await response.json() si el backend devuelve JSON
-         console.error("❌ 401 Unauthorized en filterProducts:", errorText);
+  
          const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
          (authError as any).isAuthError = true; // Marcar como error de autenticación
          (authError as any).status = 401;
@@ -110,16 +93,16 @@ if (!response.ok) {
       // --- FIN VERIFICACIÓN DE 401 ---
 
       const errorText = await response.text();
-      console.error("❌ Error en filtrado:", errorText);
+
       throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("✅ Productos filtrados recibidos:", data.total, "total, página", data.page);
+ 
 
     return data;
   } catch (error) {
-    console.error("Error al filtrar productos:", error);
+
     throw error;
   }
 };
@@ -129,31 +112,19 @@ if (!response.ok) {
 // Obtener productos (sin paginación por ahora)
 export const getProducts = async (): Promise<Product[]> => {
   try {
-    console.log("🛒 Solicitando todos los productos (requiere token)");
+
     const response = await fetch(`${API_URL}/products`, {
       method: "GET",
       headers: getAuthHeaders(), 
     });
 
-    console.log("📥 Productos response status:", response.status);
 
-    /* if (!response.ok) {
-      
-      throw new Error("No se pudieron cargar los productos");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error al traer productos:", error);
-    throw error;
-  }
-}; */
 
  if (!response.ok) {
       // --- AÑADIR VERIFICACIÓN DE 401 ---
       if (response.status === 401) {
          const errorText = await response.text(); // O await response.json() si el backend devuelve JSON
-         console.error("❌ 401 Unauthorized en getProducts:", errorText);
+
          const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
          (authError as any).isAuthError = true; // Marcar como error de autenticación
          (authError as any).status = 401;
@@ -166,7 +137,7 @@ export const getProducts = async (): Promise<Product[]> => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error al traer productos:", error);
+
     throw error;
   }
 };
@@ -177,22 +148,21 @@ export const getProducts = async (): Promise<Product[]> => {
 
 export const getProductById = async (_id: string): Promise<Product> => {
   try {
-    console.log("🔎 Solicitando producto por ID:", _id);
+
     
     const response = await fetch(`${API_URL}/products/${_id}`, {
       method: "GET",
       headers: getAuthHeaders(), 
     });
 
-    console.log(" Producto response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("❌ Error en la API:", errorText);
+
 
       // --- AÑADIR VERIFICACIÓN DE 401 ---
       if (response.status === 401) {
-         console.error("❌ 401 Unauthorized en getProductById:", errorText);
+
          const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
          (authError as any).isAuthError = true; // Marcar como error de autenticación
          (authError as any).status = 401;
@@ -208,16 +178,14 @@ export const getProductById = async (_id: string): Promise<Product> => {
     }
 
     const data = await response.json();
-    console.log("✅ Producto recibido:", data._id);
-    
-    // ✅ Validación adicional
+
     if (!data || !data._id) {
       throw new Error("Producto inválido recibido del servidor");
     }
     
     return data;
   } catch (error) {
-    console.error("⚠️ Error en getProductById:", error);
+
     
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error("No se pudo conectar con el servidor.");
@@ -233,7 +201,7 @@ export const getProductById = async (_id: string): Promise<Product> => {
 // Función para buscar productos
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    console.log("🔍 Buscando productos con query:", query);
+  
     // Si no hay query, retornar todos los productos
     if (!query.trim()) {
       return await getProducts();
@@ -250,10 +218,10 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
       product._id?.toLowerCase().includes(query.toLowerCase())
     );
 
-    console.log("✅ Productos filtrados encontrados:", filteredProducts.length);
+
     return filteredProducts;
   } catch (error) {
-    console.error("Error al buscar productos:", error);
+
     throw error;
   }
 };

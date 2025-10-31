@@ -45,7 +45,6 @@ export const OrderStatusButton = ({
         setTimeout(() => setErrorMessage(null), 5000);
       }
     } catch (error) {
-      console.error("Error al marcar como pagada:", error);
       setErrorMessage("Error de conexión");
       setTimeout(() => setErrorMessage(null), 5000);
     } finally {

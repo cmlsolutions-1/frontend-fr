@@ -36,17 +36,14 @@ export default function OrdersByIdPage() {
   };
 
   const backRoute = getBackRoute();
-  console.log("Ruta de vuelta:", backRoute);
 
-  // Debug para ver qué ID se está recibiendo
-  console.log("useParams id:", _id);
-  console.log("typeof id:", typeof _id);
+
   
   useEffect(() => {
-    console.log("useEffect ejecutado con id:", _id);
+
 
     if (!_id || _id === 'undefined' || _id === 'null') {
-      console.error("ID no válido:", _id);
+
       setError("ID de orden no válido");
       setLoading(false);
       return;
@@ -57,17 +54,17 @@ export default function OrdersByIdPage() {
         setLoading(true); // Iniciar carga
         setError(null); // Limpiar errores previos
         
-        console.log("🚀 Solicitando orden con ID:", _id);
+
         const { ok, order } = await getOrderById(_id);
         if (!ok || !order) {
           setError("Orden no encontrada");
           return;
         }
-        console.log("Orden cargada:", order);
+
         
         setOrder(order);
       } catch (error) {
-        console.error("No se pudo cargar la orden", error);
+
         setError("Error al cargar la orden");
       } finally {
         setLoading(false); // Finalizar carga

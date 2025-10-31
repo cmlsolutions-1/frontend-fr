@@ -7,9 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const getToken = () => {
   const token = useAuthStore.getState().token;
   if (token) {
-    console.log("✅ Token encontrado:", token.substring(0, 20) + "...");
   } else {
-    console.log("❌ No hay token en el store");
   }
   return token;
 };
@@ -65,7 +63,7 @@ export const loginRequest = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  console.log("🚀 Iniciando login request:", { email });
+  
   
   // getAuthHeaders() - el login es ruta pública
   const response = await fetch(`${API_URL}/auth/login`, {
@@ -76,22 +74,17 @@ export const loginRequest = async (
     body: JSON.stringify({ email, password }),
   });
 
-  console.log("📥 Login response status:", response.status);
-
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("❌ Login error:", errorText);
     throw new Error("Credenciales incorrectas");
   }
 
   const data = await response.json();
-  console.log("✅ Login response:", data);
   return data;
 };
 
 // Servicio para obtener el usuario autenticado usando el token
 export const fetchMe = async (token: string): Promise<any> => {
-  console.log("👤 Solicitando información de usuario con token");
 
   const userId = useAuthStore.getState().user?._id || useAuthStore.getState().user?.id;
   if (!userId) throw new Error("No se encontró ID de usuario en la sesión");
@@ -109,7 +102,6 @@ export const fetchMe = async (token: string): Promise<any> => {
   }
 
   const data = await response.json();
-  console.log("✅ Usuario obtenido:", data.name);
   return data;
 };
 

@@ -11,7 +11,6 @@ import React from 'react';
 
 const HomePage = () => {
 
-  console.log('HomePage rendering');
 
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -97,14 +96,11 @@ const HomePage = () => {
           setTotalPages(response.totalPages);
         }
       } catch (err) {
-        console.error("Error al filtrar productos:", err);
 
-        
         if (isMounted) {
           // Verificar si es un error de autenticación
           if (err.isAuthError) { // <-- Verificar la propiedad isAuthError
             // --- Manejar error de autenticación ---
-            console.log("Error de autenticación detectado en HomePage.");
             logout(); // Limpiar estado de autenticación
             localStorage.removeItem("authToken"); // Limpiar token si es necesario
             localStorage.removeItem("user");      // Limpiar user si es necesario

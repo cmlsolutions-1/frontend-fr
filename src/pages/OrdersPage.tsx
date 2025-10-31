@@ -27,20 +27,20 @@ export default function OrdersPage() {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        console.log("👤 Usuario actual:", user); // Debug
+
 
         if (!user || user.role !== 'Client') {
-          console.error('Usuario no válido o rol incorrecto');
+
           setOrders([]);
           return;
         }
         // Asegúrate de pasar solo el _id como string
-        console.log("🆔 ID del cliente:", user._id); // Debug
+
 
         const result = await getOrdersByClient(user._id);
         
         if (result.ok) {
-          console.log("📋 Órdenes cargadas:", result.orders); // Debug
+
 
           // Aca agramos el cliente y vendedor a cada orden
           const enrichedOrders = result.orders.map((o: any) => ({
@@ -52,11 +52,11 @@ export default function OrdersPage() {
 
           setOrders(enrichedOrders);
         } else {
-          console.error('No se pudieron cargar las órdenes del cliente');
+
           setOrders([]);
         }
       } catch (error) {
-        console.error("Error al traer órdenes:", error);
+
         setOrders([]);
       } finally {
         setLoading(false);

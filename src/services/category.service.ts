@@ -9,14 +9,14 @@ export const getCategories = async (): Promise<Category[]> => {
     const response = await fetch(`${API_URL}/category/category`);
     
     if (!response.ok) {
-      console.warn("Usando datos quemados. No se pudo conectar al backend.");
+
       return mockCategories;
     }
 
     const data = await response.json();
     return data.items || mockCategories;
   } catch (error) {
-    console.error("Error al obtener categorías:", error);
+
     return mockCategories;
   }
 };
@@ -31,7 +31,7 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
 
     return await response.json();
   } catch (error) {
-    console.error("No se pudo cargar la categoría", error);
+
     return null;
   }
 };

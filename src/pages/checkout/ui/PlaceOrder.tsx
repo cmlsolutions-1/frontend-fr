@@ -48,7 +48,7 @@ export const PlaceOrder = () => {
       return;
     }
 
-    console.log(" Usuario completoooo:", user);
+
 
     if (cart.length === 0) {
       setErrorMessage("El carrito está vacío.");
@@ -58,7 +58,7 @@ export const PlaceOrder = () => {
 
  // Obtener la categoría de precio del cliente
     const clientPriceCategory = user.priceCategory; //Aquí está la categoría de precio
-    console.log("Categoría de precio encontrada:", clientPriceCategory);
+
     
     if (!clientPriceCategory) {
       setErrorMessage("No se pudo obtener la categoría de precio del cliente.");
@@ -81,7 +81,7 @@ export const PlaceOrder = () => {
         orderItems: orderItems
       };
 
-      console.log("Payload a enviar:", payload);
+  
 
       // Crear la orden
       const result = await createOrder(payload);
@@ -103,7 +103,7 @@ export const PlaceOrder = () => {
       }
 
     } catch (error) {
-      console.error("Error al crear orden:", error);
+
       setErrorMessage(error instanceof Error ? error.message : "Ocurrió un error inesperado");
       setIsPlacingOrder(false);
     }

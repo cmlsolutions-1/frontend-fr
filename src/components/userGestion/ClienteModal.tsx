@@ -100,7 +100,7 @@ export default function ClienteModal({
         }
       } catch (err) {
         if (isMounted) { // Solo actualizar si sigue montado
-          console.error("Error al cargar departamentos o categorías de precios", err);
+
           setDepartments([]);
           setPriceCategories([]);
         }
@@ -138,7 +138,7 @@ export default function ClienteModal({
         setCities(normalizedCities);
 
       } catch (err) {
-        console.error("Error al cargar ciudades:", err);
+
         setCities([]);
         // Opcional: Limpiar cityId si falla la carga
         setFormData((prev) => ({ ...prev, cityId: "" }));
@@ -171,7 +171,6 @@ useEffect(() => {
   
   //  Función para normalizar los datos del cliente del backend
   const normalizeClientData = (clientData: any): ExtendedCliente => {
-    console.log("🔄 Normalizando cliente:", clientData);
 
     // Función helper para extraer IDs de diferentes formatos
     const extractId = (value: any): string => {
@@ -216,11 +215,6 @@ useEffect(() => {
     salesPersonId = extractId(clientData.salesPerson);
   }
 
-    console.log("PriceCategory extraído:", priceCategoryId);
-    console.log("SalesPerson extraído:", salesPersonId);
-
-    console.log("City ID extraído:", cityId);
-    console.log("Department ID extraído:", departmentId);
 
     //  Extraer email correctamente (manejar diferentes formatos)
     let emails: Cliente['emails'] = [{ EmailAddres: "", IsPrincipal: true }];
@@ -279,8 +273,6 @@ useEffect(() => {
       state,
     };
 
-
-  console.log("Cliente normalizado completo (ExtendedCliente):", normalizedClient);
   return normalizedClient;
 };
 
@@ -400,11 +392,9 @@ useEffect(() => {
         state: clienteParaGuardar.state || "activo",
       };
 
-      console.log("📤 Guardando cliente:", clientToSave);
       await onSave(clientToSave);
       onClose();
     } catch (error) {
-      console.error("Error al guardar cliente:", error);
       setApiError(error instanceof Error ? error.message : "Error desconocido");
     } finally {
       setLoading(false);

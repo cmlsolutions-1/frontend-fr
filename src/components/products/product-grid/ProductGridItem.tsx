@@ -85,7 +85,6 @@ export const ProductGridItem = ({ product }: Props) => {
 
   // Obtener el precio correcto
   const productPrice = getClientProductPrice(product);
-  console.log("precios recibidos:", product.precios);
 
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">

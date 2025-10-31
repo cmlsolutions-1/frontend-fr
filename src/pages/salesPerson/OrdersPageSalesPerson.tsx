@@ -25,27 +25,26 @@ export default function OrdersPageSalesPerson() {
   useEffect(() => {
       const loadOrders = async () => {
         try {
-          console.log("👤 Usuario actual:", user); // Debug
+
   
           if (!user || user.role !== 'SalesPerson') {
-            console.error('Usuario no válido o rol incorrecto');
+
             setOrders([]);
             return;
           }
-          // ✅ Asegúrate de pasar solo el _id como string
-          console.log("🆔 ID del vendedor:", user._id); // Debug
+
   
           const result = await getOrdersBySalesPerson(user._id);
           
           if (result.ok) {
-            console.log("📋 Órdenes cargadas:", result.orders); // Debug
+
             setOrders(result.orders);
           } else {
-            console.error('No se pudieron cargar las órdenes del cliente');
+
             setOrders([]);
           }
         } catch (error) {
-          console.error("Error al traer órdenes:", error);
+
           setOrders([]);
         } finally {
           setLoading(false);

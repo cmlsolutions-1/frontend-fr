@@ -42,7 +42,7 @@ export const getBrands = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error al cargar marcas:", error);
+
     return []; // Devolver array vacío en caso de error
   }
 };
@@ -60,7 +60,7 @@ export const getBrandById = async (brandId: string) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error al cargar marca:", error);
+
     return null;
   }
 };

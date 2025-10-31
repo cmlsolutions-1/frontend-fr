@@ -35,7 +35,7 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
         // Limitar resultados para mejor UX
         setResults(products.slice(0, 8));
       } catch (error) {
-        console.error("Error en búsqueda:", error);
+
         setResults([]);
       } finally {
         setLoading(false);

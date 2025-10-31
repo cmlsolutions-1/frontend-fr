@@ -57,22 +57,17 @@ export const OrderPDFButton = ({ order }: Props) => {
     setLoading(true);
     
     try {
-      console.log("Orden recibida:", order);
-      console.log("ID del cliente:", order.idClient);
-      console.log("ID del vendedor:", order.idSalesPerson);
-      
-
-      // Obtener el nombre del vendedor
+          // Obtener el nombre del vendedor
       let salesPersonName = 'Vendedor N/A';
       if (order.idSalesPerson) {
-        console.log("Solicitando vendedor con ID:", order.idSalesPerson);
+
         const salesPerson = await getSalesPersonById(order.idSalesPerson);
-        console.log("Vendedor recibido:", salesPerson);
+
         if (salesPerson) {
           const name = salesPerson.name || '';
           const lastName = salesPerson.lastName || '';
           salesPersonName = `${name} ${lastName}`.trim() || 'Vendedor N/A';
-          console.log("Nombre del vendedor:", salesPersonName);
+
         }
       }
 
@@ -80,26 +75,23 @@ export const OrderPDFButton = ({ order }: Props) => {
       let clientName = 'Cliente N/A';
       let clientIdToShow = 'N/A';
       if (order.idClient) {
-        console.log("Solicitando cliente con ID:", order.idClient);
+
         const client = await getClientById(order.idClient);
-        console.log("Cliente recibido:", client);
+
         
         if (client) {
           const name = client.name || '';
           const lastName = client.lastName || '';
           clientName = `${name} ${lastName}`.trim() || 'Cliente N/A';
           clientIdToShow = client.id || client._id?.slice(-6) || 'N/A';
-          console.log("Nombre del cliente:", clientName);
-          console.log("ID del cliente a mostrar:", clientIdToShow);
         } else {
-          console.log("No se encontró el cliente");
           if (order.OrderAddress) {
             clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
           }
           clientIdToShow = order.idClient.slice(-6) || 'N/A';
         }
       } else {
-        console.log("No hay ID de cliente");
+
         if (order.OrderAddress) {
           clientName = `${order.OrderAddress.firstName || ''} ${order.OrderAddress.lastName || ''}`.trim() || 'Cliente N/A';
         }
@@ -108,7 +100,6 @@ export const OrderPDFButton = ({ order }: Props) => {
       
       generatePDF(order, clientName, clientIdToShow, salesPersonName);
     } catch (error) {
-      console.error("Error al generar PDF:", error);
       alert("Error al generar el PDF");
     } finally {
       setLoading(false);

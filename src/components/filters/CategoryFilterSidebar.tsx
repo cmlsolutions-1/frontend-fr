@@ -29,7 +29,7 @@ export const CategoryFilterSidebar = () => {
         const brands = await getBrands();
         setAllBrands(brands);
       } catch (error) {
-        console.error("Error al cargar marcas:", error);
+        
         setAllBrands([]);
       } finally {
         setLoadingBrands(false);
@@ -78,8 +78,7 @@ export const CategoryFilterSidebar = () => {
 
   // Aplicar filtros
   const applyFilters = () => {
-    console.log("Categorías seleccionadas:", selectedCategories);
-    console.log("Marcas seleccionadas:", selectedBrands);
+
     
     const params = new URLSearchParams();
     

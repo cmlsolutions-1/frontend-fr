@@ -60,7 +60,7 @@ const { category } = useParams<{ category: string }>();
         const data = await res.json();
         setProducts(data.items || []);
       } catch (e) {
-        console.warn("Usando productos quemados...");
+
         const mockProducts = useCartStore.getState().cart;
         setProducts(mockProducts);
       } finally {

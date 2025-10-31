@@ -36,7 +36,7 @@ export const ProductPage = () => {
       }
 
       try {
-        console.log("🚀 Solicitando producto con ID:", _id);
+
       const fetchedProduct = await getProductById(_id);
 
       // Validación adicional del producto recibido
@@ -48,7 +48,7 @@ export const ProductPage = () => {
       setError(null);
 
     } catch (error) {
-      console.error("Error al cargar producto:", error);
+
       const errorMessage = error instanceof Error 
           ? error.message 
           : "Error desconocido al cargar el producto";

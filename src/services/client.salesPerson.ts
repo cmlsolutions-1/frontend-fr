@@ -35,7 +35,7 @@ const getAuthHeaders = (includeContentType: boolean = true) => {
 
 export const getClientsBySalesPerson = async (sellerId: string): Promise<Cliente[]> => {
   try {
-    console.log("🔍 Buscando clientes para vendedor ID:", sellerId);
+
     
     if (!sellerId) {
       throw new Error("ID de vendedor no válido");
@@ -46,18 +46,16 @@ export const getClientsBySalesPerson = async (sellerId: string): Promise<Cliente
       headers: getAuthHeaders(), // ✅ Enviar token
     });
 
-    console.log("📥 Response status:", response.status);
+
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("❌ Error del servidor:", errorText);
+
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log("✅ Clientes recibidos:", data.length);
 
-    // ✅ Mapear los datos al formato del frontend
     return Array.isArray(data) 
       ? data.map((item: any) => ({
           ...item,
@@ -69,7 +67,7 @@ export const getClientsBySalesPerson = async (sellerId: string): Promise<Cliente
         }))
       : [];
   } catch (error) {
-    console.error("Error al obtener clientes:", error);
+
     return [];
   }
 };

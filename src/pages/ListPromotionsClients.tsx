@@ -35,7 +35,7 @@ export default function ListPromotionsClients() {
         const productList = await getProducts();
         setProducts(productList);
       } catch (error) {
-        console.error("Error cargando datos:", error);
+
       } finally {
         setLoading(false);
       }

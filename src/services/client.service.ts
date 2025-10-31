@@ -82,7 +82,6 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
 
   };
 
-  console.log("Payload a enviar:", JSON.stringify(payload, null, 2));
 
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
@@ -101,7 +100,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
     }
 
     if (!response.ok) {
-      console.error("Error del backend:", responseData);
+
       throw new Error(
         responseData.message ||
           `Error al registrar el cliente (${response.status})`
@@ -126,8 +125,7 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
       // Si la respuesta es { user: Cliente }
       createdClientData = responseData.user;
     } else {
-      // Si no hay datos útiles, crea uno básico basado en el payload o lanza un error
-      console.warn("Respuesta inesperada del backend:", responseData);
+
       createdClientData = {
         ...cliente, // Conserva datos locales
         id: responseData?.id || cliente.id || crypto.randomUUID(), // Usa ID del backend si existe
@@ -148,18 +146,17 @@ export const saveClient = async (cliente: Cliente): Promise<Cliente> => {
       // Si necesitas mapear otros campos específicos del backend al frontend, hazlo aquí
     };
 
-    console.log("Cliente creado exitosamente:", createdClient);
+
     return createdClient;
   } catch (error) {
     // Es mejor relanzar errores de red/HTTP como están
     if (error instanceof TypeError && error.message.includes("fetch")) {
-      console.error("Error de red:", error);
+
       throw new Error(
         "Error de conexión. Verifique su red e intente nuevamente."
       );
     }
-    // Relanzar errores de la aplicación o del backend
-    console.error("Error en la solicitud:", error);
+
     // Si ya es un Error con mensaje útil, relánzalo. Si no, crea uno.
     if (error instanceof Error) {
       throw error; // Relanzar el error original
@@ -229,13 +226,9 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   payloadToSend.salesPerson = cliente.salesPersonId;
 
 
-  console.log(
-    "Payload a enviar para ACTUALIZAR (usando _id):",
-    JSON.stringify(payloadToSend, null, 2)
-  );
 
   try {
-    console.log("Cliente antes del fetch (para actualizar):", cliente);
+
     const response = await fetch(`${API_URL}/users/`, {
       method: "PUT",
       headers: getAuthHeaders(),
@@ -252,7 +245,7 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
     }
 
     if (!response.ok) {
-      console.error("Error del backend al actualizar:", responseData);
+
       throw new Error(
         responseData.message ||
           `Error al actualizar el cliente (${response.status})`
@@ -274,11 +267,6 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
         // Si la respuesta es el cliente directamente
         updatedClientData = responseData;
       } else {
-        // Estructura inesperada, usar datos del payload como base
-        console.warn(
-          "Respuesta inesperada del backend (éxito en actualización):",
-          responseData
-        );
         updatedClientData = { ...payloadToSend, ...responseData }; // Mezclar
       }
     }
@@ -315,10 +303,10 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
       state: mappedState,
     };
 
-    console.log("Cliente actualizado exitosamente:", updatedClient);
+
     return updatedClient;
   } catch (error) {
-    console.error("Error en la solicitud updateClient:", error);
+
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
         "Error de conexión. Verifique su red e intente nuevamente."
@@ -349,7 +337,7 @@ export const getClientsBySeller = async (
     // Asegurarse de que devuelve un array
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Error al obtener clientes:", error);
+
     // Relanzar el error para que el componente pueda manejarlo
     if (error instanceof Error) {
       throw error;
@@ -372,11 +360,8 @@ export const getClientById = async (clientId: string): Promise<Cliente | null> =
       
      if (!response.ok) throw new Error(`Error ${response.status}`);
     const data = await response.json();
-    console.log("✅ Respuesta cruda:", data);
 
- 
 
-      // ✅ Normalización para que coincida con el formato de lista
     const normalizedData = {
       ...data,
       extra: {
@@ -386,7 +371,7 @@ export const getClientById = async (clientId: string): Promise<Cliente | null> =
     };
     return normalizedData;
   } catch (error) {
-    console.error("Error al obtener cliente:", error);
+
     return null;
   }
 };
@@ -412,7 +397,7 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener vendedor:", error);
+
     return null;
   }
 };
@@ -420,18 +405,18 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
 //  Obtener TODOS los clientes (solo para Admin)
 export const getAllClients = async (): Promise<Cliente[]> => {
   try {
-    console.log("👥 Solicitando todos los clientes (modo Admin)");
+
     
     const response = await fetch(`${API_URL}/users/client`, {
       method: "GET",
       headers: getAuthHeaders(), //  Enviar token
     });
 
-    console.log(" Response status (getAllClients):", response.status);
+
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(" Error al obtener todos los clientes:", errorText);
+
       
       if (response.status === 401) {
         throw new Error("No autorizado. Solo administradores pueden acceder a esta función.");
@@ -445,7 +430,7 @@ export const getAllClients = async (): Promise<Cliente[]> => {
     }
 
     const data = await response.json();
-    console.log("✅ Todos los clientes recibidos:", data.length);
+
 
     // Mapear los datos al formato del frontend
     return Array.isArray(data) 
@@ -458,7 +443,7 @@ export const getAllClients = async (): Promise<Cliente[]> => {
           phones: item.phone || item.phones || [],
           address: Array.isArray(item.address) ? item.address : [item.address || ""],
           city: item.cityId || item.city || "",
-          password: "", // ✅ Nunca devolver la contraseña
+          password: "", // 
           role: item.role || "Client",
           priceCategoryId: item.priceCategoryId || "",
           priceCategory: item.priceCategory || null,
@@ -471,7 +456,7 @@ export const getAllClients = async (): Promise<Cliente[]> => {
       : [];
 
   } catch (error) {
-    console.error("Error al obtener todos los clientes:", error);
+ 
     
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error("Error de conexión. Verifique su red e intente nuevamente.");
@@ -511,7 +496,7 @@ export const getDepartments = async (): Promise<Department[]> => {
     const data = await response.json();
     return data; // Asumiendo que el backend devuelve un array de departamentos
   } catch (error) {
-    console.error("Error al cargar departamentos:", error);
+
     throw error;
   }
 };
@@ -520,7 +505,7 @@ export const getDepartments = async (): Promise<Department[]> => {
 export const getCitiesByDepartment = async (departmentId: string): Promise<City[]> => {
   try {
     if (!departmentId) {
-      console.warn("No se proporcionó un ID de departamento para cargar ciudades.");
+
       return [];
     }
 
@@ -537,7 +522,7 @@ export const getCitiesByDepartment = async (departmentId: string): Promise<City[
     const data = await response.json();
     return data; // Asumiendo que el backend devuelve un array de ciudades
   } catch (error) {
-    console.error("Error al cargar ciudades:", error);
+
     throw error;
   }
 };

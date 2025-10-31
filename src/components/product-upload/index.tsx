@@ -106,7 +106,6 @@ export default function ProductUpload() {
         setUploadSuccess(false);
       }, 3000);
     } catch (error) {
-      console.error("Error al subir imágenes:", error);
       setIsUploading(false);
       // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje
       alert(`Ocurrió un error al subir las imágenes: ${error instanceof Error ? error.message : "Error desconocido"}`);

@@ -22,7 +22,7 @@ export interface CreateOrderPayload {
 
 export const createOrder = async (payload: CreateOrderPayload) => {
   try {
-    console.log("Enviando orden al backend:", JSON.stringify(payload, null, 2)); // Para depuración
+
     const response = await fetch(`${API_URL}/order/`, {
       method: "POST",
       headers: {
@@ -40,19 +40,17 @@ export const createOrder = async (payload: CreateOrderPayload) => {
     }
 
     if (!response.ok) {
-      console.error("Error del backend al crear orden:", responseData);
+
       throw new Error(responseData.message || `No se pudo crear la orden (${response.status})`);
     }
 
-    console.log("Orden creada exitosamente:", responseData);
-    // Asumimos que el backend devuelve { ok: true, order: Order } o directamente la orden
-    // Ajusta esto según la respuesta real de tu backend
+
     return {
       ok: true,
       order: responseData.order || responseData, // Manejar ambas posibilidades
     };
   } catch (error) {
-    console.error("Error al crear la orden:", error);
+
     // Devolver un objeto de error consistente
     return {
       ok: false,
@@ -82,7 +80,7 @@ export const getOrderById = async (id: string): Promise<{ ok: boolean; order?: O
       order: data.order,
     };
   } catch (error) {
-    console.error("Error al obtener la orden:", error);
+
     return {
       ok: false,
       //message: "Orden no encontrada",

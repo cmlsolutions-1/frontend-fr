@@ -86,7 +86,7 @@ export default function VendedorModal({
         }
       } catch (err) {
         if (isMounted) { // Solo actualizar si sigue montado
-          console.error("Error al cargar departamentos:", err);
+
           setDepartments([]);
         }
       } finally {
@@ -122,7 +122,7 @@ export default function VendedorModal({
         const normalizedCities = cityList.map((c) => ({ _id: c._id, name: c.name }));
         setCities(normalizedCities);
       } catch (err) {
-        console.error("Error al cargar ciudades:", err);
+
         setCities([]);
         // Opcional: Limpiar cityId si falla la carga
         setFormData((prev) => ({ ...prev, cityId: "" }));
@@ -177,7 +177,6 @@ export default function VendedorModal({
 
 // --- FUNCIÓN PARA NORMALIZAR DATOS DEL VENDEDOR ---
   const normalizeVendedorData = (vendedorData: any): ExtendedVendedor => {
-    console.log("🔄 Normalizando vendedor:", vendedorData);
 
     // Función helper para extraer IDs de diferentes formatos
     const extractId = (value: any): string => {
@@ -259,7 +258,6 @@ export default function VendedorModal({
       clients: vendedorData.clients || [], // Asegurar que clients sea un array
     };
 
-    console.log("Vendedor normalizado completo (ExtendedVendedor):", normalizedVendedor);
     return normalizedVendedor;
   };
   // --- FIN FUNCIÓN ---
@@ -271,7 +269,7 @@ export default function VendedorModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    console.log("validateForm - formData:", formData);
+  
 
     if (!formData.id.trim()) newErrors.id = "El ID es requerido";
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
@@ -279,20 +277,13 @@ export default function VendedorModal({
       newErrors.lastName = "El apellido es requerido";
 
     const emailValue = formData.emails?.[0]?.EmailAddres?.trim() || formData.emails?.[0]?.EmailAddress?.trim();
-    console.log("validateForm - emailValue:", emailValue); // Log del valor del email
-    console.log("validateForm - !emailValue:", !emailValue); // Log del resultado de la condición
 
     if (!emailValue) {
-      console.log("validateForm - Asignando error de email"); // Log si entra en la condición
       newErrors.email = "El email es requerido";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
-      console.log("validateForm - Asignando error de formato de email"); 
       // Opcional: Validar formato del email
       newErrors.email = "Email inválido";
     }
-
-    console.log("validateForm - newErrors antes de setErrors:", newErrors); // Log del objeto de errores antes de guardarlo
-
     const phone = formData.phones[0]?.NumberPhone;
     if (!phone) newErrors.phone = "El teléfono es requerido";
 
@@ -332,7 +323,6 @@ export default function VendedorModal({
 
     // --- VALIDACIÓN PRINCIPAL ---
     if (!validateForm()) {
-      console.log("❌ Validación del formulario fallida. Errores:", errors);
       return; // Detener la ejecución si hay errores
     }
     // --- FIN VALIDACIÓN ---
@@ -374,7 +364,7 @@ export default function VendedorModal({
       await onSave(vendedorToSave);
       onClose();
     } catch (error) {
-      console.error("Error completo en handleSubmit:", error);
+
       // Asumiendo que `onSave` (en VendedoresManager) lanza el error correctamente
       setApiError(
         error instanceof Error

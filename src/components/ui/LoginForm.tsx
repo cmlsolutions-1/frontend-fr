@@ -22,20 +22,18 @@ export const LoginForm = () => {
     setError("");
 
     try {
-      console.log("🚀 Iniciando login para:", email);
+      
       const success = await login(email, password);
 
       if (!success) {
         setError("Credenciales incorrectas");
       } else {
-        console.log("✅ Login exitoso, redirigiendo...");
-        // Pequeño delay para que se procese el almacenamiento
+      
         setTimeout(() => {
           navigate("/homePage");
         }, 100);
       }
     } catch (err) {
-      console.error("Error en login:", err);
       setError("Error al iniciar sesión. Intente nuevamente.");
     } finally {
       setLoading(false);

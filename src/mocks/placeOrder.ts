@@ -74,11 +74,11 @@ import { Order } from "@/interfaces/order.interface";
 
   try {
     // ✅ Agrega logs para ver si llega aquí
-    console.log('Guardando orden...', order);
+
     addOrderToMock(order);
-    console.log('Orden guardada', order.id);
+
   } catch (error) {
-    console.error('Error al guardar la orden:', error);
+
     return {
       ok: false,
       message: 'No se pudo guardar la orden',

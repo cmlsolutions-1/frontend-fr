@@ -43,7 +43,7 @@ export const SearchPage = () => {
         setResults(response.products);
         setTotalPages(response.totalPages);
       } catch (error) {
-        console.error("Error al buscar productos:", error);
+
         setError("Error al cargar los resultados de búsqueda");
         setResults([]);
         setTotalPages(1);

@@ -21,7 +21,7 @@ export const CartPage = () => {
         const activePromotions = await getActivePromotions();
         setPromotions(activePromotions);
       } catch (error) {
-        console.error("Error al cargar promociones:", error);
+
         setPromotions([]);
       }
     };

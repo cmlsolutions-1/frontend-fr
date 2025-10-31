@@ -59,7 +59,7 @@ export default function PromotionsPage() {
         setProducts(productList);
         setLoadingProducts(false);
       } catch (error) {
-        console.error("Error cargando datos:", error);
+
         setLoadingProducts(false);
         alert("No se pudieron cargar productos o promociones");
       }
@@ -167,14 +167,14 @@ export default function PromotionsPage() {
       formData.typePackage === "master" ? 1 : formData.minimumQuantity,
   };
 
-  console.log("🚀 Payload que se enviará al backend:", offerData);
+
    
 
   try {
     if (editingPromotion) {
       const promotionId = (editingPromotion as any)._id || (editingPromotion as any).id;
       if (!promotionId) {
-      console.error("No se encontró ID en la promoción que se intenta editar", editingPromotion);
+
       return;
     }
       const result = await updatePromotion(promotionId, offerData);
@@ -196,9 +196,6 @@ export default function PromotionsPage() {
       const result = await createPromotion(offerData);
       const newPromo = (result as any).offer ?? result; 
 
-      //debug
-      console.log("Respuesta backend:", result);
-      console.log("Lo que agrego al store:", result.offer);
 
       const normalizedNewPromo: Promotion = {
       ...newPromo,
@@ -214,7 +211,7 @@ export default function PromotionsPage() {
     setIsDialogOpen(false);
     resetForm();
   } catch (error) {
-    console.error("Error al guardar oferta:", error);
+
     alert("Hubo un problema al guardar la oferta");
   }
 };
@@ -224,7 +221,6 @@ export default function PromotionsPage() {
       await deletePromotion(id);
       usePromotionStore.getState().deletePromotion(id);
     } catch (error) {
-      console.error("Error al eliminar promoción:", error);
       alert("Hubo un problema al eliminar la promoción");
     }
   };

@@ -76,12 +76,12 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
       try {
         setLoading(true);
         setError(null);
-        console.log("Cargando clientes para el vendedor con _id:", currentSellerId);
+
         const data = await getClientsBySalesPerson(currentSellerId);
         const normalized = normalizeClients(Array.isArray(data) ? data : [], currentSellerId);
         setClientes(normalized);
       } catch (err) {
-        console.error("Error al cargar clientes del vendedor:", err);
+
         setError(
           err instanceof Error ? err.message : "No se pudieron cargar los clientes."
         );

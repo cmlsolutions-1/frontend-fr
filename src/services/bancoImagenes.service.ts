@@ -50,7 +50,7 @@ export const uploadImages = async (files: File[]): Promise<any> => { // Ajusta e
   // });
 
   try {
-    console.log("Enviando archivos al backend...");
+
     const response = await fetch(`${API_URL}/upload`, { // Asegúrate que esta es la URL correcta
       method: 'POST',
       headers: {
@@ -60,20 +60,20 @@ export const uploadImages = async (files: File[]): Promise<any> => { // Ajusta e
       body: formData,
     });
 
-    console.log("Respuesta del backend:", response.status);
+
 
     if (!response.ok) {
       const errorText = await response.text(); // O response.json() si el backend devuelve JSON
-      console.error("Error en la subida:", response.status, errorText);
+
       throw new Error(`Error al subir imágenes: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json(); // Asumiendo que el backend devuelve JSON
-    console.log("Subida exitosa:", data);
+
     return data; // Devuelve la respuesta del backend
 
   } catch (error) {
-    console.error("Error de red o en la subida:", error);
+
     throw error; // Relanza el error para que lo maneje el componente
   }
 };
