@@ -154,7 +154,7 @@ export const ProductPage = () => {
         {/* Precio */}
           {isAdminOrSales ? (
             <div className="mb-5 space-y-1">
-              <h3 className="font-bold text-gray-800 mb-2">Lista de precios:</h3>
+              <h3 className="font-bold text-gray-800 mb-2">Lista de Precios:</h3>
               {product.precios?.map((p) => {
                 // Diccionario de etiquetas 
                 const priceLabels: Record<string, string> = {

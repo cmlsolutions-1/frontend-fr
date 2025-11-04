@@ -1,4 +1,4 @@
-
+// src/components/product/slideshow/ProductMobileSlideshow.tsx
 
 import React from 'react';
 
@@ -22,43 +22,31 @@ interface Props {
 
 
 
-export const ProductMobileSlideshow = ( { images, title, className }: Props ) => {
-
-
+export const ProductMobileSlideshow = ({ images = [], title, className }: Props) => {
   return (
-    <div className={ className }>
-
+    <div className={className}>
       <Swiper
-        style={{
-          width: '100vw',
-          height: '500px'
-        }}
+        style={{ width: '100vw', height: '500px' }}
         pagination
-        autoplay={{
-          delay: 2500
-        }}
-        modules={ [ FreeMode, Autoplay, Pagination ] }
+        autoplay={{ delay: 2500 }}
+        modules={[FreeMode, Autoplay, Pagination]}
         className="mySwiper2"
       >
-
-        {
-          images.map( image => (
-            <SwiperSlide key={ image }>
-              <img
-                width={ 600 }
-                height={ 500 }
-                src={ `/products/${ image }` }
-                alt={ title }
-                className="object-fill"
-              />
-            </SwiperSlide>
-
-          ) )
-        }
+        {images.map((image) => (
+          <SwiperSlide key={image}>
+            <img
+              width={600}
+              height={500}
+              src={image}
+              alt={title}
+              className="object-fill"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/img/placeholder.jpg";
+              }}
+            />
+          </SwiperSlide>
+        ))}
       </Swiper>
-
-
-
     </div>
   );
 };
