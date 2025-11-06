@@ -109,7 +109,6 @@ if (!response.ok) {
 
 
 
-// Obtener productos (sin paginación por ahora)
 export const getProducts = async (): Promise<Product[]> => {
   try {
 
@@ -130,7 +129,7 @@ export const getProducts = async (): Promise<Product[]> => {
          (authError as any).status = 401;
          throw authError;
       }
-      // --- FIN VERIFICACIÓN DE 401 ---
+    
 
       throw new Error("No se pudieron cargar los productos");
     }

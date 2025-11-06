@@ -1,3 +1,5 @@
+//src/interfaces/product.interface.ts
+
 export interface Precio {
   precio: string;   // parece venir vacío, pero lo dejo como string
   valor: number;
@@ -7,6 +9,12 @@ export interface Precio {
 export interface Package {
   typePackage: string; // "Inner" | "Master"
   mount: number;
+}
+
+
+export interface Brand {
+  code: string;
+  name: string;
 }
 
 export interface Product {
@@ -24,7 +32,10 @@ export interface Product {
   precios: Precio[];      
   packages: Package[];     
   stock: number;
+  brand: Brand;
 }
+
+
 
 export interface CartProduct extends Product {
   quantity: number;

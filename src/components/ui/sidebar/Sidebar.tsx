@@ -13,6 +13,7 @@ import {
   IoLogoBuffer,
 } from "react-icons/io5";
 import { BiSolidOffer } from "react-icons/bi";
+import { AiOutlineProduct } from "react-icons/ai";
 import { CiImageOn } from "react-icons/ci";
 import { RiDiscountPercentLine } from "react-icons/ri";
 
@@ -164,14 +165,7 @@ export const Sidebar = () => {
             <div className="w-full h-px bg-gray-200 my-10" />
            
 
-            {/* <Link
-              to="/admin/products"
-              onClick={() => closeMenu()}
-              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
-            >
-              <IoShirtOutline size={30} />
-              <span className="ml-3 text-lg">Productos</span>
-            </Link> */}
+            
 
             {/* <Link
               to="/admin/containers"
@@ -204,6 +198,15 @@ export const Sidebar = () => {
               <IoPeopleOutline size={30} />
               <span className="ml-3 text-lg">Gestión de Usuarios</span>
             </Link>
+
+            <Link
+              to="/admin/tableProducts"
+              onClick={() => closeMenu()}
+              className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
+            >
+              <AiOutlineProduct size={30} />
+              <span className="ml-3 text-lg">Productos</span>
+            </Link> 
 
             <Link to="/admin/bancoImagenes" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
               <CiImageOn size={30} />

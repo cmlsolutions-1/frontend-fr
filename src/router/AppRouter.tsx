@@ -32,6 +32,8 @@ import ListPromotionsClients from "@/pages/ListPromotionsClients";
 
 import { RoleProtectedRoute } from "./RoleProtectedRoute";
 import BancoImagenes from "@/pages/BancoImagenes";
+import { Table } from "lucide-react";
+import TableProducts from "@/pages/TableProducts";
 
 
 //CheckoutPage
@@ -79,6 +81,19 @@ export const AppRouter = () => {
               <RoleProtectedRoute allowedRoles={["Admin"]}>
                 <ShopLayout>
                   <BancoImagenes />
+                </ShopLayout>
+              </RoleProtectedRoute>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/tableProducts"
+          element={
+            <PrivateRoute>
+              <RoleProtectedRoute allowedRoles={["Admin"]}>
+                <ShopLayout>
+                  <TableProducts />
                 </ShopLayout>
               </RoleProtectedRoute>
             </PrivateRoute>

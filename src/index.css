@@ -1,3 +1,5 @@
+/* src/index.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,4 +11,6 @@ html, body, #root {
     padding: 0;
     overflow-x: hidden; /* Previene scroll horizontal */
   }
+
+
 

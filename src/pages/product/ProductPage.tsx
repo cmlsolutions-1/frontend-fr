@@ -141,12 +141,7 @@ export const ProductPage = () => {
 
       {/* Detalles */}
       <div className="col-span-1 px-5">
-        <StockLabel stock={product.stock} />
-
-        <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
-          {product.referencia}
-        </h1>
-
+        
         <h1 className={`${titleFont.className} antialiased font-bold text-xl mb-5`}>
           {product.detalle}
         </h1>
@@ -186,9 +181,12 @@ export const ProductPage = () => {
         {/*Referencia */}
         <h3 className="font-bold text-sm mt-4">Referencia</h3>
         <p className="font-light">{product.referencia}</p>
-        {/* Descripción */}
-        <h3 className="font-bold text-sm mt-4">Descripción</h3>
-        <p className="font-light">{product.detalle}</p>
+
+        {/*Referencia */}
+        <h3 className="font-bold text-sm mt-4">Stock</h3>
+        <p className="font-light">{product.stock} unidades </p>
+        {/* <StockLabel stock={product.stock} /> */}
+        
       </div>
     </div>
   );
