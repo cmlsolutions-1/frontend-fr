@@ -269,7 +269,7 @@ export const updateProductMaster = async (id: string, mount: number): Promise<vo
     const response = await fetch(`${API_URL}/products/update-master/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ Mount: Number(mount) }),
+      body: JSON.stringify({ mount }),
     });
 
     if (!response.ok) {
