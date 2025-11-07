@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
-import { getProducts } from "@/services/products.service";
+import { getProducts, updateProductCategory, updateProductMaster, getCategories } from "@/services/products.service";
 import { Product } from '@/interfaces/product.interface';
 
-
-// --- CATEGORÍAS (puedes cargarlas desde el backend si es dinámico) ---
-const CATEGORIAS = ["Electrónica", "Ropa", "Accesorios", "Hogar", "Deportes", "Alimentos"];
 
 // --- INTERFAZ PARA FILA EN EDICIÓN ---
 interface EditingRow {
@@ -24,53 +21,59 @@ interface ProductWithCategory extends Product {
 
 export const ProductsTable = () => {
   const [productos, setProductos] = useState<ProductWithCategory[]>([]);
+  const [categorias, setCategorias] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getProducts();
-        // Mapear para agregar category temporalmente como subgategoryId
-        const mappedProducts = data.map(p => ({
-          ...p,
-          category: p.subgategoryId || "General",
-        }));
-        setProductos(mappedProducts);
-      } catch (err) {
-        console.error("Error al cargar productos:", err);
-        setError("No se pudieron cargar los productos");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchInitialData = async () => {
+    try {
+      const [productosData, categoriasData] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ]);
 
-    fetchProducts();
-  }, []);
+      const mappedProducts = productosData.map(p => ({
+        ...p,
+        category: p.subgategoryId || "General",
+      }));
+      setProductos(mappedProducts);
+
+      // Mapear solo los nombres de las categorías
+      setCategorias(categoriasData.map(cat => cat.name));
+    } catch (err) {
+      console.error("Error al cargar productos o categorías:", err);
+      setError("No se pudieron cargar los productos o categorías");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchInitialData();
+}, []);
 
   const handleEditStart = (product: ProductWithCategory) => {
-  setEditingRow({
-    id: product._id,
-    category: product.category,
-    master: getMasterValue(product).toString(),
-    editingCategory: true,  // Editar categoría por defecto
-    editingMaster: true,    // Editar master por defecto
-  });
-};
+    setEditingRow({
+      id: product._id,
+      category: product.category,
+      master: getMasterValue(product).toString(),
+      editingCategory: true,
+      editingMaster: true,
+    });
+  };
 
   const handleCancel = () => {
     setEditingRow(null);
   };
 
-  const handleSave = async (product: Product) => {
-    if (!editingRow) return;
+  const handleSave = async (product: ProductWithCategory) => {
+  if (!editingRow) return;
 
-    setLoadingId(editingRow.id);
+  setLoadingId(editingRow.id);
 
-    try {
-    // Solo validar master si está en edición
+  try {
     let masterNum: number | undefined;
     if (editingRow.editingMaster) {
       masterNum = Number.parseInt(editingRow.master, 10);
@@ -81,18 +84,17 @@ export const ProductsTable = () => {
       }
     }
 
-    // Lógica para actualizar solo lo que esté marcado como editable
+    // Actualizar categoría si está marcado para editar
     if (editingRow.editingCategory) {
-      // Aquí harías la llamada para actualizar categoría
-      // await updateCategory(product._id, editingRow.category);
+      await updateProductCategory(product._id, editingRow.category);
     }
 
+    // Actualizar master si está marcado para editar
     if (editingRow.editingMaster) {
-      // Aquí harías la llamada para actualizar master
-      // await updateMaster(product._id, masterNum!);
-    }
+  await updateProductMaster(product._id, masterNum!); 
+  }
 
-      // Actualizar estado local
+    // Actualizar estado local
     setProductos(
       productos.map((p) =>
         p._id === editingRow.id
@@ -105,21 +107,22 @@ export const ProductsTable = () => {
       )
     );
 
-      setEditingRow(null);
-      console.log("Producto actualizado:", {
-        id: product._id,
-        category: editingRow.editingCategory ? editingRow.category : undefined,
+    setEditingRow(null);
+    console.log("Producto actualizado:", {
+      id: product._id,
+      category: editingRow.editingCategory ? editingRow.category : undefined,
       master: editingRow.editingMaster ? masterNum : undefined,
-      });
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      alert("Error al actualizar el producto");
-    } finally {
-      setLoadingId(null);
-    }
-  };
+    });
+  } catch (error) {
+    console.error("Error al actualizar:", error);
+    alert(`Error al actualizar el producto: ${(error as Error).message}`);
+  } finally {
+    setLoadingId(null);
+  }
+};
 
-   const getMasterValue = (product: ProductWithCategory): number => {
+  // --- FUNCIONES AUXILIARES ---
+  const getMasterValue = (product: ProductWithCategory): number => {
     const masterPackage = product.packages?.find(p => p.typePackage === "Master");
     return masterPackage ? masterPackage.mount : 0;
   };
@@ -133,7 +136,7 @@ export const ProductsTable = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Cargando productos...</div>;
+    return <div className="text-center py-8 text-gray-500">Cargando productos y categorías...</div>;
   }
 
   if (error) {
@@ -212,7 +215,7 @@ export const ProductsTable = () => {
                   onChange={(e) => setEditingRow({ ...editingRow, category: e.target.value })}
                   className="border rounded-md px-2 py-1 text-sm"
                 >
-                  {CATEGORIAS.map((cat) => (
+                  {categorias.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>

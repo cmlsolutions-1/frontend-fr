@@ -224,3 +224,61 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
     throw error;
   }
 };
+
+// Obtener todas las categorías
+export const getCategories = async (): Promise<{ name: string }[]> => {
+  try {
+    const response = await fetch(`${API_URL}/category/categories`, {
+      method: "GET",
+      headers: getAuthHeaders(false), // No incluir Content-Type en GET
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudieron cargar las categorías");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error al cargar categorías:", error);
+    throw error;
+  }
+};
+
+// Actualizar categoría de un producto
+export const updateProductCategory = async (id: string, categoryId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_URL}/products/update-category/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ category: categoryId }),
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo actualizar la categoría del producto");
+    }
+  } catch (error) {
+    console.error("Error al actualizar categoría:", error);
+    throw error;
+  }
+};
+
+// Actualizar master (mount) de un producto
+export const updateProductMaster = async (id: string, mount: number): Promise<void> => {
+  try {
+    console.log("Body que se enviará:", { Mount: mount, typeofMount: typeof mount });
+    const response = await fetch(`${API_URL}/products/update-master/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ Mount: Number(mount) }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text(); 
+      console.error("Error del backend:", errorText, "Status:", response.status);
+      throw new Error(`No se pudo actualizar el master del producto. Código: ${response.status}, Mensaje: ${errorText}`);
+    }
+  } catch (error) {
+    console.error("Error al actualizar master:", error);
+    throw error;
+  }
+};
