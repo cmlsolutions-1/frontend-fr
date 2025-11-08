@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { mockCategories } from "@/mocks/mock-categories";
+import { getCategories } from "@/services/products.service";
 import {
   RiNodeTree,
   RiBox3Fill,
@@ -14,12 +14,31 @@ export const CategoryFilterSidebar = () => {
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showBrandMenu, setShowBrandMenu] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]); // Seguimos usando IDs
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]); 
   const [allBrands, setAllBrands] = useState<any[]>([]);
+  const [allCategories, setAllCategories] = useState<any[]>([]);
   const [loadingBrands, setLoadingBrands] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Cargar categorías desde el backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const categories = await getCategories();
+        setAllCategories(categories);
+      } catch (error) {
+        console.error("❌ Error al cargar categorías:", error);
+        setAllCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Cargar marcas desde el backend
   useEffect(() => {
@@ -67,14 +86,12 @@ export const CategoryFilterSidebar = () => {
   };
 
   // Verificar si una categoría está seleccionada
-  const isCategorySelected = (categoryId: string) => {
-    return selectedCategories.includes(categoryId);
-  };
+  const isCategorySelected = (id: string) => selectedCategories.includes(id);
+    // Verificar si una marca está seleccionada
+  const isBrandSelected = (id: string) => selectedBrands.includes(id);
 
-  // Verificar si una marca está seleccionada
-  const isBrandSelected = (brandId: string) => {
-    return selectedBrands.includes(brandId);
-  };
+
+ 
 
   // Aplicar filtros
   const applyFilters = () => {
@@ -137,20 +154,30 @@ export const CategoryFilterSidebar = () => {
 
         {showCategoryMenu && (
           <div className="mt-2 pl-2 space-y-2 max-h-60 overflow-y-auto">
-            {mockCategories.map((category) => (
-              <label 
-                key={category.id} 
-                className="flex items-center space-x-3 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={isCategorySelected(category.id)}
-                  onChange={() => handleCategoryChange(category.id)}
-                  className="w-4 h-4 accent-[#F4C048] rounded focus:ring-yellow-500"
-                />
-                <span className="text-sm">{category.name}</span>
-              </label>
-            ))}
+            {loadingCategories ? (
+              <div className="text-center py-2 text-gray-500">
+                Cargando categorías...
+              </div>
+            ) : allCategories.length > 0 ? (
+              allCategories.map((category) => (
+                <label
+                  key={category._id}
+                  className="flex items-center space-x-3 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isCategorySelected(category._id)}
+                    onChange={() => handleCategoryChange(category._id)}
+                    className="w-4 h-4 accent-[#F4C048] rounded focus:ring-yellow-500"
+                  />
+                  <span className="text-sm">{category.name}</span>
+                </label>
+              ))
+            ) : (
+              <div className="text-center py-2 text-gray-500">
+                No hay categorías disponibles
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -224,12 +251,19 @@ export const CategoryFilterSidebar = () => {
       {/* Filtros aplicados */}
       {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
         <div className="mt-4 p-3 bg-yellow-50 rounded-md sticky bottom-0 z-10">
-          <h4 className="font-medium text-gray-700 mb-2">Filtros aplicados:</h4>
+          <h4 className="font-medium text-gray-700 mb-2">
+            Filtros aplicados:
+            </h4>
           <div className="flex flex-wrap gap-2">
-            {selectedCategories.map(categoryId => {
-              const category = mockCategories.find(cat => cat.id === categoryId);
+            {selectedCategories.map((categoryId) => {
+              const category = allCategories.find(
+                (cat) => cat._id === categoryId
+              );
               return category ? (
-                <span key={categoryId} className="inline-flex items-center px-2 py-1 bg-[#F5C85C] text-black-800 rounded text-xs">
+                <span
+                  key={categoryId}
+                  className="inline-flex items-center px-2 py-1 bg-[#F5C85C] text-black rounded text-xs"
+                >
                   {category.name}
                   <button 
                     onClick={() => handleCategoryChange(categoryId)}

@@ -50,7 +50,7 @@ export const ProductsTable = () => {
 
         const mappedProducts = productosData.map((p) => ({
           ...p,
-          category: p.subCategoryId || "",
+          category: p.subgategory?._id || "",
         }));
         setProductos(mappedProducts);
 
@@ -90,7 +90,7 @@ export const ProductsTable = () => {
     setLoadingId(product._id + "-category");
   
     try {
-      console.log("🧩 Intentando actualizar categoría con:", {
+      console.log("Intentando actualizar categoría con:", {
         id: product._id,
         categoryId: editingRow.category,
         tipo: typeof editingRow.category,
@@ -103,15 +103,19 @@ export const ProductsTable = () => {
   
       await updateProductCategory(product._id, editingRow.category);
   
-      setProductos(
-        productos.map((p) =>
+      setProductos((prev) =>
+        prev.map((p) =>
           p._id === product._id
-            ? { ...p, category: editingRow.category }
+            ? {
+                ...p,
+                category: editingRow.category,
+                subgategory: { _id: editingRow.category }, 
+              }
             : p
         )
       );
   
-      console.log("✅ Categoría actualizada:", {
+      console.log("Categoría actualizada:", {
         id: product._id,
         category: editingRow.category,
       });
@@ -203,8 +207,8 @@ export const ProductsTable = () => {
   }
 
   return (
-    <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="w-full overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -239,7 +243,7 @@ export const ProductsTable = () => {
 
             return (
               <tr key={product._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-2 py-2 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm">
                   {product.referencia}
                 </td>
                 <td className="px-6 py-4 max-w-xs text-sm text-gray-500">
@@ -278,7 +282,7 @@ export const ProductsTable = () => {
                     </div>
                   ) : (
                     <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md text-xs">
-                          {categorias.find(cat => cat._id === product.category)?.name || "Sin categoría"}
+                          {categorias.find((cat) => cat._id === product.subgategory?._id)?.name || "Sin categoría"}
                         </span>
                   )}
                 </td>
