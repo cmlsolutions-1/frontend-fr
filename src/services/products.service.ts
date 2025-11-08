@@ -225,26 +225,32 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   }
 };
 
+// Definimos la interfaz correcta según tu backend
+export interface Category {
+  _id: string;
+  name: string;
+}
+
 // Obtener todas las categorías
-export const getCategories = async (): Promise<{ name: string }[]> => {
+export const getCategories = async (): Promise<Category[]> => {
   try {
     const response = await fetch(`${API_URL}/category/categories`, {
       method: "GET",
-      headers: getAuthHeaders(false), // No incluir Content-Type en GET
+      headers: getAuthHeaders(false),
     });
 
     if (!response.ok) {
       throw new Error("No se pudieron cargar las categorías");
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data as Category[]; // ✅ Tipamos correctamente
   } catch (error) {
     console.error("Error al cargar categorías:", error);
     throw error;
   }
 };
 
-// Actualizar categoría de un producto
 export const updateProductCategory = async (id: string, categoryId: string): Promise<void> => {
   try {
     const response = await fetch(`${API_URL}/products/update-category/${id}`, {
@@ -254,7 +260,10 @@ export const updateProductCategory = async (id: string, categoryId: string): Pro
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo actualizar la categoría del producto");
+      const errorText = await response.text();
+      throw new Error(
+        `No se pudo actualizar la categoría del producto. Código: ${response.status}, Mensaje: ${errorText}`
+      );
     }
   } catch (error) {
     console.error("Error al actualizar categoría:", error);
@@ -262,23 +271,44 @@ export const updateProductCategory = async (id: string, categoryId: string): Pro
   }
 };
 
+
 // Actualizar master (mount) de un producto
-export const updateProductMaster = async (id: string, mount: number): Promise<void> => {
+export const updateProductMaster = async (
+  id: string,
+  mount: number,
+  code: string,
+  reference: string,
+  brand: string,
+  detail: string
+): Promise<void> => {
   try {
-    console.log("Body que se enviará:", { Mount: mount, typeofMount: typeof mount });
+    const body = {
+      mount,
+      code,
+      reference,
+      brand,
+      detail,
+    };
+
+    console.log("📤 Enviando actualización master:", body);
+
     const response = await fetch(`${API_URL}/products/update-master/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ mount }),
+      body: JSON.stringify(body),
     });
 
+    console.log("📥 Respuesta status:", response.status);
+    const text = await response.text();
+    console.log("📥 Respuesta completa:", text);
+
     if (!response.ok) {
-      const errorText = await response.text(); 
-      console.error("Error del backend:", errorText, "Status:", response.status);
-      throw new Error(`No se pudo actualizar el master del producto. Código: ${response.status}, Mensaje: ${errorText}`);
+      throw new Error(`No se pudo actualizar el master del producto. Código: ${response.status}, Mensaje: ${text}`);
     }
   } catch (error) {
     console.error("Error al actualizar master:", error);
     throw error;
   }
 };
+
+
