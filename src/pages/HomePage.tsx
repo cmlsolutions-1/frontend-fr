@@ -7,6 +7,7 @@ import { CategoryFilterSidebar } from "@/components/filters/CategoryFilterSideba
 import { filterProducts } from "@/services/products.service";
 import { ArrowUp } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
+import { CiFilter } from "react-icons/ci";
 import React from 'react';
 
 const HomePage = () => {
@@ -30,6 +31,10 @@ const HomePage = () => {
 
   //boton flotante para subir al inicio
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+
+  //para mostrar y ocultar filtros
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   
   // Detectar scroll para mostrar el botón para subir arriba
@@ -214,10 +219,21 @@ const HomePage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Columna izquierda - Filtros fijos */}
-          <div className="md:col-span-1">
+          <div className="hidden md:block md:col-span-1">
             <div className="sticky top-[100px]">
               <CategoryFilterSidebar />
             </div>
+          </div>
+
+          {/* Botón Filtros - Solo visible en móvil */}
+          <div className="flex justify-end md:hidden mb-4">
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F4C048] text-white rounded-md shadow hover:bg-[#f1b212] transition-colors"
+            >
+              <CiFilter size={20} />
+              <span>Filtros</span>
+            </button>
           </div>
 
         {/* Columna derecha - Productos */}
@@ -245,6 +261,25 @@ const HomePage = () => {
             </>
           )}
         </div>
+
+        {/* Panel de filtros en móviles */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+          <div className="bg-white w-3/4 sm:w-2/3 h-full p-4 overflow-y-auto shadow-lg animate-slideInRight relative">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Filtros</h3>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="text-gray-600 hover:text-black text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <CategoryFilterSidebar />
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
 

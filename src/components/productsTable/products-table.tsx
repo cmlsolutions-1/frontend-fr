@@ -196,8 +196,11 @@ export const ProductsTable = () => {
 
     return (
 
-      <div className="text-center py-8 text-gray-500">
-        Cargando productos y categorías...
+      <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[90px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando productos y categorias...</p>
+        </div>
       </div>
     );
   }

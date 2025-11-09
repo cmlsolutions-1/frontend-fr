@@ -84,7 +84,7 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
       <div className="relative">
         <input
           type="text"
-          placeholder="Buscar por código o nombre..."
+          placeholder="¿Que estas buscando?"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);

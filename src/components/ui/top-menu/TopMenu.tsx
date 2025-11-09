@@ -25,23 +25,39 @@ export const TopMenu = () => {
   const isClient = user?.role === "Client";
 
   return (
-    <nav className="fixed top-0 left-0 z-40 flex px-5 justify-between items-center w-full bg-white shadow-md">
+    <nav className="fixed top-0 left-0 z-40 flex px-5 py-3 justify-between items-center w-full bg-white shadow-md">
       {/* Logo */}
-      <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
-        <div className="flex items-center">
-          <Link to="/homePage">
-            <FrLogo />
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-2">
+      <div className="flex items-center">
+            <Link to="/homePage">
+              {/* Logo grande (desktop) */}
+              <div className="hidden md:block">
+                <FrLogo />
+              </div>
+
+              {/* Logo compacto (móvil) */}
+              <div className="block md:hidden">
+                <img
+                  src="/FRsolo.png"
+                  alt="Ferrelectricos Restrepo"
+                  className="w-12 h-auto" // puedes ajustar tamaño
+                />
+              </div>
+            </Link>
+          </div>
+
+
         {/* Search - Oculta en pantallas pequeñas */}
-        <div className="w-full order-3 md:order-1 md:flex-1 md:mx-8 md:block hidden">
-          <div className="relative w-full max-w-[600px] mx-auto">
+        <div className="flex-1 max-w-[400px] sm:max-w-[500px] md:max-w-[600px] mx-2">
+          <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <IoSearchOutline />
             </div>
             <ProductSearchDropdown />
           </div>
         </div>
+
+        
         {/* User Info - Oculta o colapsa en móviles, anterior flex items-center space-x-10 */}
         <div className="hidden md:flex items-center space-x-4 order-2">
           <UserInfo />

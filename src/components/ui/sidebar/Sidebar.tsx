@@ -62,7 +62,7 @@ export const Sidebar = () => {
       <nav
         className={clsx(
           "fixed right-0 top-0 h-screen bg-white shadow-2xl transform transition-transform duration-300 z-[70]",
-          "w-full max-w-xs sm:max-w-sm md:max-w-md flex flex-col justify-between",
+          "w-full max-w-xs sm:max-w-sm md:max-w-md flex flex-col ",
           {
             "translate-x-full": !isSideMenuOpen,
             "translate-x-0": isSideMenuOpen,
@@ -219,7 +219,7 @@ export const Sidebar = () => {
         </div>
 
         {isAuthenticated && (
-          <div className="p-6 border-t">
+          <div className="p-6 border-t mt-auto mb-6">
 
           
           <button
@@ -228,7 +228,7 @@ export const Sidebar = () => {
             onClick={handleLogout}
           >
             <IoLogOutOutline size={30} />
-            <span className="ml-3 text-lg">Salir</span>
+            <span className="text-lg font-medium">Salir</span>
           </button>
           </div>
         )}
