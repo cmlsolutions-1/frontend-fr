@@ -92,7 +92,9 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
           }}
           onKeyDown={handleKeyDown} //Maneja Enter
           onFocus={() => setShowResults(true)}
-          className="block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318] text-sm"
+          className="block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-full bg-gray-50 
+               focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318] 
+               text-sm text-center"
         />
         <IoSearchOutline className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
       </div>

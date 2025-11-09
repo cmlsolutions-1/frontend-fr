@@ -7,6 +7,7 @@ import { useUIStore } from "@/store";
 import clsx from "clsx";
 import { useAuthStore } from "@/store/auth-store"; 
 import { FrLogo } from "@/assets/icons/logo";
+import { LuMenu } from "react-icons/lu";
 import { ProductSearchDropdown } from "@/components/ui/ProductSearchDropdown";
 import { UserInfo } from "../UserInfo";
 
@@ -86,9 +87,10 @@ export const TopMenu = () => {
 
         <button
           onClick={openSideMenu}
-          className="p-2 rounded-md transition-all hover:bg-gray-100"
+          className="p-2 rounded-md transition-all hover:bg-gray-100 flex items-center gap-2"
         >
-          Menú
+          <LuMenu  size={22} className="text-gray-700" />
+          <span className="font-medium text-gray-700">Menú</span>
         </button>
       </div>
     </nav>
