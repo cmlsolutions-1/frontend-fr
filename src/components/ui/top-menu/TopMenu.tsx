@@ -26,7 +26,7 @@ export const TopMenu = () => {
   const isClient = user?.role === "Client";
 
   return (
-    <nav className="fixed top-0 left-0 z-40 flex px-5 py-3 justify-between items-center w-full bg-white shadow-md">
+    <nav className="fixed top-0 left-0 z-40 flex px-5 py-3 md:py-1 justify-between items-center w-full bg-white shadow-md">
       {/* Logo */}
       <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-2">
       <div className="flex items-center">
