@@ -66,10 +66,9 @@ export const filterProducts = async (params: {
     url.searchParams.set('limit', limit.toString());
     url.searchParams.set('search', search);
 
-    // ⚙️ Aquí ajustamos el nombre del campo para coincidir con el backend
     const requestBody = {
       brands,
-      subgategories: categories // 👈 cambia "categories" por "subgategories"
+      categories 
     };
 
     const response = await fetch(url.toString(), {
@@ -80,20 +79,14 @@ export const filterProducts = async (params: {
 
     if (!response.ok) {
       if (response.status === 401) {
-        const errorText = await response.text();
         const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
         (authError as any).isAuthError = true;
-        (authError as any).status = 401;
         throw authError;
       }
-      const errorText = await response.text();
       throw new Error(`No se pudieron filtrar los productos. Status: ${response.status}`);
     }
 
     const data = await response.json();
-
-    // 🧩 Log para depuración
-    console.log("🔍 Respuesta del backend (filterProducts):", data);
 
     return data;
   } catch (error) {
@@ -284,7 +277,6 @@ export const updateProductMaster = async (
       detail,
     };
 
-    console.log("📤 Enviando actualización master:", body);
 
     const response = await fetch(`${API_URL}/products/update-master/${id}`, {
       method: "PUT",

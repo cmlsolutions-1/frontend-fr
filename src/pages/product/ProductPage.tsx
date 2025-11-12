@@ -27,6 +27,15 @@ export const ProductPage = () => {
   const placeholder = "/img/placeholder.jpg"; // imagen por defecto
   const isAdminOrSales = user?.role === "Admin" || user?.role === "SalesPerson";
 
+  const getMasterValue = (product: Product) => {
+    const masterPackage = product.packages?.find(
+      (p) => p.typePackage === "Master"
+    );
+    return masterPackage ? masterPackage.Mount : "N/A";
+  };
+  
+  const masterValue = product ? getMasterValue(product) : "N/A";
+
   useEffect(() => {
     const fetchProduct = async () => {
       if (!_id) {
@@ -175,7 +184,7 @@ export const ProductPage = () => {
         <div className="mt-4">
           <h3 className="font-bold text-sm">Master</h3>
           <p className="font-light">
-            {masterPackage ? masterPackage.mount : "N/A"} unidades
+            {masterValue} unidades
           </p>
         </div>
         {/*Referencia */}

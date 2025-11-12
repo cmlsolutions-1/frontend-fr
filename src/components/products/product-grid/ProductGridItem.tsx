@@ -15,10 +15,16 @@ export const ProductGridItem = ({ product }: Props) => {
   const isClient = user?.role === "Client";
   const isAdminOrSales = user?.role === "Admin" || user?.role === "SalesPerson";
 
-  const masterPackage = product.packages?.find(
-    (p) => p.typePackage === "Master"
-  );
-  // Asegúrate de que image y image.url existan
+  const getMasterValue = (product: Product) => {
+    const masterPackage = product.packages?.find(
+      (p) => p.typePackage === "Master"
+    );
+    return masterPackage ? masterPackage.Mount : "N/A";
+  };
+  
+  const masterValue = getMasterValue(product);
+
+
   const imageUrl = product.image?.url?.trim();
   const fallbackImage = "/images/no-image.jpg";
 
@@ -91,7 +97,7 @@ export const ProductGridItem = ({ product }: Props) => {
       {/* Imagen */}
       <Link
         to={`/product/${product._id}`}
-        className="block w-full aspect-[4/3]"
+        className="block w-full aspect-[4/3] "
       >
         <img
           src={displayImage}
@@ -146,8 +152,7 @@ export const ProductGridItem = ({ product }: Props) => {
         </span>
 
         <span className="text-sm text-gray-600">
-          <span className="font-bold">Master:</span>{" "}
-          {masterPackage ? masterPackage.mount : "N/A"}
+        <span className="font-bold">Master:</span> {masterValue}
         </span>
 
         {/* Agregar al carrito mostrar solo para clientes */}

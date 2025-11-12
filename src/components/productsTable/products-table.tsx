@@ -47,17 +47,18 @@ export const ProductsTable = () => {
           getProducts(),
           getCategories(),
         ]);
-
+  
         const mappedProducts = productosData.map((p) => ({
           ...p,
           category: p.subgategory?._id || "",
+          package: p.packages || [],
         }));
+  
         setProductos(mappedProducts);
-
-        // Guardar categorías con _id y name
+  
         setCategorias(
           categoriasData.map((cat) => ({
-            _id: cat._id || "", 
+            _id: cat._id || "",
             name: cat.name,
           }))
         );
@@ -68,9 +69,10 @@ export const ProductsTable = () => {
         setLoading(false);
       }
     };
-
+  
     fetchInitialData();
   }, []);
+  
 
   const handleEditStart = (product: ProductWithCategory) => {
     setEditingRow({
@@ -90,12 +92,7 @@ export const ProductsTable = () => {
     setLoadingId(product._id + "-category");
   
     try {
-      console.log("Intentando actualizar categoría con:", {
-        id: product._id,
-        categoryId: editingRow.category,
-        tipo: typeof editingRow.category,
-      });
-  
+        
       if (!editingRow.category || editingRow.category === "") {
         alert("Por favor selecciona una categoría válida antes de actualizar.");
         return;
@@ -115,10 +112,6 @@ export const ProductsTable = () => {
         )
       );
   
-      console.log("Categoría actualizada:", {
-        id: product._id,
-        category: editingRow.category,
-      });
     } catch (error) {
       console.error("Error al actualizar categoría:", error);
       alert("Error al actualizar la categoría");
@@ -140,7 +133,7 @@ export const ProductsTable = () => {
     setLoadingId(product._id + "-master");
   
     try {
-      
+      // 🔹 Llamada al backend (actualiza solo ese producto)
       await updateProductMaster(
         product._id,
         masterNum,
@@ -150,39 +143,42 @@ export const ProductsTable = () => {
         product.detalle || ""
       );
   
-   
+      // 🔹 Actualizar solo el producto en el estado local
       setProductos((prev) =>
         prev.map((p) =>
           p._id === product._id
-            ? { ...p, packages: updateMasterPackage(p.packages, masterNum) }
+            ? { ...p, packages: updateMasterPackage(p.packages || [], masterNum) }
             : p
         )
       );
   
-      console.log("✅ Master actualizado:", { id: product._id, master: masterNum });
     } catch (error) {
-      console.error("❌ Error al actualizar master:", error);
+      
       alert("Error al actualizar el master");
     } finally {
       setLoadingId(null);
     }
   };
+  
+  
+  
+
 
   // --- FUNCIONES AUXILIARES ---
-  const getMasterValue = (product: ProductWithCategory): number => {
-    const masterPackage = product.packages?.find(
-      (p) => p.typePackage === "Master"
-    );
-    return masterPackage ? masterPackage.mount : 0;
+  const getMasterValue = (product: ProductWithCategory) => {
+    const masterPackage = product.packages?.find(p => p.typePackage === "Master");
+    return masterPackage ? masterPackage.Mount : 0;
   };
 
-  const updateMasterPackage = (packages, newValue: number) => {
+  const updateMasterPackage = (packages: any[], newValue: number) => {
     if (!packages || packages.length === 0) {
-      return [{ typePackage: "Master", mount: newValue }];
+      return [{ typePackage: "Master", Mount: newValue }];
     }
-
+  
     return packages.map((p) =>
-      p.typePackage === "Master" ? { ...p, mount: newValue } : p
+      p.typePackage === "Master"
+        ? { ...p, Mount: newValue }
+        : p
     );
   };
 

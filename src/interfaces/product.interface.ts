@@ -8,7 +8,7 @@ export interface Precio {
 
 export interface Package {
   typePackage: string; // "Inner" | "Master"
-  mount: number;
+  Mount: number;
 }
 
 
@@ -32,7 +32,7 @@ export interface Product {
     idCloud: string;
   };           
   precios: Precio[];      
-  packages: Package[];     
+  packages?: Package[];
   stock: number;
   brand: Brand;
 }
@@ -48,3 +48,4 @@ export interface ProductSummary {
   reference?: string;
   description?: string;
 }
+
