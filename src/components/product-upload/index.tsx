@@ -4,8 +4,9 @@ import { useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
-import { Upload, X, Check, Loader2, ImageIcon } from "lucide-react";
+import { Upload, X, Check, Loader2, ImageIcon,AlertCircle } from "lucide-react";
 import { uploadImages } from "@/services/bancoImagenes.service";
+
 
 
 function cn(...inputs: (string | boolean | undefined)[]) {
@@ -23,7 +24,9 @@ export default function ProductUpload() {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);//para manejar el error
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;
@@ -39,6 +42,7 @@ export default function ProductUpload() {
 
     setImages((prev) => [...prev, ...newImages]);
     setUploadSuccess(false);
+    setErrorMessage(null);// Limpiar error al agregar nuevas imágenes
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -76,6 +80,7 @@ export default function ProductUpload() {
       return prev.filter((img) => img.id !== id);
     });
     setUploadSuccess(false);
+    setErrorMessage(null);// Limpiar error al quitar imagen
   }, []);
 
 
@@ -85,6 +90,7 @@ export default function ProductUpload() {
 
     setIsUploading(true);
     setUploadSuccess(false);
+    setErrorMessage(null);
 
     try {
       // --- LÓGICA REAL DE SUBIDA AL BACKEND ---
@@ -107,8 +113,16 @@ export default function ProductUpload() {
       }, 3000);
     } catch (error) {
       setIsUploading(false);
-      // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje
-      alert(`Ocurrió un error al subir las imágenes: ${error instanceof Error ? error.message : "Error desconocido"}`);
+      // --- Manejo del error personalizado ---
+      let message = "Ocurrió un error desconocido al subir las imágenes.";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      // Detectar el error específico de producto no encontrado
+      if (message.includes('404') && message.includes('Product not found')) {
+        message = "No se pudo subir las imágenes porque el producto no existe en el sistema.";
+      }
+      setErrorMessage(message);
     }
   };
 
@@ -200,6 +214,16 @@ export default function ProductUpload() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Mensaje de error */}
+        {errorMessage && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-red-700">
+              {errorMessage}
+            </p>
           </div>
         )}
 
