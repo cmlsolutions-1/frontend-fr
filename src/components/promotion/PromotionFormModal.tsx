@@ -71,6 +71,16 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
     });
   };
 
+  const [search, setSearch] = React.useState("");
+
+  
+
+  const filteredProducts = allProducts.filter(product =>
+    product.referencia.toLowerCase().includes(search.toLowerCase())
+  );
+
+
+
   return (
     <Modal
       isOpen={isOpen}
@@ -198,15 +208,26 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           {/* Selector de productos */}
           <div className="grid gap-2">
             <label htmlFor="products">Selecciona productos</label>
+
+            {/* Buscador */}
+            <input
+              type="text"
+              placeholder="Buscar por referencia..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border border-gray-300 p-2 rounded"
+            />
             
             <ProductCheckList
               selectedIds={formData.products}
               onValueChange={handleProductChange}
-              products={allProducts} 
+              products={allProducts}
+              search={search}
+
             />
             <SelectedProductsList selectedProducts={
-      allProducts.filter((p) => formData.products.includes(p._id)) // 🔥 filtra los productos seleccionados
-    } onRemove={removeProduct} />
+              allProducts.filter((p) => formData.products.includes(p._id))
+            } onRemove={removeProduct} />
           </div>
 
           {/* Fechas */}

@@ -34,12 +34,22 @@ export default function OrdersPageAdmin() {
     loadOrders();
   }, []);
 
-  if (loading) return <p>Cargando órdenes...</p>;
+  
 
-  //TERMINA BACKEND
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[90px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando Pedidos...</p>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
-    <div className="px-4 sm:px-8 py-4 mt-[100px]">
+    <div className="px-4 sm:px-8 py-4 mt-[120px]">
       <h2 className="text-xl font-bold mb-4">Lista de Pedidos Clientes</h2>
 
       <div className="overflow-x-auto">
