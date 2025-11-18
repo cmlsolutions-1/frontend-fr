@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LoginForm } from '@/components/ui/LoginForm'; // ✅ Importamos el formulario
+import { LoginForm } from '@/components/ui/LoginForm'; // Importamos el formulario
 
 export default function LoginPage() {
   return <LoginForm />;

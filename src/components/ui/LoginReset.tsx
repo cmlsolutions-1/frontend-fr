@@ -5,43 +5,42 @@ import { IoInformationOutline } from "react-icons/io5";
 import { useAuthStore } from "@/store/auth-store";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Lock } from "lucide-react";
-import { Eye, EyeOff } from "lucide-react";
 
-export const LoginForm = () => {
+export const LoginReset = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate(); 
-  const [showPassword, setShowPassword] = useState(false);
-
 
   
 
-  const handleSubmit = async  (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      
-      const success = await login(email, password);
+  try {
+    const res = await fetch("https://tu-api.com/auth/send-reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
 
-      if (!success) {
-        setError("Credenciales incorrectas");
-      } else {
-      
-        setTimeout(() => {
-          navigate("/homePage");
-        }, 100);
-      }
-    } catch (err) {
-      setError("Error al iniciar sesión. Intente nuevamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!res.ok) throw new Error("Error enviando email");
+
+    // ⬅️ MOVER A LA PANTALLA DEL CÓDIGO
+    navigate(`/auth/reset-code?email=${email}`);
+
+  } catch (error) {
+    setError("No pudimos enviar el correo, intenta nuevamente.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-white">
@@ -54,9 +53,9 @@ export const LoginForm = () => {
         <div className="absolute inset-0 bg-black bg-opacity-5" />
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 md:px-16 text-white text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">¡Bienvenido!</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">¿Olvidaste la contraseña?</h1>
           <p className="text-sm md:text-xl max-w-md">
-            Inicia sesión para acceder a tu cuenta.
+            Solo envia tu codigo de actualización a tu correo registrado.
           </p>
         </div>
       </div>
@@ -66,7 +65,7 @@ export const LoginForm = () => {
         <div className="w-full max-w-md space-y-6">
           <div className="text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">
-              Iniciar Sesión
+              Restablecer Contraseña
             </h2>
           </div>
 
@@ -83,31 +82,6 @@ export const LoginForm = () => {
               />
             </div>
 
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Contraseña"
-                className="pl-10 h-12 bg-white border border-gray-300 rounded-full w-full"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-
-            {error && (
-              <div className="flex items-center text-sm text-red-500">
-                <IoInformationOutline className="mr-2 h-5 w-5" />
-                Credenciales incorrectas
-              </div>
-            )}
 
             <button
               type="submit"
@@ -140,10 +114,10 @@ export const LoginForm = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Iniciando...
+                  Enviando...
                 </span>
               ) : (
-                <span className="text-white">Ingresar</span>
+                <span className="text-white">Enviar</span>
               )}
             </button>
 
@@ -154,16 +128,6 @@ export const LoginForm = () => {
                 alt="Logo Emrapess"
                 className="max-w-full h-12 md:h-16 mx-auto"
               />
-            </div>
-
-            <div className="text-center">
-              <span className="text-gray-600">¿Olvidaste la contraseña? </span>
-              <Link
-                to="/auth/reset-password"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Restablécela Aquí
-              </Link>
             </div>
           </form>
         </div>

@@ -59,19 +59,25 @@ export const TopMenu = () => {
         </div>
 
         
-        {/* User Info - Oculta o colapsa en móviles, anterior flex items-center space-x-10 */}
-        <div className="hidden md:flex items-center space-x-4 order-2">
-          <UserInfo />
-          {/* Barra separadora */}
-          <div className="h-6 border-l border-gray-400 mx-2"></div>
-        </div>
+        {/* User Info visible en móvil (simple) */}
+          {/* Mobile: ícono + nombre pequeño */}
+          <div className="flex md:hidden items-center mr-3">
+            <UserInfo mobile />
+          </div>
+
+          {/* Desktop: logo + info */}
+          <div className="hidden md:flex items-center space-x-4 order-2">
+            <UserInfo />
+            <div className="h-6 border-l border-gray-400 mx-2"></div>
+          </div>
+
       </div>
 
       {/* Search, Cart, Menu - Compacto para móviles */}
       <div className="flex items-center space-x-2 order-4 md:order-3 mt-2 md:mt-0">
         {isClient && (
         <Link
-          to={totalItemsInCart === 0 && loaded ? "/empty" : "/cart"} // Cambia href a to
+          to={totalItemsInCart === 0 && loaded ? "/empty" : "/cart"}
           className="relative"
         >
           <div className="relative">
@@ -89,8 +95,9 @@ export const TopMenu = () => {
           onClick={openSideMenu}
           className="p-2 rounded-md transition-all hover:bg-gray-100 flex items-center gap-2"
         >
-          <LuMenu  size={22} className="text-gray-700" />
-          <span className="font-medium text-gray-700">Menú</span>
+          <LuMenu size={22} className="text-gray-700" />
+          {/* ocultar texto en pantallas pequeñas */}
+          <span className="font-medium text-gray-700 hidden md:inline">Menú</span>
         </button>
       </div>
     </nav>

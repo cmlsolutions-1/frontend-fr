@@ -34,9 +34,10 @@ import { RoleProtectedRoute } from "./RoleProtectedRoute";
 import BancoImagenes from "@/pages/BancoImagenes";
 import { Table } from "lucide-react";
 import TableProducts from "@/pages/TableProducts";
+import { LoginReset } from "@/components/ui/LoginReset";
+import { ResetCodePage } from "@/components/ui/ResetCodePage";
+import { ResetNewPasswordPage } from "@/components/ui/ResetNewPasswordPage";
 
-
-//CheckoutPage
 
 export const AppRouter = () => {
   const { user } = useAuthStore();
@@ -46,6 +47,11 @@ export const AppRouter = () => {
       <Routes>
         {/* Ruta pública */}
         <Route path="/" element={<LoginPage />} />
+
+        {/* Recuperar contraseña */}
+        <Route path="/auth/reset-password" element={<LoginReset />} />
+        <Route path="/auth/reset-code" element={<ResetCodePage />} />
+        <Route path="/auth/new-password" element={<ResetNewPasswordPage />} />
 
         {/* Rutas Admin */}
         <Route
