@@ -2,6 +2,7 @@
 import React from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { FaRegCircleUser } from "react-icons/fa6";
+import { FiUser } from "react-icons/fi";
 
 type Props = {
   mobile?: boolean;
@@ -14,7 +15,7 @@ export const UserInfo: React.FC<Props> = ({ mobile = false }) => {
     // MOBILE: icono + nombre pequeño debajo
     return (
       <div className="flex flex-col items-center justify-center">
-        <FaRegCircleUser className="text-2xl text-[#4d4e4e]" />
+        <FiUser className="text-2xl text-[#4d4e4e]" />
         <span className="text-[11px] font-medium text-gray-700 mt-1 truncate max-w-[70px] text-center">
           {user?.name ? shorten(user.name) : "Usuario"}
         </span>
@@ -26,7 +27,7 @@ export const UserInfo: React.FC<Props> = ({ mobile = false }) => {
   return (
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 flex items-center justify-center">
-        <FaRegCircleUser className="text-xl text-[#505252] w-7 h-8" />
+        <FiUser className="text-xl text-[#505252] w-7 h-8" />
       </div>
 
       <div className="min-w-0">

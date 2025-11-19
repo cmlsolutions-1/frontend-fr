@@ -9,6 +9,11 @@ import { ArrowUp } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { CiFilter } from "react-icons/ci";
 import React from 'react';
+import { useLocation } from "react-router-dom";
+import { X } from "lucide-react";
+import { AiOutlineDelete } from "react-icons/ai";
+
+
 
 const HomePage = () => {
 
@@ -35,6 +40,10 @@ const HomePage = () => {
 
   //para mostrar y ocultar filtros
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  const location = useLocation();
+  const query = new URLSearchParams(location.search).get("search");
+
 
   
   // Detectar scroll para mostrar el botón para subir arriba
@@ -216,6 +225,26 @@ const HomePage = () => {
         title="Distribucciones Ferrelectricos Restrepo"
         subtitle="Todos los productos"
       />
+      {query && (
+        <p className="text-gray-700 text-sm mb-3 flex items-center gap-2">
+          Resultados para <span className="font-bold">"{query}"</span> — {products.length} coincidencias
+
+          {/* Icono borrar al lado del texto */}
+          <button
+            onClick={() => {
+              const params = new URLSearchParams(location.search);
+              params.delete("search");
+              navigate(`?${params.toString()}`, { replace: true });
+            }}
+            className="text-gray-500 hover:text-red-600 transition"
+          >
+            <AiOutlineDelete size={18} />
+          </button>
+        </p>
+      )}
+
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Columna izquierda - Filtros fijos */}

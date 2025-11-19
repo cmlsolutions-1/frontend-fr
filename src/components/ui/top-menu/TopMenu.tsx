@@ -11,6 +11,7 @@ import { LuMenu } from "react-icons/lu";
 import { ProductSearchDropdown } from "@/components/ui/ProductSearchDropdown";
 import { UserInfo } from "../UserInfo";
 
+
 export const TopMenu = () => {
   const openSideMenu = useUIStore((state) => state.openSideMenu);
   const totalItemsInCart = useCartStore((state) => state.getTotalItems());
