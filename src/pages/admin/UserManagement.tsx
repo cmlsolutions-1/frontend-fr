@@ -56,7 +56,7 @@ const UserManagement: React.FC = () => {
   }, [vendedores]);
 
   const renderNavigation = () => (
-    <div className="w-full mt-[100px]">
+    <div className="w-full mt-[110px]">
       <div className="flex gap-1 py-2 justify-center w-full">
           <Button
             variant={currentView === "home" ? "default" : "ghost"}

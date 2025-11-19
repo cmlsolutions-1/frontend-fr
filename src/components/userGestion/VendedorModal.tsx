@@ -289,7 +289,7 @@ export default function VendedorModal({
 
     if (!formData.cityId) newErrors.cityId = "La ciudad es requerida";
     
-    if (!vendedor?._id && !vendedor?.id) { // Si es nuevo vendedor
+    if (!vendedor?._id && !vendedor?.id) { 
       if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
       else if (formData.password.length < 6)
         newErrors.password = "La contraseña debe tener al menos 6 caracteres";
@@ -513,8 +513,8 @@ export default function VendedorModal({
               </SelectTrigger>
 
               <SelectContent
-                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
-                style={{ maxHeight: "80px" }}
+                className="w-[--radix-select-trigger-width] rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "160px", overflowY: "auto" }}
               >
                 <SelectScrollUpButton />
                 {loadingDepartments ? (
@@ -526,7 +526,7 @@ export default function VendedorModal({
                     <SelectItem
                       key={dept._id}
                       value={dept._id}
-                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-black focus:outline-hidden"
                     >
                       {dept.name}
                     </SelectItem>
@@ -545,11 +545,9 @@ export default function VendedorModal({
           <div className="space-y-2 relative z-50">
             <Label>Ciudad *</Label>
             <Select
-              value={selectCityId} // <-- AQUÍ ESTÁ EL CAMBIO
+              value={selectCityId}
               onValueChange={(value) => {
-                 // Actualiza también formData.cityId cuando cambia el Select
                  handleChange("cityId", value);
-                 // Y el estado temporal
                  setSelectCityId(value);
               }}
               disabled={!formData.departmentId || loadingCities}
@@ -562,7 +560,6 @@ export default function VendedorModal({
               >
                 <div className="flex items-center gap-3 pr-6">
                   <SelectValue
-                    // 👇 Cambia la condición para usar selectCityId
                     placeholder={
                       !formData.departmentId
                         ? "Seleccione un departamento"
@@ -570,9 +567,9 @@ export default function VendedorModal({
                         ? "Cargando ciudades..."
                         : cities.length === 0
                         ? "No hay ciudades disponibles"
-                        : !selectCityId // <-- AQUÍ ESTÁ EL CAMBIO
+                        : !selectCityId
                         ? "Seleccionar ciudad"
-                        : "Ciudad seleccionada" // O puedes mostrar el nombre si lo tienes en otro estado
+                        : "Ciudad seleccionada" 
                     }
                   />
                 </div>
@@ -596,7 +593,7 @@ export default function VendedorModal({
                     <SelectItem
                       key={city._id}
                       value={city._id}
-                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                      className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-black focus:outline-hidden"
                     >
                       {city.name}
                     </SelectItem>
@@ -628,9 +625,9 @@ export default function VendedorModal({
               </SelectTrigger>
               <SelectContent className="max-h-32 w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 
                         outline-black/5 [--anchor-gap:4px] sm:text-sm">
-                <SelectItem value="activo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                <SelectItem value="activo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-black focus:outline-hidden"
                       >Activo</SelectItem>
-                <SelectItem value="inactivo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-white focus:outline-hidden"
+                <SelectItem value="inactivo"className="group/option relative flex cursor-default items-center py-2 pr-9 pl-3 text-gray-900 select-none focus:bg-[#F2B318] focus:text-black focus:outline-hidden"
                       >Inactivo</SelectItem>
               </SelectContent>
             </Select>
