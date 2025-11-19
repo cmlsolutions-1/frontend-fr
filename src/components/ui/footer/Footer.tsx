@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom';
 
 export const Footer = () => {
   return (
-    <div className="flex w-full justify-center text-xs mb-10">
+    <div className="flex w-full justify-center items-center text-xs mb-10 ">
 
       <Link
-        to='/'
+        to='/homePage'
       >
         <span className={`${ titleFont.className } antialiased font-bold `}>Ferrelectricos </span>
         <span>| Restrepo </span>
         <span>© { new Date().getFullYear() }</span>
       </Link>
 
-      <Link
+      {/* <Link
         to='/'
         className="mx-3"
       >
@@ -26,7 +26,7 @@ export const Footer = () => {
       >
         Ubicaciones
       </Link>
-
+ */}
 
     </div>
   )

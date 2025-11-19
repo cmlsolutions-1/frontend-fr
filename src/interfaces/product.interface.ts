@@ -24,6 +24,7 @@ export interface Product {
   detalle: string;
   subgategory?: {
   _id: string;
+  name?: string;
   };
   image: {
     _id: string;

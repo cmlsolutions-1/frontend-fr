@@ -31,7 +31,7 @@ export const CategoryFilterSidebar = () => {
         const categories = await getCategories();
         setAllCategories(categories);
       } catch (error) {
-        console.error("❌ Error al cargar categorías:", error);
+        console.error("Error al cargar categorías:", error);
         setAllCategories([]);
       } finally {
         setLoadingCategories(false);

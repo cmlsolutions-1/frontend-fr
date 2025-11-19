@@ -133,7 +133,56 @@ export const ProductPage = () => {
   const masterPackage = product.packages?.find((p) => p.typePackage === "Master");
 
   return (
-    <div className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-3 mt-[110px]">
+    <div className="mt-[130px]">
+  
+      {/* --- BREADCRUMB + VOLVER --- */}
+      <div className="container mx-auto px-4 mb-6 flex items-center gap-2 text-sm text-gray-600">
+  
+        {/* Botón volver */}
+        <button
+          onClick={() => navigate('/homePage')}
+          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
+        >
+          Inicio
+        </button>
+  
+        {/* <span className="text-gray-400">/</span> */}
+  
+        {/* Categoría */}
+          {/* <button
+            onClick={() =>
+              product.subgategory?._id &&
+              navigate(`/homePage?categories=${product.subgategory._id}&page=1`)
+            }
+            className="hover:text-blue-700 text-blue-600"
+          >
+            {product.subgategory?._id || "Sin categoría"}
+          </button> */}
+  
+        <span className="text-gray-400">/</span>
+  
+        <button
+          onClick={() => navigate(-1)}
+          className="hover:text-blue-700 text-blue-600"
+        >
+          volver
+        </button>
+  
+        <span className="text-gray-400">/</span>
+  
+        {/* Nombre del producto */}
+        <span className="font-semibold text-gray-800 truncate max-w-[130px] md:max-w-none">
+          {product.detalle}
+        </span>
+      </div>
+
+
+      {/* ---- CONTENIDO PRINCIPAL ------ */}
+
+    <div className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-3 mt-[40px]">
+
+
+      
       {/* Slideshow */}
       <div className="col-span-1 md:col-span-2">
         <ProductMobileSlideshow
@@ -196,6 +245,7 @@ export const ProductPage = () => {
         <p className="font-light">{product.stock} unidades </p>
         {/* <StockLabel stock={product.stock} /> */}
         
+      </div>
       </div>
     </div>
   );
