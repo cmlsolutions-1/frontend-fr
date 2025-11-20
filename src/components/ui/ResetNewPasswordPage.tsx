@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import { setNewPassword } from "@/services/seller.service";
 
 export const ResetNewPasswordPage = () => {
   const navigate = useNavigate();
@@ -14,13 +15,20 @@ export const ResetNewPasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Aquí llamarás tu backend
-    // await fetch("/auth/new-password", { ... })
+  const code = query.get("code") || "";
 
-    navigate("/");
-  };
+  const ok = await setNewPassword(email, code, password);
+
+  if (!ok) {
+    alert("No se pudo cambiar la contraseña. Verifica que el código es correcto.");
+    return;
+  }
+
+  alert("Contraseña actualizada correctamente. Inicia sesión.");
+  navigate("/");
+};
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-white">

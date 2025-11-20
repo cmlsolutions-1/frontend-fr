@@ -332,3 +332,56 @@ export const getSalesPersonById = async (
   }
 };
 
+/* ------RESTABLECER CONTRASEÑA */
+
+// === 1. Generar código ===
+export const generateResetPasswordCode = async (email: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_URL}/auth/recove`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error("Error generando código:", error);
+    return false;
+  }
+};
+
+// === 2. Validar código ===
+export const validateResetPasswordCode = async (email: string, code: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_URL}/auth/validate-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }, 
+      body: JSON.stringify({ email, code }),
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error("Error validando código:", error);
+    return false;
+  }
+};
+
+// === 3. Nueva contraseña ===
+export const setNewPassword = async (
+  email: string,
+  code: string,
+  newPassword: string
+): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code, newPassword }),
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error("Error estableciendo nueva contraseña:", error);
+    return false;
+  }
+};

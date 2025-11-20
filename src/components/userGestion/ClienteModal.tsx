@@ -46,6 +46,9 @@ export default function ClienteModal({
 
   type ExtendedCliente = Cliente & { departmentId: string; cityId: string };
 
+  // --- CAMBIO: Estado para manejar la contraseña temporal ---
+  const [tempPassword, setTempPassword] = useState("");
+
   const [formData, setFormData] = useState<ExtendedCliente>({
     id: "",
     name: "",
@@ -289,6 +292,9 @@ useEffect(() => {
         const normalizedClient = normalizeClientData(cliente);
         // Cargar datos en formData. El useEffect de departmentId se encargará de cargar ciudades.
         setFormData(normalizedClient);
+
+        setTempPassword("");
+
       } else {
         // Solo resetear campos específicos, mantener departmentId y cityId vacíos
         setFormData((prev) => ({
@@ -307,6 +313,7 @@ useEffect(() => {
           salesPersonId: "",
           state: "activo",
         }));
+        setTempPassword("");
         setCities([]); // Limpiar ciudades al resetear
       }
       setErrors({});
@@ -349,7 +356,7 @@ useEffect(() => {
         newErrors.password = "La contraseña debe tener al menos 6 caracteres";
     } else { // Si es edición
       // Solo validar si se ingresó algo y es muy corto
-      if (formData.password && formData.password.trim() && formData.password.length < 6) {
+      if (tempPassword && tempPassword.trim() && tempPassword.length < 6) {
         newErrors.password = "La nueva contraseña debe tener al menos 6 caracteres";
       }
       // Si formData.password está vacío o solo espacios, y es edición, NO se agrega error
@@ -381,6 +388,20 @@ useEffect(() => {
     }
   };
 
+  // --- NUEVA FUNCIÓN PARA MANEJAR CAMBIO DE CONTRASEÑA ---
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTempPassword(e.target.value);
+    // Limpiar error de contraseña si se empieza a escribir
+    if (errors.password) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.password;
+        return newErrors;
+      });
+    }
+  };
+  // --- FIN NUEVA FUNCIÓN ---
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -390,11 +411,19 @@ useEffect(() => {
 
     try {
       const { departmentId, cityId, ...clienteParaGuardar } = formData;
+
       const clientToSave: Cliente = {
         ...clienteParaGuardar,
         city: cityId, // Usar cityId como el valor de city
         state: clienteParaGuardar.state || "activo",
+        password: tempPassword || cliente?.password || "",
       };
+
+      // --- VALIDACIÓN FINAL PARA ASEGURAR EL ID ---
+      if (!clientToSave.id) {
+        throw new Error("La cédula (ID) es obligatoria y no se ha proporcionado.");
+      }
+      // --- FIN VALIDACIÓN ---
 
       await onSave(clientToSave);
       onClose();
@@ -428,7 +457,7 @@ useEffect(() => {
               value={formData.id}
               onChange={(e) => handleChange("id", e.target.value)}
               className={errors.id ? "border-red-500" : ""}
-              disabled={!!cliente}
+              //disabled={!!cliente}
             />
             {errors.id && <p className="text-red-500 text-sm">{errors.id}</p>}
           </div>
@@ -525,8 +554,8 @@ useEffect(() => {
             <div className="relative"> 
             <Input
               type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={(e) => handleChange("password", e.target.value)}
+              value={tempPassword} 
+              onChange={handlePasswordChange}
               className={`${errors.password ? "border-red-500" : ""} pr-10`} 
             />
             <button

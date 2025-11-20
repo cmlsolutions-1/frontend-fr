@@ -5,6 +5,7 @@ import { IoInformationOutline } from "react-icons/io5";
 import { useAuthStore } from "@/store/auth-store";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Lock } from "lucide-react";
+import { generateResetPasswordCode } from "@/services/seller.service";
 
 export const LoginReset = () => {
   const [email, setEmail] = useState("");
@@ -21,23 +22,15 @@ export const LoginReset = () => {
   setLoading(true);
   setError("");
 
-  try {
-    const res = await fetch("https://tu-api.com/auth/send-reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
+  const ok = await generateResetPasswordCode(email);
 
-    if (!res.ok) throw new Error("Error enviando email");
-
-    // ⬅️ MOVER A LA PANTALLA DEL CÓDIGO
-    navigate(`/auth/reset-code?email=${email}`);
-
-  } catch (error) {
-    setError("No pudimos enviar el correo, intenta nuevamente.");
-  } finally {
+  if (!ok) {
+    setError("No pudimos enviar el código. Revisa el correo e intenta nuevamente.");
     setLoading(false);
+    return;
   }
+
+  navigate(`/auth/reset-code?email=${email}`);
 };
 
 
@@ -129,6 +122,15 @@ export const LoginReset = () => {
                 className="max-w-full h-12 md:h-16 mx-auto"
               />
             </div>
+            <div className="text-center">
+                        <span className="text-gray-600">¿Te acordaste de la contraseña? </span>
+                        <Link
+                        to="/"
+                       className="text-blue-600 hover:text-blue-700 font-medium"
+                     >
+                     Volver
+                </Link>
+             </div>
           </form>
         </div>
       </div>

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "lucide-react";
+import { validateResetPasswordCode } from "@/services/seller.service";
+
 
 export const ResetCodePage = () => {
   const navigate = useNavigate();
@@ -12,13 +14,17 @@ export const ResetCodePage = () => {
   const [code, setCode] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Aquí validarás el código con tu backend
-    // const res = await fetch("/auth/validate-code", { ... })
+  const ok = await validateResetPasswordCode(email, code);
 
-    navigate(`/auth/new-password?email=${email}`);
-  };
+  if (!ok) {
+    alert("Código incorrecto o expirado.");
+    return;
+  }
+
+  navigate(`/auth/new-password?email=${email}&code=${code}`);
+};
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-white">

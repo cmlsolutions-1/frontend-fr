@@ -315,7 +315,7 @@ export default function ClientesManager({
       const payloadToSend: Cliente = {
         ...clienteData,
         salesPersonId: clienteData.salesPersonId, // lo que espera el backend
-        id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
+        //id: editingCliente?.id || crypto.randomUUID(), // usar ID existente o generar uno nuevo
       };
 
       // No necesitas almacenar el resultado de save/update aquí si vas a recargar

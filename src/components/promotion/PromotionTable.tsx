@@ -147,7 +147,7 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
                     variant="secondary"
                     className="text-xs"
                   >
-                    {product?.referencia ||
+                    {product?.reference ||
                                 product?.detalle ||
                                 product?._id ||
                                 "Sin referencia"}
@@ -163,7 +163,7 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
-                  <FaBoxOpen className="text-emerald-600" />
+                  Por compras iguales a<FaBoxOpen className="text-emerald-600" /> 
                   {promotion.minimumQuantity} ({promotion.typePackage})
                 </div>
               </td>
