@@ -4,8 +4,10 @@ import VendedorModal from "./VendedorModal";
 import { Button } from "@/components/ui/Button";
 import { getVendedores } from "@/services/seller.service";
 import type { Vendedor } from "@/interfaces/user.interface";
-import { createVendedor, updateVendedor } from "@/services/seller.service";
+import { createVendedor, updateVendedor,getSalesPersonById } from "@/services/seller.service";
 import { User } from "@/interfaces/user.interface";
+
+
 
 export default function VendedoresManager() {
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
@@ -72,59 +74,45 @@ export default function VendedoresManager() {
   };
 
   // Función que se llama después de guardar (crear o editar)
-  const handleSave = async (vendedorData: Vendedor) => {
-    try {
-      let vendedorFinal: Vendedor;
-
-      if (editingVendedor) {
-        const vendedorParaActualizar: Vendedor = {
-          ...editingVendedor, // ID, _id y datos originales
-          ...vendedorData, // Datos actualizados del formulario (puede sobrescribir id/_id si están)
-          // Asegurar que el ID para actualizar esté presente
-          id: editingVendedor.id, // Preferir el ID original
-          _id: editingVendedor._id, // Preferir el _id original
-        };
-
-        // Ahora pasamos el objeto completo que sabemos que tiene id/_id
-        vendedorFinal = await updateVendedor(vendedorParaActualizar);
-        // --- Fin del cambio ---
-      } else {
-
-        vendedorFinal = await createVendedor(vendedorData);
-        if (!vendedorFinal.emails) vendedorFinal.emails = [];
-        if (!vendedorFinal.phones) vendedorFinal.phones = [];
-      }
-
-      // --- Actualización del estado de la lista ---
-      setVendedores((prev) => {
-
-
-        const index = prev.findIndex(v => v._id === vendedorFinal._id || (v.id && v.id === vendedorFinal.id));
-
-
-        if (index !== -1) {
-          // Si se encontró, es una actualización
-          const updatedList = [...prev];
-          updatedList[index] = vendedorFinal;
-
-          return updatedList;
-        } else {
-          // Si no se encontró, es una creación
-          return [...prev, vendedorFinal];
-        }
+  // Función que se llama después de guardar (crear o editar)
+const handleSave = async (vendedorData: Vendedor) => {
+  try {
+    if (editingVendedor) {
+      // Actualizar vendedor existente
+      const vendedorActualizado = await updateVendedor({
+        ...editingVendedor,
+        ...vendedorData,
+        id: editingVendedor.id,
+        _id: editingVendedor._id,
       });
 
-      setIsModalOpen(false);
-    } catch (err) {
-
-      // Es mejor mostrar el mensaje de error específico si existe
-      alert(
-        `Ocurrió un error al guardar el vendedor: ${
-          err instanceof Error ? err.message : "Error desconocido"
-        }`
+      // Actualizar en la lista local
+      setVendedores((prev) =>
+        prev.map((v) =>
+          (v._id === vendedorActualizado._id || (v.id && v.id === vendedorActualizado.id))
+            ? vendedorActualizado
+            : v
+        )
       );
+    } else {
+      // Crear nuevo vendedor
+      const nuevoVendedor = await createVendedor(vendedorData);
+      
+      // Recargar la lista completa para asegurar consistencia
+      const data = await getVendedores();
+      setVendedores(Array.isArray(data) ? data : []);
     }
-  };
+
+    setIsModalOpen(false);
+  } catch (err) {
+    alert(
+      `Ocurrió un error al guardar el vendedor: ${
+        err instanceof Error ? err.message : "Error desconocido"
+      }`
+    );
+  }
+};
+  
 
   if (loading) {
     return (

@@ -24,6 +24,7 @@ import { Cliente, Vendedor, Role, City, Department } from "@/interfaces/user.int
 import { getPriceCategories } from "@/services/priceCategory.service";
 import { ChevronDown, UserRound } from "lucide-react";
 import { getDepartments, getCitiesByDepartment } from "@/services/client.service";
+import { Eye, EyeOff } from "lucide-react";
 
 
 
@@ -82,6 +83,9 @@ export default function ClienteModal({
   // --- NUEVO: Estado temporal para el Select de Ciudad ---
   const [selectCityId, setSelectCityId] = useState<string>("");
   // --- FIN NUEVO ---
+
+   // --- VISUALIZAR CONTRASEÑA ---
+   const [showPassword, setShowPassword] = useState(false);
 
   // Cargar departamentos y categorías una sola vez al montar el componente
   useEffect(() => {
@@ -516,12 +520,23 @@ useEffect(() => {
           {/* Contraseña */}
           <div className="space-y-2">
             <Label>Contraseña *</Label>
+
+            {/* Contenedor con posición relativa para el icono */}
+            <div className="relative"> 
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
-              className={errors.password ? "border-red-500" : ""}
+              className={`${errors.password ? "border-red-500" : ""} pr-10`} 
             />
+            <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              </div>
             {errors.password && (
               <p className="text-red-500 text-sm">{errors.password}</p>
             )}
@@ -555,8 +570,8 @@ useEffect(() => {
               </SelectTrigger>
 
               <SelectContent
-                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
-                style={{ maxHeight: "80px" }}
+                className="w-[--radix-select-trigger-width] rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "160px", overflowY: "auto" }}
               >
                 <SelectScrollUpButton />
                 {loadingDepartments ? (
@@ -621,8 +636,8 @@ useEffect(() => {
               </SelectTrigger>
 
               <SelectContent
-                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
-                style={{ maxHeight: "80px" }}
+                className="w-[--radix-select-trigger-width] rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "160px", overflowY: "auto" }}
               >
                 <SelectScrollUpButton />
                 {loadingCities ? (

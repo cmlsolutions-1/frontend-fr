@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/Dialog";
 import { Vendedor, City, Department } from "@/interfaces/user.interface";
 import { getDepartments, getCitiesByDepartment } from "@/services/client.service";
+import { Eye, EyeOff } from "lucide-react";
 
 interface VendedorModalProps {
   isOpen: boolean;
@@ -71,6 +72,9 @@ export default function VendedorModal({
   // --- FIN ESTADOS ---
 
   const [selectCityId, setSelectCityId] = useState<string>("");
+
+  // --- VISUALIZAR CONTRASEÑA ---
+  const [showPassword, setShowPassword] = useState(false);
 
 
   // Cargar departamentos una sola vez al montar el componente
@@ -244,7 +248,7 @@ export default function VendedorModal({
       id: vendedorData.id || "",
       name: vendedorData.name || "",
       lastName: vendedorData.lastName || "",
-      password: "", // Nunca mostrar contraseña
+      password: "", 
       emails,
       phones,
       address,
@@ -470,14 +474,26 @@ export default function VendedorModal({
           {/* Contraseña */}
           <div className="space-y-2">
             <Label>Contraseña *</Label>
+
+            {/* Contenedor con posición relativa para el icono */}
+            <div className="relative"> 
             <Input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
-              className={errors.password ? "border-red-500" : ""}
+              className={`${errors.password ? "border-red-500" : ""} pr-10`} 
             />
+            <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              </div>
+
             {errors.password && (
               <p className="text-red-500 text-sm">{errors.password}</p>
             )}
@@ -576,8 +592,8 @@ export default function VendedorModal({
               </SelectTrigger>
 
               <SelectContent
-                className="w-[--radix-select-trigger-width] overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
-                style={{ maxHeight: "80px" }}
+                className="w-[--radix-select-trigger-width] rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 [--anchor-gap:4px] sm:text-sm"
+                style={{ maxHeight: "160px", overflowY: "auto" }}
               >
                 <SelectScrollUpButton />
                 {loadingCities ? (

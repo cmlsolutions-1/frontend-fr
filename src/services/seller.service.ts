@@ -303,3 +303,32 @@ export const deleteVendedor = async (id: string): Promise<boolean> => {
     return false;
   }
 };
+
+// Obtener vendedor por ID
+export const getSalesPersonById = async (
+  salesPersonId: string
+): Promise<any | null> => {
+  try {
+    if (!salesPersonId) {
+      throw new Error("ID de vendedor no válido");
+    }
+
+    const response = await fetch(`${API_URL}/users/getById/${salesPersonId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    return data.user || null;
+  } catch (error) {
+    console.error("Error al obtener vendedor por ID:", error);
+    return null;
+  }
+};
+
