@@ -11,14 +11,17 @@ import { OrderStatusButton } from '@/components/orders/OrderStatusButton';
 import { useAuthStore } from "@/store/auth-store";
 import { getOrdersBySalesPerson } from "@/services/orders.service";
 
+
 export default function OrdersPageSalesPerson() {
 
 
   // ACTIVAR BAKEND 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingClients, setLoadingClients] = useState(true);
   const { user } = useAuthStore();
 
+ 
 
 
   //BACKEND
@@ -54,9 +57,21 @@ export default function OrdersPageSalesPerson() {
       loadOrders();
     }, [user]);
 
-  if (loading) return <p>Cargando órdenes...</p>;
+    
 
-  //TERMINA BACKEND
+
+
+
+ if (loading) {
+    return (
+      <div className="px-4 sm:px-8 py-4 mt-[100px]">
+        <p>Cargando órdenes...</p>
+      </div>
+    );
+  }
+
+
+
 
   return (
     <div className="px-4 sm:px-8 py-4 mt-[100px]">
@@ -93,9 +108,13 @@ export default function OrdersPageSalesPerson() {
                   {order._id.slice(-6)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {user?.name && user?.lastName 
-                    ? `${user.name} ${user.lastName}` 
-                    : user?.name || user?.lastName || "Sin Nombre"}
+                  {/* --- CAMBIO AQUÍ --- */}
+                  {order.Client && order.Client.name && order.Client.lastName
+                    ? `${order.Client.name} ${order.Client.lastName}`
+                    : order.Client && (order.Client.name || order.Client.lastName)
+                    ? order.Client.name || order.Client.lastName
+                    : "Cliente no encontrado"}
+                  {/* --- FIN CAMBIO --- */}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               <div className="flex items-center">

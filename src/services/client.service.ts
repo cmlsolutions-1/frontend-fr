@@ -222,6 +222,11 @@ export const updateClient = async (cliente: Cliente): Promise<Cliente> => {
   if (cliente.priceCategoryId)
     payloadToSend.priceCategory = cliente.priceCategoryId;
 
+ 
+  if (cliente.id) payloadToSend.id = cliente.id; // <-- Incluir el ID (cedula) para actualizarlo
+  if (cliente.password) payloadToSend.password = cliente.password; // <-- Incluir la contraseña para actualizarla
+
+
 
   payloadToSend.salesPerson = cliente.salesPersonId;
 

@@ -132,46 +132,95 @@ export const ProductPage = () => {
   // Package Master
   const masterPackage = product.packages?.find((p) => p.typePackage === "Master");
 
+  // Función para determinar la fuente de navegación
+  const getBreadcrumbNavigation = () => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.has('categories')) {
+      const categoryId = searchParams.get('categories');
+      return {
+        type: 'category',
+        id: categoryId,
+        name: product.subCategory?.name || "Categoría"
+      };
+    } else if (searchParams.has('brands')) {
+      const brandCode = searchParams.get('brands');
+      return {
+        type: 'brand',
+        id: brandCode,
+        name: product.brand.name
+      };
+    }
+    return null;
+  };
+
+  const breadcrumbSource = getBreadcrumbNavigation();
+
   return (
     <div className="mt-[130px]">
-  
-      {/* --- BREADCRUMB + VOLVER --- */}
+
+      {/* --- BREADCRUMB --- */}
       <div className="container mx-auto px-4 mb-6 flex items-center gap-2 text-sm text-gray-600">
-  
-        {/* Botón volver */}
+
+        {/* Inicio */}
         <button
           onClick={() => navigate('/homePage')}
           className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
         >
           Inicio
         </button>
-  
-        {/* <span className="text-gray-400">/</span> */}
-  
+
+        {/* Separador con icono */}
+        <span className="text-gray-400 mx-1">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+
         {/* Categoría */}
-          {/* <button
-            onClick={() =>
-              product.subgategory?._id &&
-              navigate(`/homePage?categories=${product.subgategory._id}&page=1`)
-            }
-            className="hover:text-blue-700 text-blue-600"
-          >
-            {product.subgategory?._id || "Sin categoría"}
-          </button> */}
-  
-        <span className="text-gray-400">/</span>
-  
-        <button
-          onClick={() => navigate(-1)}
-          className="hover:text-blue-700 text-blue-600"
-        >
-          volver
-        </button>
-  
-        <span className="text-gray-400">/</span>
-  
+        {product.subCategory && product.subCategory.name && (
+          <>
+            <button
+              onClick={() =>
+                product.subCategory?._id &&
+                navigate(`/homePage?categories=${product.subCategory._id}&page=1`)
+              }
+              className="hover:text-blue-700 text-blue-600"
+            >
+              {product.subCategory.name}
+            </button>
+
+            {/* Separador con icono */}
+            <span className="text-gray-400 mx-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </>
+        )}
+
+        {/* Marca */}
+        {product.brand && product.brand.name && (
+          <>
+            <button
+              onClick={() =>
+                navigate(`/homePage?brands=${product.brand.code || product.brand.name}&page=1`)
+              }
+              className="hover:text-blue-700 text-blue-600"
+            >
+              {product.brand.name}
+            </button>
+
+            {/* Separador con icono */}
+            <span className="text-gray-400 mx-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </>
+        )}
+
         {/* Nombre del producto */}
-        <span className="font-semibold text-gray-800 truncate max-w-[130px] md:max-w-none">
+        <span className="font-semibold text-gray-800 truncate max-w-xs md:max-w-md">
           {product.detalle}
         </span>
       </div>
@@ -240,10 +289,18 @@ export const ProductPage = () => {
         <h3 className="font-bold text-sm mt-4">Referencia</h3>
         <p className="font-light">{product.referencia}</p>
 
-        {/*Referencia */}
+        {/*Stock */}
         <h3 className="font-bold text-sm mt-4">Stock</h3>
         <p className="font-light">{product.stock} unidades </p>
         {/* <StockLabel stock={product.stock} /> */}
+
+        {/*Categoria */}
+        <h3 className="font-bold text-sm mt-4">Categoría</h3>
+        <p className="font-light">{product.subCategory.name} </p>
+
+        {/*Marca */}
+        <h3 className="font-bold text-sm mt-4">Marca</h3>
+        <p className="font-light">{product.brand.name} </p>
         
       </div>
       </div>

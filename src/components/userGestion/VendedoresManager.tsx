@@ -82,7 +82,6 @@ const handleSave = async (vendedorData: Vendedor) => {
       const vendedorActualizado = await updateVendedor({
         ...editingVendedor,
         ...vendedorData,
-        id: editingVendedor.id,
         _id: editingVendedor._id,
       });
 

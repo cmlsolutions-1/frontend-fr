@@ -150,10 +150,9 @@ export const createVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   }
 };
 
-// src/services/seller.service.ts (o donde tengas updateVendedor)
+// src/services/seller.service.ts 
 
 // Actualizar un vendedor
-// Asumiendo que la interfaz Vendedor también usa Email[] y Phone[] con mayúsculas
 export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   // Validaciones básicas para la actualización (similares a updateClient)
   // Priorizar _id para la actualización, pero fallback a id si _id no está
@@ -167,8 +166,6 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
   const payloadToSend: any = {
     // Usar _id como el identificador principal
     _id: sellerIdToUpdate,
-    // Añadir campos que se pueden actualizar. Ajusta según tu backend y la interfaz Vendedor.
-    // Asumiendo que Vendedor tiene una estructura similar a Cliente
     name: vendedor.name?.trim() || undefined,
     lastName: vendedor.lastName?.trim() || undefined,
 
@@ -199,6 +196,9 @@ export const updateVendedor = async (vendedor: Vendedor): Promise<Vendedor> => {
            vendedor.state === "inactivo" ? "Inactive" : undefined,
     // clients: vendedor.clients || undefined, // Si se maneja la lista de clientes directamente
   };
+
+  if (vendedor.id) payloadToSend.id = vendedor.id; 
+  if (vendedor.password) payloadToSend.password = vendedor.password;
 
   // Limpiar el payload de campos undefined para no enviarlos innecesariamente
   const cleanPayload = Object.fromEntries(

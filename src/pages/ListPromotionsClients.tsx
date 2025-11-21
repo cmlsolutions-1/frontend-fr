@@ -9,15 +9,15 @@ import type { Product } from "@/interfaces/product.interface";
 
 export default function ListPromotionsClients() {
   const { promotions, loadPromotions } = usePromotionStore();
-  const [products, setProducts] = useState<Product[]>([]);
+  //const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Función para saber si una promoción ya expiró
+
   const isPromotionExpired = (endDate: string): boolean => {
     return new Date(endDate) < new Date();
   };
 
-  // ✅ Filtrar promociones activas y no expiradas
+  
   const activePromotions = promotions.filter((promotion) => {
     const isExpired = isPromotionExpired(promotion.endDate);
     const isActive =
@@ -25,16 +25,16 @@ export default function ListPromotionsClients() {
     return isActive && !isExpired;
   });
 
-  // ✅ Cargar promociones y productos
+  //  Cargar promociones y productos
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (promotions.length === 0) {
           await loadPromotions();
         }
-        const productList = await getProducts();
-        setProducts(productList);
+
       } catch (error) {
+        console.error("Error al cargar promociones:", error);
 
       } finally {
         setLoading(false);
@@ -53,7 +53,7 @@ export default function ListPromotionsClients() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 flex justify-center items-center h-64">
+      <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[100px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando promociones...</p>
@@ -79,13 +79,13 @@ export default function ListPromotionsClients() {
         {activePromotions.length > 0 ? (
           <PromotionTableClient
             promotions={activePromotions}
-            products={products}
+            //products={products}
             isPromotionExpired={isPromotionExpired}
             getStatusBadge={getStatusBadge}
           />
         ) : (
           <div className="p-10 text-center text-gray-500 border rounded-lg">
-            <p className="text-lg">No hay promociones activas en este momento 😔</p>
+            <p className="text-lg">No hay promociones activas en este momento </p>
           </div>
         )}
       </div>

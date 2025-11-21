@@ -131,7 +131,7 @@ export default function ProductUpload() {
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Banco de Imágenes</CardTitle>
         <CardDescription>
-          Carga las imagenes de los productos para su uso en el sistema
+          Para cargar productos la imagen debe tener el nombre igual a la referencia del producto.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

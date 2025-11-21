@@ -4,7 +4,7 @@ import type { Order } from "@/interfaces/order.interface";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/order`;
 
-// ✅ Obtener el token
+// Obtener el token
 const getToken = () => {
   const authData = localStorage.getItem('auth-storage');
   if (authData) {
@@ -18,7 +18,7 @@ const getToken = () => {
   return null;
 };
 
-// ✅ Función para obtener headers con token
+// Función para obtener headers con token
 const getAuthHeaders = () => {
   const token = getToken();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -36,7 +36,7 @@ export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] 
   try {
     const response = await fetch(`${API_URL}`, {
       method: "GET",
-      headers: getAuthHeaders(), // ✅ Usar headers con token
+      headers: getAuthHeaders(), 
     });
 
     if (!response.ok) throw new Error("No se pudieron cargar las órdenes");
@@ -54,7 +54,7 @@ export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] 
 };
 
 
-// 🔹 Client → obtiene órdenes de un cliente específico
+
 export const getOrdersByClient = async (
   clientId: string // 
 ): Promise<{ ok: boolean; orders: Order[] }> => {
@@ -115,8 +115,7 @@ export const getOrdersBySalesPerson = async (
 
     const data = await response.json();
    
-    
-    // ✅ Manejar tanto objetos individuales como arrays
+  
     let ordersArray: Order[] = [];
     if (Array.isArray(data)) {
       ordersArray = data;

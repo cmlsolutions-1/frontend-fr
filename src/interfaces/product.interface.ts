@@ -22,7 +22,7 @@ export interface Product {
   referencia: string;
   codigo: string;
   detalle: string;
-  subgategory?: {
+  subCategory?: {
   _id: string;
   name?: string;
   };

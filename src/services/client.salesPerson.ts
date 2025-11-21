@@ -17,7 +17,7 @@ const getToken = () => {
   }
 };
 
-// ✅ Función para obtener headers con token
+// Función para obtener headers con token
 const getAuthHeaders = (includeContentType: boolean = true) => {
   const token = getToken();
   const headers: Record<string, string> = {};

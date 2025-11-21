@@ -113,7 +113,7 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
   }
 
   return (
-    <div className="min-h-screen py-8 px-6">
+    <div className="min-h-screen py-8 px-6 mt-[100px]">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-semibold text-gray-800">
           Mis Clientes

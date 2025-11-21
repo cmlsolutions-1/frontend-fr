@@ -1,22 +1,29 @@
 // src/components/ui/ClientSearch.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { getClientById } from "@/services/client.service";
 import type { Cliente } from "@/interfaces/user.interface";
 
 interface Props {
-  clientes: Cliente[];
-  onResults: (results: Cliente[]) => void; // Callback para pasar resultados al manager
+  clientes: Cliente[]; 
+  onResults: (results: Cliente[]) => void; 
 }
 
 export const ClientSearch: React.FC<Props> = ({ clientes, onResults }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Usar useRef para mantener una referencia actualizable de clientes
+  const clientesRef = useRef<Cliente[]>(clientes);
+  // Actualizar la referencia cada vez que clientes cambie
+  useEffect(() => {
+    clientesRef.current = clientes;
+  }, [clientes]);
+
   useEffect(() => {
     const search = async () => {
       if (!searchTerm.trim()) {
-        onResults(clientes);
+        onResults(clientesRef.current); 
         return;
       }
 
@@ -24,16 +31,19 @@ export const ClientSearch: React.FC<Props> = ({ clientes, onResults }) => {
       try {
         let results: Cliente[] = [];
 
-        // 🔍 Si es un ID exacto → consultar API
         if (/^[a-zA-Z0-9-]+$/.test(searchTerm)) {
-          const client = await getClientById(searchTerm);
-          if (client) results = [client];
+          try {
+            const client = await getClientById(searchTerm);
+            if (client) results = [client];
+          } catch (apiError) {
+            // Si la API falla (por ejemplo, 404), continuar con búsqueda local
+            console.warn("Cliente no encontrado por ID:", apiError);
+          }
         }
 
-        // 🔍 Buscar por nombre en lista local
         if (results.length === 0) {
           const term = searchTerm.toLowerCase();
-          results = clientes.filter(
+          results = clientesRef.current.filter( // Usar la referencia actualizada
             (c) =>
               c.name.toLowerCase().includes(term) ||
               c.lastName.toLowerCase().includes(term) ||
@@ -43,6 +53,7 @@ export const ClientSearch: React.FC<Props> = ({ clientes, onResults }) => {
 
         onResults(results);
       } catch (err) {
+        console.error("Error en la búsqueda:", err);
         onResults([]);
       } finally {
         setLoading(false);
@@ -51,7 +62,7 @@ export const ClientSearch: React.FC<Props> = ({ clientes, onResults }) => {
 
     const debounce = setTimeout(search, 400); // Debounce 400ms
     return () => clearTimeout(debounce);
-  }, [searchTerm, clientes, onResults]);
+  }, [searchTerm]); 
 
   return (
     <div className="relative w-full max-w-md">

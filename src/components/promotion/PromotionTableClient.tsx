@@ -15,7 +15,7 @@ import { Promotion } from "@/interfaces/promotion.interface";
 
 interface PromotionTableClientProps {
   promotions: Promotion[];
-  products: Product[];
+  //products: Product[];
   onEdit?: (promotion: Promotion) => void;
   onDelete?: (id: string) => void;
   isPromotionExpired: (endDate: string) => boolean;
@@ -39,7 +39,7 @@ const formatDate = (dateString?: string) => {
 
 export const PromotionTableClient: React.FC<PromotionTableClientProps> = ({
   promotions,
-  products,
+  //products,
   onEdit,
   onDelete,
   isPromotionExpired,
@@ -120,34 +120,33 @@ export const PromotionTableClient: React.FC<PromotionTableClientProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex flex-wrap gap-2">
-                {promotion.isAll ? (
-                    <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
-                  ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
-                    promotion.products.map((prod: any, idx: number ) => {
-                       const product =
-                            typeof prod === "string"
-                              ? products.find((p) => p._id === prod)
-                              : prod;
-
-                       return (
-                  <Badge
-                    key={`${promotion._id ?? promotion.id}-product-${idx}`}
-                    variant="secondary"
-                    className="text-xs"
-                  >
-                    {product?.referencia ||
-                                product?.detalle ||
-                                product?._id ||
-                                "Sin referencia"}
-                  </Badge>
-                );
-              })
-            ) : (
-              <Badge variant="secondary" className="text-xs">
-                Sin productos
-              </Badge>
-            )}
-          </div>
+                            {promotion.isAll ? (
+                              <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
+                            ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
+                              <>
+                                {promotion.products.length > 3 ? (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {promotion.products.length} productos
+                                  </Badge>
+                                ) : (
+                          // --- CAMBIO: Acceder al ID del objeto producto ---
+                          promotion.products.map((prodObj, idx) => (
+                            <Badge
+                              key={`${promotion._id ?? promotion.id}-product-${idx}`}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {prodObj.reference || prodObj._id || "ID desconocido"} {/* Accede al campo ID del objeto */}
+                            </Badge>
+                                    ))
+                                  )}
+                                </>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">
+                                  Sin productos
+                                </Badge>
+                              )}
+                            </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
