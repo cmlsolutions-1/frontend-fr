@@ -15,11 +15,12 @@ import { Promotion } from "@/interfaces/promotion.interface";
 
 interface PromotionTableProps  {
   promotions: Promotion[];
-  products: Product[];
+  //products: Product[];
   onEdit: (promotion: Promotion) => void;
   onDelete: (id: string) => void;
   isPromotionExpired: (endDate: string) => boolean;
   getStatusBadge: (promotion: Promotion) => React.ReactNode;
+  loadingPromotionId?: string;
 }
 
 const formatDate = (dateString?: string) => {
@@ -38,11 +39,12 @@ const formatDate = (dateString?: string) => {
 
 export const PromotionTable: React.FC<PromotionTableProps> = ({
   promotions,
-  products,
+  //products,
   onEdit,
   onDelete,
   isPromotionExpired,
   getStatusBadge,
+  loadingPromotionId,
 }) => {
   if (!promotions || promotions.length === 0) {
     return (
@@ -111,11 +113,8 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             
-            {promotions.map((promotion, index) => {
+          {promotions.map((promotion) => (
              
-
-              return (
-
               <tr key={promotion._id ?? promotion.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="font-medium">{promotion.name}</div>
@@ -131,36 +130,36 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex flex-wrap gap-2">
-                {promotion.isAll ? (
-                    <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
-                  ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
-                    promotion.products.map((prod: any, idx: number ) => {
-                       const product =
-                            typeof prod === "string"
-                              ? products.find((p) => p._id === prod)
-                              : prod;
 
-                       return (
-                  <Badge
-                    key={`${promotion._id ?? promotion.id}-product-${idx}`}
-                    variant="secondary"
-                    className="text-xs"
-                  >
-                    {product?.reference ||
-                                product?.detalle ||
-                                product?._id ||
-                                "Sin referencia"}
+          <div className="flex flex-wrap gap-2">
+            {promotion.isAll ? (
+              <Badge variant="secondary" className="text-xs">Todos los productos</Badge>
+            ) : Array.isArray(promotion.products) && promotion.products.length > 0 ? (
+              <>
+                {promotion.products.length > 3 ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {promotion.products.length} productos
                   </Badge>
-                );
-              })
-            ) : (
-              <Badge variant="secondary" className="text-xs">
-                Sin productos
-              </Badge>
-            )}
-          </div>
-        </td>
+                ) : (
+          // --- CAMBIO: Acceder al ID del objeto producto ---
+          promotion.products.map((prodObj, idx) => (
+            <Badge
+              key={`${promotion._id ?? promotion.id}-product-${idx}`}
+              variant="secondary"
+              className="text-xs"
+            >
+              {prodObj.reference || prodObj._id || "ID desconocido"} {/* Accede al campo ID del objeto */}
+            </Badge>
+                    ))
+                  )}
+                </>
+              ) : (
+                <Badge variant="secondary" className="text-xs">
+                  Sin productos
+                </Badge>
+              )}
+            </div>
+          </td>
         <td className="px-6 py-4 whitespace-nowrap">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
                   Por compras iguales a<FaBoxOpen className="text-emerald-600" /> 
@@ -177,12 +176,21 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
           {getStatusBadge(promotion)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-          <button
-            onClick={() => onEdit(promotion)}
-            className="text-blue-600 hover:text-blue-900 mr-4"
-          >
-            <Edit />
-          </button>
+        <button
+              onClick={() => onEdit(promotion)}
+              className={`mr-4 ${
+                loadingPromotionId === (promotion._id ?? promotion.id)
+                  ? 'text-gray-400 cursor-not-allowed' // Estilo para deshabilitado
+                  : 'text-blue-600 hover:text-blue-900' // Estilo normal
+              }`}
+              disabled={loadingPromotionId === (promotion._id ?? promotion.id)} // <-- Nuevo: Deshabilitar botón
+            >
+              {loadingPromotionId === (promotion._id ?? promotion.id) ? ( // <-- Nuevo: Mostrar spinner o ícono
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              ) : (
+                <Edit />
+              )}
+            </button>
           {/* <button
             onClick={() => onDelete(promotion._id ?? promotion.id)}
             className="text-red-600 hover:text-red-900"
@@ -190,10 +198,9 @@ export const PromotionTable: React.FC<PromotionTableProps> = ({
             <Trash2 />
           </button> */}
         </td>
-      </tr>
-    );
-  })}
-</tbody>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>
