@@ -296,7 +296,9 @@ export const ProductPage = () => {
 
         {/*Categoria */}
         <h3 className="font-bold text-sm mt-4">Categoría</h3>
-        <p className="font-light">{product.subCategory.name} </p>
+        <p className="font-light">{product.subCategory && product.subCategory.name // Valida antes de acceder
+              ? product.subCategory.name
+              : "Sin categoría"}  </p>
 
         {/*Marca */}
         <h3 className="font-bold text-sm mt-4">Marca</h3>

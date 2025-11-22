@@ -39,6 +39,10 @@ export const ProductsTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
 
+  // --- NUEVO ESTADO: Filtro por categoría ---
+  const [filterSinCategoria, setFilterSinCategoria] = useState(false);
+  // --- FIN NUEVO ESTADO ---
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -50,7 +54,7 @@ export const ProductsTable = () => {
   
         const mappedProducts = productosData.map((p) => ({
           ...p,
-          category: p.subgategory?._id || "",
+          category: p.subCategory?._id || "",
           package: p.packages || [],
         }));
   
@@ -73,6 +77,13 @@ export const ProductsTable = () => {
     fetchInitialData();
   }, []);
   
+  // --- NUEVA FUNCIÓN: Aplicar filtro ---
+  const filteredProducts = productos.filter(product => {
+    if (!filterSinCategoria) return true; // Si no está filtrando, mostrar todos
+    // Mostrar solo los productos sin categoría
+    return !product.subCategory?._id || product.subCategory._id === "";
+  });
+  // --- FIN NUEVA FUNCIÓN ---
 
   const handleEditStart = (product: ProductWithCategory) => {
     setEditingRow({
@@ -106,7 +117,7 @@ export const ProductsTable = () => {
             ? {
                 ...p,
                 category: editingRow.category,
-                subgategory: { _id: editingRow.category }, 
+                subCategory: { _id: editingRow.category }, 
               }
             : p
         )
@@ -133,7 +144,7 @@ export const ProductsTable = () => {
     setLoadingId(product._id + "-master");
   
     try {
-      // 🔹 Llamada al backend (actualiza solo ese producto)
+      
       await updateProductMaster(
         product._id,
         masterNum,
@@ -142,8 +153,7 @@ export const ProductsTable = () => {
         product.brand?.name || "",
         product.detalle || ""
       );
-  
-      // 🔹 Actualizar solo el producto en el estado local
+
       setProductos((prev) =>
         prev.map((p) =>
           p._id === product._id
@@ -184,8 +194,8 @@ export const ProductsTable = () => {
 
       // Calcular productos visibles en la página actual
       const startIndex = (currentPage - 1) * itemsPerPage;
-      const currentProducts = productos.slice(startIndex, startIndex + itemsPerPage);
-      const totalPages = Math.ceil(productos.length / itemsPerPage);
+      const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage); // <-- Cambio aquí
+      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   if (loading) {
 
@@ -207,6 +217,26 @@ export const ProductsTable = () => {
 
   return (
     <div className="w-full overflow-x-auto rounded-lg border bg-white shadow-sm">
+      {/* --- FILTRO: Botón para mostrar/ocultar productos sin categoría --- */}
+      <div className="p-4 bg-gray-50 border-b">
+        <button
+          onClick={() => setFilterSinCategoria(!filterSinCategoria)}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${
+            filterSinCategoria
+              ? 'bg-red-100 text-red-700 border border-red-300'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          {filterSinCategoria ? 'Mostrar Todos' : 'Filtrar por Sin Categoría'}
+        </button>
+        {filterSinCategoria && (
+          <span className="ml-4 text-sm text-gray-600">
+            Mostrando {filteredProducts.length} productos sin categoría
+          </span>
+        )}
+      </div>
+      {/* --- FIN FILTRO --- */}
+
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
@@ -281,7 +311,7 @@ export const ProductsTable = () => {
                     </div>
                   ) : (
                     <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md text-xs">
-                          {categorias.find((cat) => cat._id === product.subgategory?._id)?.name || "Sin categoría"}
+                          {categorias.find((cat) => cat._id === product.subCategory?._id)?.name || "Sin categoría"}
                         </span>
                   )}
                 </td>
@@ -339,8 +369,8 @@ export const ProductsTable = () => {
       </table>
       
 
-      {productos.length === 0 && (
-        <div className="text-center py-8 text-gray-500">No hay productos disponibles</div>
+      {filteredProducts.length === 0 && ( // Mostrar mensaje si la lista filtrada está vacía
+        <div className="text-center py-8 text-gray-500">No hay productos disponibles con los filtros aplicados</div>
       )}
 {/* 🔹 PAGINACIÓN */}
 <div className="flex justify-center items-center py-4 gap-4">

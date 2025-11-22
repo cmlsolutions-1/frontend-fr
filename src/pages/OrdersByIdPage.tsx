@@ -78,12 +78,16 @@ export default function OrdersByIdPage() {
   // Manejar estados de loading y error
   if (loading) {
     return (
-      <div className="container mx-auto p-6 text-center">
-        <p className="text-lg">Cargando detalles de la orden...</p>
-        <p className="text-sm text-gray-500">ID: {_id || 'undefined'}</p>
+      <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[90px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="text-lg">Cargando detalles de la orden...</p>
+          <p className="text-sm text-gray-500">ID: {_id || 'undefined'}</p>
+        </div>
       </div>
     );
   }
+
 
   if (error) {
     return (
