@@ -410,14 +410,10 @@ export const getSalesPersonById = async (salesPersonId: string): Promise<any | n
 //  Obtener TODOS los clientes (solo para Admin)
 export const getAllClients = async (): Promise<Cliente[]> => {
   try {
-
-    
     const response = await fetch(`${API_URL}/users/client`, {
       method: "GET",
       headers: getAuthHeaders(), //  Enviar token
     });
-
-
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -529,5 +525,22 @@ export const getCitiesByDepartment = async (departmentId: string): Promise<City[
   } catch (error) {
 
     throw error;
+  }
+};
+
+// Activar o desactivar un usuario (cliente o vendedor)
+export const toggleUserState = async (userId: string): Promise<void> => {
+  const token = getToken();
+
+  const res = await fetch(`${API_URL}/users/${userId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Error al cambiar estado del usuario");
   }
 };

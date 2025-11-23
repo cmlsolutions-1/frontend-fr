@@ -27,7 +27,6 @@ import { getDepartments, getCitiesByDepartment } from "@/services/client.service
 import { Eye, EyeOff } from "lucide-react";
 
 
-
 interface ClienteModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -351,10 +350,12 @@ useEffect(() => {
     
     // --- VALIDACIÓN DE CONTRASEÑA MODIFICADA ---
     if (!cliente?._id && !cliente?.id) { // Si es nuevo cliente
-      if (!formData.password.trim()) newErrors.password = "La contraseña es requerida";
-      else if (formData.password.length < 6)
-        newErrors.password = "La contraseña debe tener al menos 6 caracteres";
-    } else { // Si es edición
+      // --- CAMBIO: Validar tempPassword en lugar de formData.password ---
+    if (!tempPassword.trim()) newErrors.password = "La contraseña es requerida";
+    else if (tempPassword.length < 6)
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+    // --- FIN CAMBIO ---
+  } else {
       // Solo validar si se ingresó algo y es muy corto
       if (tempPassword && tempPassword.trim() && tempPassword.length < 6) {
         newErrors.password = "La nueva contraseña debe tener al menos 6 caracteres";
@@ -788,7 +789,7 @@ useEffect(() => {
           </div>
 
           {/* Estado */}
-          <div className="space-y-2 relative z-50">
+          {/* <div className="space-y-2 relative z-50">
             <Label>Estado</Label>
             <Select
               value={formData.state || "activo"}
@@ -811,7 +812,7 @@ useEffect(() => {
                       >Inactivo</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose}>

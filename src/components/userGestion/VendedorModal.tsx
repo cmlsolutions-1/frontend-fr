@@ -625,7 +625,7 @@ export default function VendedorModal({
           </div>
 
           {/* Estado */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Estado</Label>
             <Select
               value={formData.state}
@@ -647,7 +647,7 @@ export default function VendedorModal({
                       >Inactivo</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose}>

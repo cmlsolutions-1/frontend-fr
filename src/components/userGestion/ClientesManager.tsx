@@ -9,7 +9,7 @@ import ClienteModal from "@/components/userGestion/ClienteModal";
 import { Cliente, Email, Phone, Vendedor } from "@/interfaces/user.interface";
 import {
   saveClient,
-  updateClient,getAllClients
+  updateClient,getAllClients,toggleUserState
 } from "@/services/client.service";
 import { useAuthStore } from "@/store/auth-store";
 import { getClientsBySalesPerson } from "@/services/client.salesPerson";
@@ -182,9 +182,39 @@ export default function ClientesManager({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
+  const [loadingToggle, setLoadingToggle] = useState<string | null>(null); // Nuevo estado
   
 
- 
+ //funcion para estado
+ const handleToggleState = async (cliente: Cliente) => {
+  if (!cliente._id) {
+    alert("No se puede cambiar el estado del cliente: ID no disponible.");
+    return;
+  }
+
+  const userIdToToggle = cliente._id;
+  setLoadingToggle(userIdToToggle);
+
+  try {
+    await toggleUserState(userIdToToggle);
+
+    // Actualizar el estado local de la lista de clientes
+    setClientes(prevClientes =>
+      prevClientes.map(c =>
+        c._id === cliente._id
+          ? { ...c, state: c.state === 'activo' ? 'inactivo' : 'activo' }
+          : c
+      )
+    );
+
+  } catch (error) {
+    console.error("Error al cambiar estado del cliente:", error);
+    alert(error instanceof Error ? error.message : "Error al cambiar el estado del cliente.");
+  } finally {
+    setLoadingToggle(null);
+  }
+};
+
     // Cargar clientes según el rol del usuario
     useEffect(() => {
       const loadClients = async () => {
@@ -309,6 +339,8 @@ export default function ClientesManager({
         alert(errorMsg);
         return;
       }
+
+      
 
 
 
@@ -486,14 +518,36 @@ export default function ClientesManager({
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
+                      
+                      {/* --- BOTÓN DE ACTIVAR/DESACTIVAR --- */}
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteCliente(cliente.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleState(cliente)}
+                          disabled={loadingToggle === cliente._id}
+                          className={cliente.state === "activo" ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
+                        >
+                          {loadingToggle === cliente._id ? (
+                            <div className="flex items-center gap-1">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                              <span>Cambiando...</span>
+                            </div>
+                          ) : cliente.state === "activo" ? (
+                            <div className="flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                              <span>Desactivar</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span>Activar</span>
+                            </div>
+                          )}
+                        </Button>
                     </div>
                   </div>
                 </CardHeader>
