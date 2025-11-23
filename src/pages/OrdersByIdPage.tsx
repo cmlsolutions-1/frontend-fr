@@ -130,7 +130,7 @@ export default function OrdersByIdPage() {
   return (
     <div className="flex justify-center items-center mb-72 px-10 sm:px-0">
       <div className="flex flex-col w-full max-w-6xl">
-        <Title title={`Orden #${order._id?.slice(-6) || 'N/A'}`} />
+      <Title title={order.orderNumber || order._id?.slice(-6) || 'N/A'} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Carrito */}

@@ -102,7 +102,7 @@ export default function OrdersPage() {
                 className="border-b hover:bg-gray-100 transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
-                  {order._id.slice(-6) || 'N/A'}
+                {order.orderNumber || order._id?.slice(-6) || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {user?.name && user?.lastName 

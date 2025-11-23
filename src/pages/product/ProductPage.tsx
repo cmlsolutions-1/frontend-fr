@@ -159,70 +159,74 @@ export const ProductPage = () => {
     <div className="mt-[130px]">
 
       {/* --- BREADCRUMB --- */}
-      <div className="container mx-auto px-4 mb-6 flex items-center gap-2 text-sm text-gray-600">
+      <div className="container mx-auto px-4 mb-6 flex flex-wrap items-center gap-2 
+      text-sm text-gray-600 overflow-hidden ">
 
         {/* Inicio */}
         <button
-          onClick={() => navigate('/homePage')}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
-        >
-          Inicio
-        </button>
+      onClick={() => navigate('/homePage')}
+      className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
+    >
+      Inicio
+    </button>
 
         {/* Separador con icono */}
         <span className="text-gray-400 mx-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </span>
+
+        {/* Categoría */}
+        {product.subCategory?.name && (
+      <>
+        <button
+          onClick={() =>
+            product.subCategory?._id &&
+            navigate(`/homePage?categories=${product.subCategory._id}&page=1`)
+          }
+          className="hover:text-blue-700 text-blue-600 
+          truncate max-w-[80px] md:max-w-none overflow-hidden"
+        >
+          {product.subCategory.name}
+        </button>
+
+            {/* Separador con icono */}
+            <span className="text-gray-400 mx-1">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </span>
-
-        {/* Categoría */}
-        {product.subCategory && product.subCategory.name && (
-          <>
-            <button
-              onClick={() =>
-                product.subCategory?._id &&
-                navigate(`/homePage?categories=${product.subCategory._id}&page=1`)
-              }
-              className="hover:text-blue-700 text-blue-600"
-            >
-              {product.subCategory.name}
-            </button>
-
-            {/* Separador con icono */}
-            <span className="text-gray-400 mx-1">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
           </>
         )}
 
         {/* Marca */}
-        {product.brand && product.brand.name && (
-          <>
-            <button
-              onClick={() =>
-                navigate(`/homePage?brands=${product.brand.code || product.brand.name}&page=1`)
-              }
-              className="hover:text-blue-700 text-blue-600"
-            >
-              {product.brand.name}
-            </button>
+        {product.brand?.name && (
+      <>
+        <button
+          onClick={() =>
+            navigate(`/homePage?brands=${product.brand.code || product.brand.name}&page=1`)
+          }
+          className="hover:text-blue-700 text-blue-600 
+          truncate max-w-[80px] md:max-w-none overflow-hidden"
+        >
+          {product.brand.name}
+        </button>
 
             {/* Separador con icono */}
             <span className="text-gray-400 mx-1">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
           </>
         )}
 
         {/* Nombre del producto */}
-        <span className="font-semibold text-gray-800 truncate max-w-xs md:max-w-md">
-          {product.detalle}
-        </span>
+        <span className="font-semibold text-gray-800 truncate max-w-[90px] md:max-w-md
+      overflow-hidden">
+      {product.detalle}
+    </span>
       </div>
 
 
