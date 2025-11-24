@@ -376,9 +376,11 @@ export default function ClientesManager({
 
       setIsModalOpen(false);
     } catch (err: any) {
-      alert(
-        err.message || "No se pudo guardar el cliente. Intente nuevamente."
-      );
+      // Captura el error aquí y pásalo al modal
+      const errorMessage = err instanceof Error ? err.message : "No se pudo guardar el cliente. Intente nuevamente.";
+      // No uses alert aquí
+      // alert(errorMessage); // Comentar o eliminar alert
+      throw new Error(errorMessage); // Relanzar para que el modal lo maneje
     }
   };
 

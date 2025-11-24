@@ -429,7 +429,9 @@ useEffect(() => {
       await onSave(clientToSave);
       onClose();
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : "Error desconocido");
+      // Captura cualquier error (validación o del backend)
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido al guardar el cliente.";
+      setApiError(errorMessage); // Mostrar en el UI del modal
     } finally {
       setLoading(false);
     }

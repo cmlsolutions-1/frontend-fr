@@ -2,7 +2,7 @@
 
 import type { Cliente } from "@/interfaces/user.interface";
 
-import { UpdateUserDto } from "@/interfaces/update-user";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
