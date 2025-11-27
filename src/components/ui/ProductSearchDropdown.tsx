@@ -46,7 +46,7 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
     };
   }, [searchTerm]);
 
-  // 🔥 CERRAR DROPDOWN CUANDO HACES CLIC AFUERA
+  // CERRAR DROPDOWN CUANDO HACES CLIC AFUERA
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -91,8 +91,8 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
         <IoSearchOutline className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
       </div>
 
-      {/* 🔥 Dropdown resultados */}
-      {showResults && (
+      {/*Dropdown resultados */}
+      {/* {showResults && (
         <div className="absolute z-50 mt-2 w-full bg-white shadow-lg rounded-md border border-gray-200">
           {loading ? (
             <div className="p-3 text-sm text-gray-500 text-center">Buscando...</div>
@@ -115,7 +115,9 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
             </div>
           )}
         </div>
-      )}
+      )//aca
+      
+      } */}
     </div>
   );
 };

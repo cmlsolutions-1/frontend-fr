@@ -36,18 +36,20 @@ export const ProductSlideshow = ({ images, title, className }: Props) => {
           swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
         }}
         modules={[FreeMode, Navigation, Thumbs, Autoplay]}
-        className="mySwiper2 bg-white rounded-lg"
+        className="mySwiper2 rounded-lg"
       >
         {images.map((image) => (
           <SwiperSlide key={image}>
-            <div className="aspect-square w-full flex items-center justify-center bg-white">
+            <div className="p-0">
+            <div className="w-full aspect-square bg-white rounded-lg">
               <ProductImage
-                width={1024}
-                height={1024}
+                width={1080}
+                height={1080}
                 src={image}
                 alt={title}
-                className="object-contain max-w-full max-h-full rounded-lg"
+                className="w-full h-full object-contain"
               />
+              </div>
             </div>
           </SwiperSlide>
         ))}
