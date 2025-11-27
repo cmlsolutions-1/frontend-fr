@@ -98,6 +98,10 @@ export const ProductPage = () => {
   }
   if (!product) return <p className="p-4">Producto no encontrado</p>;
 
+  // Determinar si el producto está agotado
+  const isOutOfStock = product.stock <= 0;
+
+
   // Obtener la URL de la imagen
   const imageUrl = product.image?.url?.trim() || placeholder;
 
@@ -281,7 +285,13 @@ export const ProductPage = () => {
             <p className="text-lg mb-5 font-bold text-gray-900">{formatPrice()}</p>
           )}
 
-        <AddToCart product={product} />
+        {isOutOfStock ? (
+            <span className="inline-block w-full text-center py-2 bg-red-500 text-white font-bold rounded-md">
+              Producto Agotado
+            </span>
+          ) : (
+            <AddToCart product={product} />
+          )}
         {/* Master package */}
         <div className="mt-4">
           <h3 className="font-bold text-sm">Master</h3>

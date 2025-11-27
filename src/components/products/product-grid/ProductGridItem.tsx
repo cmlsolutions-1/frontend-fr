@@ -92,6 +92,10 @@ export const ProductGridItem = ({ product }: Props) => {
   // Obtener el precio correcto
   const productPrice = getClientProductPrice(product);
 
+
+   // determinar si el producto está agotado
+  const isOutOfStock = product.stock <= 0;
+
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
       {/* Imagen */}
@@ -158,9 +162,15 @@ export const ProductGridItem = ({ product }: Props) => {
         {/* Agregar al carrito mostrar solo para clientes */}
         {isClient && (
         <div className="mt-auto pt-4">
-          <Agregar product={product} />
+          {isOutOfStock ? (
+            <span className="inline-block w-full text-center py-2 bg-red-500 text-white font-bold rounded-md">
+              Agotado
+            </span>
+          ) : (
+            <Agregar product={product} />
+          )}
         </div>
-        )}
+      )}
       </div>
     </div>
   );
