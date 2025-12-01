@@ -18,6 +18,22 @@ interface Props {
   className?: string;
 }
 
+// Función para optimizar la URL de Cloudinary
+const optimizeCloudinaryUrl = (url: string) => {
+  if (url.includes('res.cloudinary.com')) {
+    return url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,w_1080,h_1080/');
+  }
+  return url;
+};
+
+// Para miniaturas
+const optimizeThumbnailUrl = (url: string) => {
+  if (url.includes('res.cloudinary.com')) {
+    return url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,w_300,h_300/');
+  }
+  return url;
+};
+
 export const ProductSlideshow = ({ images, title, className }: Props) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperObject>();
 
@@ -41,14 +57,14 @@ export const ProductSlideshow = ({ images, title, className }: Props) => {
         {images.map((image) => (
           <SwiperSlide key={image}>
             <div className="p-0">
-            <div className="w-full aspect-square bg-white rounded-lg">
-              <ProductImage
-                width={1080}
-                height={1080}
-                src={image}
-                alt={title}
-                className="w-full h-full object-contain"
-              />
+              <div className="w-full aspect-square bg-white rounded-lg">
+                <ProductImage
+                  width={1080}
+                  height={1080}
+                  src={optimizeCloudinaryUrl(image)}
+                  alt={title}
+                  className="w-full h-full object-contain"
+                />
               </div>
             </div>
           </SwiperSlide>
@@ -71,7 +87,7 @@ export const ProductSlideshow = ({ images, title, className }: Props) => {
               <ProductImage
                 width={300}
                 height={300}
-                src={image}
+                src={optimizeThumbnailUrl(image)}
                 alt={title}
                 className="object-contain max-w-full max-h-full rounded-lg"
               />
