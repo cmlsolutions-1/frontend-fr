@@ -69,7 +69,7 @@ export const loginRequest = async (
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json", // Solo Content-Type, sin Authorization
+      "Content-Type": "application/json", 
     },
     body: JSON.stringify({ email, password }),
   });
@@ -105,4 +105,20 @@ export const fetchMe = async (token: string): Promise<any> => {
   return data;
 };
 
+
+// Reenviar validación de email
+export const resendValidationEmail = async (email: string) => {
+  const response = await fetch(`${API_URL}/auth/resend-validation-email`, {
+    method: "POST",
+    headers: getAuthHeaders(), // incluye content-type y bearer token
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "No se pudo enviar el correo.");
+  }
+
+  return await response.json();
+};
 
