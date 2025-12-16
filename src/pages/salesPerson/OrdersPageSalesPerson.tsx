@@ -88,6 +88,9 @@ export default function OrdersPageSalesPerson() {
                 Nombre Cliente
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                Pedido Syscafe
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Estado
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
@@ -115,6 +118,9 @@ export default function OrdersPageSalesPerson() {
                     ? order.Client.name || order.Client.lastName
                     : "Cliente no encontrado"}
                   {/* --- FIN CAMBIO --- */}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
+                  {order.syscafeOrder || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               <div className="flex items-center">

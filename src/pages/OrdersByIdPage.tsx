@@ -236,16 +236,18 @@ export default function OrdersByIdPage() {
 
             {/* Botón de estado */}
             <div className="mt-8">
-              <OrderStatusButton
-                orderId={order._id}
-                initialIsPaid={order.isPaid}
-                onStatusChange={(newIsPaid) => {
-                  setOrder((prevOrder: any) => ({
-                    ...prevOrder,
-                    isPaid: newIsPaid,
-                  }));
-                }}
-              />
+            <OrderStatusButton
+              orderId={order._id}
+              initialIsPaid={order.isPaid}
+              syscafeOrder={order.syscafeOrder}
+              onStatusChange={(newIsPaid, newSyscafeOrder) => {
+                setOrder((prevOrder: any) => ({
+                  ...prevOrder,
+                  isPaid: newIsPaid,
+                  syscafeOrder: newSyscafeOrder ?? prevOrder.syscafeOrder,
+                }));
+              }}
+            />
             </div>
 
             <Link

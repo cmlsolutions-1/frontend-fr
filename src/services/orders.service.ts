@@ -151,17 +151,21 @@ export const getOrderById = async (id: string) => {
 
 // Actualizar estado de orden a pagada/gestionada
 export const updateOrderStatusToPaid = async (
-  orderId: string
+  orderId: string,
+  syscafeOrder: string
 ): Promise<{ ok: boolean; message?: string }> => {
   try {
-    if (!orderId) {
+    if (!orderId || !syscafeOrder) {
       throw new Error("ID de orden no válido");
     }
 
     const response = await fetch(`${API_URL}/paid`, {
       method: "PATCH",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ _id: orderId }),
+      body: JSON.stringify({ 
+        _id: orderId,
+        syscafeOrder,
+      }),
     });
 
     if (!response.ok) {
@@ -169,7 +173,7 @@ export const updateOrderStatusToPaid = async (
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json();
+    await response.json();
 
     
     return { ok: true, message: "Orden actualizada correctamente" };

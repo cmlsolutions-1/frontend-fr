@@ -150,6 +150,9 @@ export default function OrdersPageAdmin() {
               <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Nombre Vendedor
               </th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                Pedido Syscafe
+              </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Estado
               </th>
@@ -175,6 +178,10 @@ export default function OrdersPageAdmin() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {getSalesPersonName(order.idSalesPerson)}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
+                  {order.syscafeOrder || 'N/A'}
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">

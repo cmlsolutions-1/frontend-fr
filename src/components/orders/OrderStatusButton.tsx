@@ -1,5 +1,5 @@
 // src/components/orders/OrderStatusButton.tsx
-import React, { useState } from "react";
+import React, { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { updateOrderStatusToPaid } from "@/services/orders.service"; 
 import { useAuthStore } from '@/store/auth-store';
@@ -7,12 +7,14 @@ import { useAuthStore } from '@/store/auth-store';
 interface Props {
   orderId: string;
   initialIsPaid: boolean;
-  onStatusChange?: (newIsPaid: boolean) => void;
+  syscafeOrder?: string | null;
+  onStatusChange?: (newIsPaid: boolean, syscafeOrder?: string) => void;
 }
 
 export const OrderStatusButton = ({
   orderId,
   initialIsPaid,
+  syscafeOrder,
   onStatusChange,
 }: Props) => {
   const { user } = useAuthStore();
@@ -21,44 +23,89 @@ export const OrderStatusButton = ({
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [externalOrderName, setExternalOrderName] = useState(
+    syscafeOrder ?? ""
+  );
+
+  useEffect(() => {
+    if (syscafeOrder) {
+      setExternalOrderName(syscafeOrder);
+    }
+  }, [syscafeOrder]);
+
   // Verificar si el usuario puede gestionar ordenes
   const canManageOrders = user?.role === 'Admin' || user?.role === 'SalesPerson';
+  
 
- const handleMarkAsPaid = async () => {
+  const handleMarkAsPaid = async () => {
     if (isPaid || !canManageOrders || loading) return;
-
+  
+    if (!externalOrderName.trim()) {
+      setErrorMessage("Debes ingresar el número de pedido Syscafe");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+  
     try {
       setLoading(true);
       setErrorMessage(null);
-      
-      const result = await updateOrderStatusToPaid(orderId);
-      
+  
+      const result = await updateOrderStatusToPaid(
+        orderId,
+        externalOrderName
+      );
+  
       if (result.ok) {
         setIsPaid(true);
-        onStatusChange?.(true);
-        
-        // Mostrar mensaje de éxito
+        onStatusChange?.(true, externalOrderName);
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
       } else {
         setErrorMessage(result.message || "Error al actualizar la orden");
         setTimeout(() => setErrorMessage(null), 5000);
       }
-    } catch (error) {
+    } catch {
       setErrorMessage("Error de conexión");
       setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setLoading(false);
     }
   };
+  
 
-  // ✅ No mostrar el botón si el usuario no tiene permisos
+  // No mostrar el botón si el usuario no tiene permisos
   if (!canManageOrders) {
     return null;
   }
 
   return (
     <div className="relative">
+        <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Nombre del pedido Syscafe
+        </label>
+
+        <input
+          type="text"
+          value={externalOrderName}
+          onChange={(e) => setExternalOrderName(e.target.value)}
+          disabled={isPaid}
+          placeholder="Ej: PE-00021"
+          className={`w-full px-3 py-2 rounded-md border text-sm
+            ${
+              isPaid
+                ? "bg-gray-100 border-gray-300 cursor-not-allowed text-gray-600"
+                : "border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            }`}
+        />
+
+        {isPaid && (
+          <p className="text-xs text-gray-500 mt-1">
+            Este pedido ya fue gestionado y no puede editarse
+          </p>
+        )}
+      </div>
+
       <button
         onClick={handleMarkAsPaid}
         disabled={isPaid || loading}
