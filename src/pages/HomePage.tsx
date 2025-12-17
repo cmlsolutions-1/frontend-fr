@@ -11,7 +11,7 @@ import { CiFilter } from "react-icons/ci";
 import React from 'react';
 import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
-import { AiOutlineDelete } from "react-icons/ai";
+import { MdDelete } from "react-icons/md";
 
 
 
@@ -236,9 +236,9 @@ const HomePage = () => {
               params.delete("search");
               navigate(`?${params.toString()}`, { replace: true });
             }}
-            className="text-gray-500 hover:text-red-600 transition"
+            className="text-red-400 hover:text-red-600 transition"
           >
-            <AiOutlineDelete size={18} />
+            <MdDelete size={32} />
           </button>
         </p>
       )}

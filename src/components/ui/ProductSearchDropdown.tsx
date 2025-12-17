@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { searchProducts } from '@/services/products.service';
 import type { Product } from '@/interfaces/product.interface';
 import { IoSearchOutline } from 'react-icons/io5';
+import { MdDeleteForever } from "react-icons/md";
 
 interface Props {
   onClose?: () => void;
@@ -76,20 +77,43 @@ export const ProductSearchDropdown = ({ onClose }: Props) => {
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="¿Qué estás buscando?"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => searchTerm && setShowResults(true)}
-          className="block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-full bg-gray-50 
-                 focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318] 
-                 text-sm text-center"
-        />
-        <IoSearchOutline className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+  <div className="relative">
+    <input
+      type="text"
+      placeholder="¿Qué estás buscando?"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      onKeyDown={handleKeyDown}
+      onFocus={() => searchTerm && setShowResults(true)}
+      className="block w-full pl-12 pr-10 py-2 border border-gray-300 rounded-full bg-gray-50 
+             focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318] 
+             text-sm text-center"
+    />
+    <IoSearchOutline className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+    
+    {/* Botón con X y texto "Cerrar búsqueda" */}
+    {searchTerm && (
+      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+        <span className="text-xs text-gray-500 whitespace-nowrap">Cerrar búsqueda</span>
+        <button
+          type="button"
+          onClick={() => {
+            setSearchTerm('');
+            const params = new URLSearchParams(location.search);
+            params.delete("search");
+            navigate(`?${params.toString()}`, { replace: true });
+          }}
+          className="text-gray-500 hover:text-gray-700 transition-colors ml-1"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
+    )}
+  </div>
+
 
       {/*Dropdown resultados */}
       {/* {showResults && (
