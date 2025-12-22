@@ -214,7 +214,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
 
 // Definimos la interfaz correcta según tu backend
 export interface Category {
-  _id: string;
+  code: string;
   name: string;
 }
 
@@ -231,7 +231,7 @@ export const getCategories = async (): Promise<Category[]> => {
     }
 
     const data = await response.json();
-    return data as Category[]; // ✅ Tipamos correctamente
+    return data as Category[]; 
   } catch (error) {
     console.error("Error al cargar categorías:", error);
     throw error;

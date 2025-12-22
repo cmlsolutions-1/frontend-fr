@@ -23,7 +23,7 @@ export interface Product {
   codigo: string;
   detalle: string;
   subCategory?: {
-  _id: string;
+  code: string;
   name?: string;
   };
   image: {

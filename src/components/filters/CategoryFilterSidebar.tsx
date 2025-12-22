@@ -67,12 +67,21 @@ export const CategoryFilterSidebar = () => {
     setSelectedBrands(brandsFromUrl);
   }, []); // Solo una vez al montar
 
+  // Agregar un useEffect para sincronizar los estados con la URL cuando cambia
+  useEffect(() => {
+    const categoriesFromUrl = searchParams.get('categories')?.split(',') || [];
+    const brandsFromUrl = searchParams.get('brands')?.split(',') || [];
+    
+    setSelectedCategories(categoriesFromUrl);
+    setSelectedBrands(brandsFromUrl);
+  }, [searchParams]); // Se ejecuta cada vez que cambia searchParams
+
   // Manejar cambio de categoría
-  const handleCategoryChange = (categoryId: string) => {
+  const handleCategoryChange = (categoryCode: string) => {
     setSelectedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId) 
-        : [...prev, categoryId]
+      prev.includes(categoryCode) 
+        ? prev.filter(id => id !== categoryCode) 
+        : [...prev, categoryCode]
     );
   };
 
@@ -127,6 +136,10 @@ export const CategoryFilterSidebar = () => {
     if (currentSearch) {
       params.set('search', currentSearch);
     }
+    // Limpiar los estados locales
+    setSelectedCategories([]);
+    setSelectedBrands([]);
+    
     navigate(`/homePage?${params.toString()}`);
   };
 
@@ -166,8 +179,8 @@ export const CategoryFilterSidebar = () => {
                 >
                   <input
                     type="checkbox"
-                    checked={isCategorySelected(category._id)}
-                    onChange={() => handleCategoryChange(category._id)}
+                    checked={isCategorySelected(category.code)}
+                    onChange={() => handleCategoryChange(category.code)}
                     className="w-4 h-4 accent-[#F4C048] rounded focus:ring-yellow-500"
                   />
                   <span className="text-sm">{category.name}</span>
@@ -255,18 +268,18 @@ export const CategoryFilterSidebar = () => {
             Filtros aplicados:
             </h4>
           <div className="flex flex-wrap gap-2">
-            {selectedCategories.map((categoryId) => {
+            {selectedCategories.map((categoryCode) => {
               const category = allCategories.find(
-                (cat) => cat._id === categoryId
+                (cat) => cat.code === categoryCode
               );
               return category ? (
                 <span
-                  key={categoryId}
+                  key={categoryCode}
                   className="inline-flex items-center px-2 py-1 bg-[#F5C85C] text-black rounded text-xs"
                 >
                   {category.name}
                   <button 
-                    onClick={() => handleCategoryChange(categoryId)}
+                    onClick={() => handleCategoryChange(categoryCode)}
                     className="ml-1 text-black-600 hover:text-black-800"
                   >
                     ×
