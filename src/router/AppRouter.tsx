@@ -37,6 +37,7 @@ import TableProducts from "@/pages/TableProducts";
 import { LoginReset } from "@/components/ui/LoginReset";
 import { ResetCodePage } from "@/components/ui/ResetCodePage";
 import { ResetNewPasswordPage } from "@/components/ui/ResetNewPasswordPage";
+import NewsProducts from "@/pages/newsProducts";
 
 
 export const AppRouter = () => {
@@ -47,6 +48,7 @@ export const AppRouter = () => {
       <Routes>
         {/* Ruta pública */}
         <Route path="/" element={<LoginPage />} />
+        <Route path="/newsProducts" element={<NewsProducts />} />
 
         {/* Recuperar contraseña */}
         <Route path="/auth/reset-password" element={<LoginReset />} />

@@ -12,6 +12,7 @@ import {
   IoTicketOutline,
   IoLogoBuffer,
 } from "react-icons/io5";
+import { GiKnockedOutStars } from "react-icons/gi";
 import { BiSolidOffer } from "react-icons/bi";
 import { AiOutlineProduct } from "react-icons/ai";
 import { CiImageOn } from "react-icons/ci";
@@ -104,7 +105,17 @@ export const Sidebar = () => {
             <IoLogInOutline size={30} />
             <span className="ml-3 text-lg">Ingresar</span>
           </Link>
+
+          
+          
         )}
+
+        {/* Común para todos */}
+        <Link to="/newsProducts" onClick={closeMenu} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
+          <AiOutlineProduct size={30} />
+          <span className="ml-3 text-lg">Nuevos productos</span>
+        </Link>
+
         {isClient&& (
           <>
             {/* Line Separator */}
@@ -204,8 +215,8 @@ export const Sidebar = () => {
               onClick={() => closeMenu()}
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
-              <AiOutlineProduct size={30} />
-              <span className="ml-3 text-lg">Productos</span>
+              <GiKnockedOutStars size={30} />
+              <span className="ml-3 text-lg">Gestion de Favoritos</span>
             </Link> 
 
             <Link to="/admin/bancoImagenes" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">

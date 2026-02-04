@@ -1,3 +1,4 @@
+// src/interfaces/address.interface.ts
 export interface Address {
   firstName: string;
   lastName: string;
