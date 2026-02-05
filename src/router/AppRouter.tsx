@@ -48,7 +48,13 @@ export const AppRouter = () => {
       <Routes>
         {/* Ruta pública */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/newsProducts" element={<NewsProducts />} />
+        <Route path="/newsProducts" 
+        element={
+          <ShopLayout>
+        <NewsProducts />
+        </ShopLayout>
+        } 
+        />
 
         {/* Recuperar contraseña */}
         <Route path="/auth/reset-password" element={<LoginReset />} />

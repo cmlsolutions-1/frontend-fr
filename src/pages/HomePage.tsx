@@ -43,6 +43,7 @@ const HomePage = () => {
 
   const location = useLocation();
   const query = new URLSearchParams(location.search).get("search");
+  
 
 
   

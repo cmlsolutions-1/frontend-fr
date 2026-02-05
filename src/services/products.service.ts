@@ -298,3 +298,34 @@ export const updateProductMaster = async (
 };
 
 
+// Obtener lista de favoritos
+export const listFavoriteProducts = async (params: {
+  page: number;
+  limit: number;
+}): Promise<Product[]> => {
+  const { page, limit } = params;
+
+  const url = new URL(`${API_URL}/products/list-favorite/`);
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("limit", String(limit));
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
+      (authError as any).isAuthError = true;
+      (authError as any).status = 401;
+      throw authError;
+    }
+
+    const text = await response.text();
+    throw new Error(`No se pudieron cargar los favoritos. Status: ${response.status}. ${text}`);
+  }
+
+  const data = await response.json();
+  return data as Product[];
+};
