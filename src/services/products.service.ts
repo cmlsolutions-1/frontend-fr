@@ -329,3 +329,34 @@ export const listFavoriteProducts = async (params: {
   const data = await response.json();
   return data as Product[];
 };
+
+// Activar / desactivar “Nuevo” (isFavorite)
+export const updateProductFavoriteState = async (
+  productId: string,
+  state: boolean
+) => {
+  try {
+    const response = await fetch(`${API_URL}/products/favorite/${productId}`, {
+      method: "PUT",
+      headers: getAuthHeaders(true), // incluye Authorization + Content-Type
+      body: JSON.stringify({ state }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        const authError = new Error("No autorizado. Tu sesión puede haber expirado.");
+        (authError as any).isAuthError = true;
+        (authError as any).status = 401;
+        throw authError;
+      }
+
+      const text = await response.text();
+      throw new Error(`No se pudo actualizar el estado de Nuevo. Status: ${response.status}. ${text}`);
+    }
+
+    return await response.json(); // { message, product }
+  } catch (error) {
+    console.error("Error al actualizar isFavorite:", error);
+    throw error;
+  }
+};

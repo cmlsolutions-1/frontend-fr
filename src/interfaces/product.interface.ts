@@ -36,6 +36,7 @@ export interface Product {
   packages?: Package[];
   stock: number;
   brand: Brand;
+  isFavorite?: boolean;
 }
 
 

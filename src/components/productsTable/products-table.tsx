@@ -1,211 +1,131 @@
-import { useState, useEffect } from "react";
-import { Check, X } from "lucide-react";
-import {
-  getProducts,
-  updateProductCategory,
-  updateProductMaster,
-  getCategories,
-} from "@/services/products.service";
-import { Product } from "@/interfaces/product.interface";
-import { Select } from "@/components/ui/Select";
+import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
+import { getProducts, updateProductFavoriteState } from "@/services/products.service";
+import type { Product } from "@/interfaces/product.interface";
 
-// --- INTERFAZ EXTENDIDA LOCALMENTE ---
-interface ProductWithCategory extends Product {
-  category: string;
-}
-
-// --- INTERFAZ PARA FILA EN EDICIÓN ---
 interface EditingRow {
   id: string;
-  category: string;
-  master: string;
+  isFavorite: boolean;
 }
 
-// --- INTERFAZ DE CATEGORÍA ---
-interface Category {
-  _id: string;
-  name: string;
-}
+type FavoriteFilter = "ALL" | "ONLY_FAVORITE" | "ONLY_NOT_FAVORITE";
 
 export const ProductsTable = () => {
-  const [productos, setProductos] = useState<ProductWithCategory[]>([]);
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  const { logout } = useAuthStore();
+
+  const [productos, setProductos] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [editingRow, setEditingRow] = useState<EditingRow | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  //paginacion local
+  // Filtro (opcional pero útil para “activar nuevos”)
+  const [favoriteFilter, setFavoriteFilter] = useState<FavoriteFilter>("ALL");
+
+  // Paginación local
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
 
-  // --- NUEVO ESTADO: Filtro por categoría ---
-  const [filterSinCategoria, setFilterSinCategoria] = useState(false);
-  // --- FIN NUEVO ESTADO ---
-
-
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const [productosData, categoriasData] = await Promise.all([
-          getProducts(),
-          getCategories(),
-        ]);
-  
-        const mappedProducts = productosData.map((p) => ({
-          ...p,
-          category: p.subCategory?._id || "",
-          package: p.packages || [],
-        }));
-  
-        setProductos(mappedProducts);
-  
-        setCategorias(
-          categoriasData.map((cat) => ({
-            _id: cat._id || "",
-            name: cat.name,
-          }))
-        );
-      } catch (err) {
-        console.error("Error al cargar productos o categorías:", err);
-        setError("No se pudieron cargar los productos o categorías");
+        const data = await getProducts();
+        setProductos(data);
+      } catch (err: any) {
+        if (err?.isAuthError) {
+          logout();
+          setError("auth_expired");
+        } else {
+          setError("No se pudieron cargar los productos");
+        }
       } finally {
         setLoading(false);
       }
     };
-  
-    fetchInitialData();
-  }, []);
-  
-  // --- NUEVA FUNCIÓN: Aplicar filtro ---
-  const filteredProducts = productos.filter(product => {
-    if (!filterSinCategoria) return true; // Si no está filtrando, mostrar todos
-    // Mostrar solo los productos sin categoría
-    return !product.subCategory?._id || product.subCategory._id === "";
-  });
-  // --- FIN NUEVA FUNCIÓN ---
 
-  const handleEditStart = (product: ProductWithCategory) => {
+    fetchProducts();
+  }, [logout]);
+
+  const filteredProducts = useMemo(() => {
+    if (favoriteFilter === "ONLY_FAVORITE") {
+      return productos.filter((p) => Boolean(p.isFavorite));
+    }
+    if (favoriteFilter === "ONLY_NOT_FAVORITE") {
+      return productos.filter((p) => !Boolean(p.isFavorite));
+    }
+    return productos;
+  }, [productos, favoriteFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+
+  // Si cambias filtro y quedas en una página inválida
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(1);
+  }, [totalPages, currentPage]);
+
+  const handleEditStart = (product: Product) => {
     setEditingRow({
       id: product._id,
-      category: product.category,
-      master: getMasterValue(product).toString(),
+      isFavorite: Boolean(product.isFavorite),
     });
   };
 
-  const handleCancel = () => {
-    setEditingRow(null);
-  };
+  const handleCancel = () => setEditingRow(null);
 
-  const handleUpdateCategory = async (product: ProductWithCategory) => {
+  const handleSaveFavorite = async (product: Product) => {
     if (!editingRow) return;
-  
-    setLoadingId(product._id + "-category");
-  
+
+    const rowKey = product._id + "-favorite";
+    setLoadingId(rowKey);
+
     try {
-        
-      if (!editingRow.category || editingRow.category === "") {
-        alert("Por favor selecciona una categoría válida antes de actualizar.");
+      await updateProductFavoriteState(product._id, editingRow.isFavorite);
+
+      // Update local state
+      setProductos((prev) =>
+        prev.map((p) =>
+          p._id === product._id ? { ...p, isFavorite: editingRow.isFavorite } : p
+        )
+      );
+
+      setEditingRow(null);
+    } catch (err: any) {
+      if (err?.isAuthError) {
+        logout();
+        setError("auth_expired");
         return;
       }
-  
-      await updateProductCategory(product._id, editingRow.category);
-  
-      setProductos((prev) =>
-        prev.map((p) =>
-          p._id === product._id
-            ? {
-                ...p,
-                category: editingRow.category,
-                subCategory: { _id: editingRow.category }, 
-              }
-            : p
-        )
-      );
-  
-    } catch (error) {
-      console.error("Error al actualizar categoría:", error);
-      alert("Error al actualizar la categoría");
+      alert(err?.message || "Error al actualizar el estado de Nuevo");
     } finally {
       setLoadingId(null);
     }
   };
-  
-
-  const handleUpdateMaster = async (product: ProductWithCategory) => {
-    if (!editingRow) return;
-  
-    const masterNum = Number.parseInt(editingRow.master, 10);
-    if (isNaN(masterNum)) {
-      alert("Master debe ser un número válido");
-      return;
-    }
-  
-    setLoadingId(product._id + "-master");
-  
-    try {
-      
-      await updateProductMaster(
-        product._id,
-        masterNum,
-        product.codigo || product.referencia || "",
-        product.referencia || "",
-        product.brand?.name || "",
-        product.detalle || ""
-      );
-
-      setProductos((prev) =>
-        prev.map((p) =>
-          p._id === product._id
-            ? { ...p, packages: updateMasterPackage(p.packages || [], masterNum) }
-            : p
-        )
-      );
-  
-    } catch (error) {
-      
-      alert("Error al actualizar el master");
-    } finally {
-      setLoadingId(null);
-    }
-  };
-  
-  
-  
-
-
-  // --- FUNCIONES AUXILIARES ---
-  const getMasterValue = (product: ProductWithCategory) => {
-    const masterPackage = product.packages?.find(p => p.typePackage === "Master");
-    return masterPackage ? masterPackage.Mount : 0;
-  };
-
-  const updateMasterPackage = (packages: any[], newValue: number) => {
-    if (!packages || packages.length === 0) {
-      return [{ typePackage: "Master", Mount: newValue }];
-    }
-  
-    return packages.map((p) =>
-      p.typePackage === "Master"
-        ? { ...p, Mount: newValue }
-        : p
-    );
-  };
-
-      // Calcular productos visibles en la página actual
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage); // <-- Cambio aquí
-      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   if (loading) {
-
-
     return (
-
       <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[90px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando productos y categorias...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
+          <p className="mt-4 text-gray-600">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error === "auth_expired") {
+    return (
+      <div className="container mx-auto p-6 mt-[90px]">
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+          <p className="text-yellow-700">
+            Tu sesión ha expirado. Por favor vuelve a iniciar sesión.
+          </p>
         </div>
       </div>
     );
@@ -217,25 +137,47 @@ export const ProductsTable = () => {
 
   return (
     <div className="w-full overflow-x-auto rounded-lg border bg-white shadow-sm">
-      {/* --- FILTRO: Botón para mostrar/ocultar productos sin categoría --- */}
-      <div className="p-4 bg-gray-50 border-b">
+      {/* Filtros */}
+      <div className="p-4 bg-gray-50 border-b flex flex-wrap items-center gap-3">
+        <span className="text-sm text-gray-600 font-medium">Filtro:</span>
+
         <button
-          onClick={() => setFilterSinCategoria(!filterSinCategoria)}
+          onClick={() => setFavoriteFilter("ALL")}
           className={`px-4 py-2 rounded-md text-sm font-medium ${
-            filterSinCategoria
-              ? 'bg-red-100 text-red-700 border border-red-300'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            favoriteFilter === "ALL"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
-          {filterSinCategoria ? 'Mostrar Todos' : 'Filtrar por Sin Categoría'}
+          Todos
         </button>
-        {filterSinCategoria && (
-          <span className="ml-4 text-sm text-gray-600">
-            Mostrando {filteredProducts.length} productos sin categoría
-          </span>
-        )}
+
+        <button
+          onClick={() => setFavoriteFilter("ONLY_FAVORITE")}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${
+            favoriteFilter === "ONLY_FAVORITE"
+              ? "bg-green-600 text-white"
+              : "bg-green-100 text-green-700 hover:bg-green-200"
+          }`}
+        >
+          Solo Nuevos
+        </button>
+
+        <button
+          onClick={() => setFavoriteFilter("ONLY_NOT_FAVORITE")}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${
+            favoriteFilter === "ONLY_NOT_FAVORITE"
+              ? "bg-red-600 text-white"
+              : "bg-red-100 text-red-700 hover:bg-red-200"
+          }`}
+        >
+          No Nuevos
+        </button>
+
+        <span className="ml-auto text-sm text-gray-600">
+          Mostrando {filteredProducts.length} productos
+        </span>
       </div>
-      {/* --- FIN FILTRO --- */}
 
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
@@ -253,103 +195,87 @@ export const ProductsTable = () => {
               Marca
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Categoría
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Master
+              Nuevo
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Acciones
             </th>
           </tr>
         </thead>
+
         <tbody className="bg-white divide-y divide-gray-200">
           {currentProducts.map((product) => {
             const isEditing = editingRow?.id === product._id;
-            const isCategoryLoading = loadingId === product._id + '-category';
-            const isMasterLoading = loadingId === product._id + '-master';
-            const masterValue = getMasterValue(product);
+            const isFavoriteLoading = loadingId === product._id + "-favorite";
 
             return (
               <tr key={product._id}>
                 <td className="px-2 py-2 md:px-6 md:py-4 whitespace-nowrap text-xs md:text-sm">
                   {product.referencia}
                 </td>
+
                 <td className="px-6 py-4 max-w-xs text-sm text-gray-500">
                   {product.detalle}
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {product.stock}
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.brand.name}
+                  {product.brand?.name}
                 </td>
 
-                {/* Columna Categoría - Editable */}
+                {/* Nuevo (isFavorite) */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {isEditing ? (
                     <div className="flex flex-col gap-2">
-                      <Select
-                          value={editingRow?.category || ""}
-                          onValueChange={(value) => setEditingRow({ ...editingRow, category: value })}
-                          options={categorias.map((cat) => ({
-                            value: cat._id,
-                            label: cat.name,
-                          }))}
-                        />
+                      <select
+                        value={editingRow.isFavorite ? "true" : "false"}
+                        onChange={(e) =>
+                          setEditingRow({
+                            ...editingRow,
+                            isFavorite: e.target.value === "true",
+                          })
+                        }
+                        className="border rounded-md px-2 py-1 text-sm w-28"
+                      >
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                      </select>
+
                       <button
-                        onClick={() => handleUpdateCategory(product)}
-                        disabled={isCategoryLoading}
+                        onClick={() => handleSaveFavorite(product)}
+                        disabled={isFavoriteLoading}
                         className={`text-xs px-2 py-1 rounded ${
-                          isCategoryLoading
-                            ? 'bg-gray-300 cursor-not-allowed'
-                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                          isFavoriteLoading
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-purple-600 text-white hover:bg-purple-700"
                         }`}
                       >
-                        {isCategoryLoading ? 'Guardando...' : 'Actualizar Categoría'}
+                        {isFavoriteLoading ? "Guardando..." : "Guardar"}
                       </button>
                     </div>
                   ) : (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md text-xs">
-                          {categorias.find((cat) => cat._id === product.subCategory?._id)?.name || "Sin categoría"}
-                        </span>
+                    <span
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        product.isFavorite
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {product.isFavorite ? "Sí" : "No"}
+                    </span>
                   )}
                 </td>
 
-                {/* Columna Master - Editable */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {isEditing ? (
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="number"
-                        value={editingRow.master}
-                        onChange={(e) => setEditingRow({ ...editingRow, master: e.target.value })}
-                        className="border rounded-md px-2 py-1 text-sm w-24"
-                        placeholder="0"
-                      />
-                      <button
-                        onClick={() => handleUpdateMaster(product)}
-                        disabled={isMasterLoading}
-                        className={`text-xs px-2 py-1 rounded ${
-                          isMasterLoading
-                            ? 'bg-gray-300 cursor-not-allowed'
-                            : 'bg-green-500 text-white hover:bg-green-600'
-                        }`}
-                      >
-                        {isMasterLoading ? 'Guardando...' : 'Actualizar Master'}
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="font-semibold text-gray-900">{masterValue}</span>
-                  )}
-                </td>
-
-                {/* Botones de Acción */}
+                {/* Acciones */}
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   {isEditing ? (
                     <button
                       onClick={handleCancel}
                       className="p-1 text-gray-500 hover:text-gray-700"
+                      title="Cancelar"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -367,13 +293,15 @@ export const ProductsTable = () => {
           })}
         </tbody>
       </table>
-      
 
-      {filteredProducts.length === 0 && ( // Mostrar mensaje si la lista filtrada está vacía
-        <div className="text-center py-8 text-gray-500">No hay productos disponibles con los filtros aplicados</div>
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No hay productos disponibles con los filtros aplicados
+        </div>
       )}
-{/* 🔹 PAGINACIÓN */}
-<div className="flex justify-center items-center py-4 gap-4">
+
+      {/* PAGINACIÓN LOCAL */}
+      <div className="flex justify-center items-center py-4 gap-4">
         <button
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
           disabled={currentPage === 1}
