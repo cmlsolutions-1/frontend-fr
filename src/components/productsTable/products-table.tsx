@@ -238,7 +238,16 @@ export const ProductsTable = () => {
                             isFavorite: e.target.value === "true",
                           })
                         }
-                        className="border rounded-md px-2 py-1 text-sm w-28"
+                        className="border border-[#F4C048]
+                          rounded-md px-2 py-1 text-sm w-28
+                          bg-white text-gray-700
+
+                          focus:outline-none
+                          focus:ring-2 focus:ring-[#F4C048]
+                          focus:border-[#F4C048]
+
+                          hover:bg-yellow-50
+                          cursor-pointer"
                       >
                         <option value="true">Sí</option>
                         <option value="false">No</option>
@@ -250,7 +259,7 @@ export const ProductsTable = () => {
                         className={`text-xs px-2 py-1 rounded ${
                           isFavoriteLoading
                             ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-purple-600 text-white hover:bg-purple-700"
+                            : "bg-[#F4C048] text-white hover:bg-[#F2B318]"
                         }`}
                       >
                         {isFavoriteLoading ? "Guardando..." : "Guardar"}
