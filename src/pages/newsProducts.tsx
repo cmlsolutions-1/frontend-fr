@@ -77,7 +77,7 @@ const NewsProducts = () => {
       <div className="container mx-auto p-6 flex justify-center items-center h-64 mt-[90px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
-          <p className="mt-4 text-gray-600">Cargando favoritos...</p>
+          <p className="mt-4 text-gray-600">Cargando productos nuevos...</p>
         </div>
       </div>
     );
