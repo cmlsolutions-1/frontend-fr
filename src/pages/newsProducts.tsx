@@ -17,7 +17,7 @@ const NewsProducts = () => {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
 
-  // ✅ declarar ANTES de usar
+  // declarar ANTES de usar
   const [hasNextPage, setHasNextPage] = useState(false);
 
   const totalPages = hasNextPage ? page + 1 : page;
