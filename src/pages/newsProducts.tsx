@@ -1,8 +1,11 @@
+// src/pages/newsProducts.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { listFavoriteProducts } from "@/services/products.service";
 import { ProductGrid, Pagination, Title } from "@/components";
+import { Home } from "lucide-react";
+
 
 
 const NewsProducts = () => {
@@ -113,9 +116,32 @@ const NewsProducts = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6 mt-[80px]">
-      <Title title="Productos Nuevos" 
-        subtitle="Conoce Lo Nuevo En Nuestro Catálogo" />
+    <div className="container mx-auto px-4 py-6 space-y-6 mt-[90px]">
+
+      {/* Título principal */}
+    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+      Productos Nuevos
+    </h1>
+
+    {/* Subtitle + botón en la misma fila */}
+    <div className="flex items-center justify-between">
+      <p className="text-base md:text-lg text-gray-600">
+        Conoce Lo Nuevo En Nuestro Catálogo
+      </p>
+        {/* Botón volver al Home debajo del subtitle */}
+  <button
+    onClick={() => navigate("/homePage")}
+    className="
+      flex items-center gap-2
+      text-sm font-semibold
+      text-gray-600 hover:text-[#F4C048]
+      transition
+    "
+  >
+    <Home className="w-4 h-4" />
+    Inicio
+  </button>
+</div>
 
       {products.length === 0 ? (
         <p className="text-center text-gray-600">No tienes productos favoritos aún.</p>

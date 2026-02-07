@@ -12,6 +12,9 @@ import React from 'react';
 import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { MdDelete } from "react-icons/md";
+import { ShoppingBag } from "lucide-react";
+import { ArrowRightCircle } from "lucide-react";
+
 
 
 
@@ -225,7 +228,7 @@ const HomePage = () => {
       <button
         onClick={() => navigate("/newsProducts")}
         className="
-        mt-[90px] w-full flex items-center justify-between gap-3
+        mt-[95px] w-full flex items-center justify-between gap-3
           bg-[#F4C048] text-white
           px-4 py-3 rounded-lg shadow
           hover:bg-[#f1b212] transition-colors
@@ -235,9 +238,9 @@ const HomePage = () => {
           ¡Ven a conocer nuestros nuevos productos!
         </span>
 
-        <span className="text-xs md:text-sm font-medium underline">
-          Ver ahora →
-        </span>
+        <span className="flex items-center gap-1 text-xs md:text-sm font-medium underline">
+        <ShoppingBag className="w-4 h-4" /> 
+      </span>
       </button>
 
     <div className="container mx-auto px-4 py-6 space-y-6 ">
