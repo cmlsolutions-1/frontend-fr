@@ -221,11 +221,32 @@ const HomePage = () => {
 
   return (
     <>
-    <div className="container mx-auto px-4 py-6 space-y-6 mt-[80px]">
+    {/* Banda: Nuevos productos */}
+      <button
+        onClick={() => navigate("/newsProducts")}
+        className="
+        mt-[90px] w-full flex items-center justify-between gap-3
+          bg-[#F4C048] text-white
+          px-4 py-3 rounded-lg shadow
+          hover:bg-[#f1b212] transition-colors
+        "
+      >
+        <span className="text-sm md:text-base font-semibold">
+          ¡Ven a conocer nuestros nuevos productos!
+        </span>
+
+        <span className="text-xs md:text-sm font-medium underline">
+          Ver ahora →
+        </span>
+      </button>
+
+    <div className="container mx-auto px-4 py-6 space-y-6 ">
       <Title
         title="Distribucciones Ferrelectricos Restrepo"
         subtitle="Todos los productos"
       />
+      
+
       {query && (
         <p className="text-gray-700 text-sm mb-3 flex items-center gap-2">
           Resultados para <span className="font-bold">"{query}"</span> — {products.length} coincidencias

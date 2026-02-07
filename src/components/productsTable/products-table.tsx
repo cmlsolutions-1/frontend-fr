@@ -4,6 +4,17 @@ import { useAuthStore } from "@/store/auth-store";
 import { getProducts, updateProductFavoriteState } from "@/services/products.service";
 import type { Product } from "@/interfaces/product.interface";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectScrollDownButton, 
+  SelectScrollUpButton,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/SelectUsers";
+
+
 interface EditingRow {
   id: string;
   isFavorite: boolean;
@@ -228,55 +239,86 @@ export const ProductsTable = () => {
 
                 {/* Nuevo (isFavorite) */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {isEditing ? (
-                    <div className="flex flex-col gap-2">
-                      <select
-                        value={editingRow.isFavorite ? "true" : "false"}
-                        onChange={(e) =>
-                          setEditingRow({
-                            ...editingRow,
-                            isFavorite: e.target.value === "true",
-                          })
-                        }
-                        className="border border-[#F4C048]
-                          rounded-md px-2 py-1 text-sm w-28
-                          bg-white text-gray-700
+  {isEditing ? (
+    <div className="flex flex-col gap-2 relative z-50">
+      <Select
+        value={editingRow.isFavorite ? "true" : "false"}
+        onValueChange={(value) =>
+          setEditingRow({ ...editingRow, isFavorite: value === "true" })
+        }
+      >
+        <SelectTrigger
+          className="
+            mt-1 block w-28 cursor-default rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900
+            outline-1 -outline-offset-1 outline-[#F4C048]
+            focus:outline-2 focus:-outline-offset-2 focus:outline-[#F4C048]
+            sm:text-sm
+          "
+          style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center" }}
+        >
+          <div className="flex items-center gap-3 pr-6">
+            <SelectValue placeholder="..." />
+          </div>
+        </SelectTrigger>
 
-                          focus:outline-none
-                          focus:ring-2 focus:ring-[#F4C048]
-                          focus:border-[#F4C048]
+        <SelectContent
+          className="
+            w-[--radix-select-trigger-width]
+            rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5
+            [--anchor-gap:4px] sm:text-sm
+          "
+          style={{ maxHeight: "160px", overflowY: "auto" }}
+        >
+          <SelectScrollUpButton />
 
-                          hover:bg-yellow-50
-                          cursor-pointer"
-                      >
-                        <option value="true">Sí</option>
-                        <option value="false">No</option>
-                      </select>
+          <SelectItem
+            value="true"
+            className="
+              group/option relative flex cursor-default items-center py-2 pr-9 pl-3
+              text-gray-900 select-none
+              focus:bg-[#F2B318] focus:text-black focus:outline-hidden
+            "
+          >
+            Sí
+          </SelectItem>
 
-                      <button
-                        onClick={() => handleSaveFavorite(product)}
-                        disabled={isFavoriteLoading}
-                        className={`text-xs px-2 py-1 rounded ${
-                          isFavoriteLoading
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-[#F4C048] text-white hover:bg-[#F2B318]"
-                        }`}
-                      >
-                        {isFavoriteLoading ? "Guardando..." : "Guardar"}
-                      </button>
-                    </div>
-                  ) : (
-                    <span
-                      className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        product.isFavorite
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {product.isFavorite ? "Sí" : "No"}
-                    </span>
-                  )}
-                </td>
+          <SelectItem
+            value="false"
+            className="
+              group/option relative flex cursor-default items-center py-2 pr-9 pl-3
+              text-gray-900 select-none
+              focus:bg-[#F2B318] focus:text-black focus:outline-hidden
+            "
+          >
+            No
+          </SelectItem>
+
+          <SelectScrollDownButton />
+        </SelectContent>
+      </Select>
+
+      <button
+        onClick={() => handleSaveFavorite(product)}
+        disabled={isFavoriteLoading}
+        className={`text-xs px-2 py-1 rounded ${
+          isFavoriteLoading
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-[#F4C048] text-white hover:bg-[#F2B318]"
+        }`}
+      >
+        {isFavoriteLoading ? "Guardando..." : "Guardar"}
+      </button>
+    </div>
+  ) : (
+    <span
+      className={`px-2 py-1 rounded-md text-xs font-medium ${
+        product.isFavorite ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+      }`}
+    >
+      {product.isFavorite ? "Sí" : "No"}
+    </span>
+  )}
+</td>
 
                 {/* Acciones */}
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

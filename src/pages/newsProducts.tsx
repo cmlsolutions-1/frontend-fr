@@ -122,7 +122,11 @@ const NewsProducts = () => {
       ) : (
         <>
           {/*  aquí viene el override de 4 columnas */}
-          <div className="product-grid-override">
+          <div className="[&_.grid]:grid
+            [&_.grid]:grid-cols-2
+            md:[&_.grid]:grid-cols-3
+            lg:[&_.grid]:grid-cols-4
+            [&_.grid]:gap-4">
             <ProductGrid products={products} />
           </div>
 
