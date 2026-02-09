@@ -1,5 +1,7 @@
+//src/components/productsTable/products-table.tsx
+
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { getProducts, updateProductFavoriteState } from "@/services/products.service";
 import type { Product } from "@/interfaces/product.interface";
@@ -13,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/SelectUsers";
+
 
 
 interface EditingRow {
@@ -35,9 +38,18 @@ export const ProductsTable = () => {
   // Filtro (opcional pero útil para “activar nuevos”)
   const [favoriteFilter, setFavoriteFilter] = useState<FavoriteFilter>("ALL");
 
+  //Buscardor
+  const [searchRef, setSearchRef] = useState("");
+
+
   // Paginación local
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
+
+    useEffect(() => {
+    setCurrentPage(1);
+  }, [searchRef, favoriteFilter]);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -63,14 +75,23 @@ export const ProductsTable = () => {
   }, [logout]);
 
   const filteredProducts = useMemo(() => {
+    let list = productos;
+
+    // filtro por nuevo
     if (favoriteFilter === "ONLY_FAVORITE") {
-      return productos.filter((p) => Boolean(p.isFavorite));
-    }
-    if (favoriteFilter === "ONLY_NOT_FAVORITE") {
-      return productos.filter((p) => !Boolean(p.isFavorite));
-    }
-    return productos;
-  }, [productos, favoriteFilter]);
+    list = list.filter((p) => Boolean(p.isFavorite));
+  } else if (favoriteFilter === "ONLY_NOT_FAVORITE") {
+    list = list.filter((p) => !Boolean(p.isFavorite));
+  }
+
+  // búsqueda por referencia
+  const term = searchRef.trim().toLowerCase();
+  if (term) {
+    list = list.filter((p) => (p.referencia || "").toLowerCase().includes(term));
+  }
+
+  return list;
+}, [productos, favoriteFilter, searchRef]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -185,10 +206,46 @@ export const ProductsTable = () => {
           No Nuevos
         </button>
 
+        {/* Buscador por referencia */}
+        
+      <div className="relative w-full sm:w-72">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+        <input
+          value={searchRef}
+          onChange={(e) => setSearchRef(e.target.value)}
+          placeholder="Buscar por referencia..."
+          className="
+            w-full pl-9 pr-9 py-2 rounded-md border border-gray-300 bg-white text-sm
+            focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318]
+          "
+        />
+
+      {searchRef.trim() && (
+        <button
+          type="button"
+          onClick={() => setSearchRef("")}
+          className="
+            absolute right-2 top-1/2 -translate-y-1/2
+            w-7 h-7 rounded-full
+            flex items-center justify-center
+            text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition
+          "
+          aria-label="Limpiar búsqueda"
+          title="Limpiar búsqueda"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+
+
         <span className="ml-auto text-sm text-gray-600">
           Mostrando {filteredProducts.length} productos
         </span>
       </div>
+
+      
 
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">

@@ -216,7 +216,7 @@ export const Sidebar = () => {
               className="flex items-center p-2 hover:bg-gray-100 rounded transition-all"
             >
               <GiKnockedOutStars size={30} />
-              <span className="ml-3 text-lg">Gestion de Favoritos</span>
+              <span className="ml-3 text-lg">Gestion de Productos Nuevos</span>
             </Link> 
 
             <Link to="/admin/bancoImagenes" onClick={() => closeMenu()} className="flex items-center p-2 hover:bg-gray-100 rounded transition-all">
