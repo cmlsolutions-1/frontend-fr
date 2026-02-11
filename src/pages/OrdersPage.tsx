@@ -15,6 +15,7 @@ export default function OrdersPage() {
 
 
   // ACTIVAR BAKEND 
+  
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
@@ -91,6 +92,9 @@ export default function OrdersPage() {
                 Estado
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                Observaciones
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Opciones
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
@@ -129,6 +133,14 @@ export default function OrdersPage() {
                 </span>
               </div>
             </td>
+                  {/* Observaciones */}
+            <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+            {order.addres?.trim()
+              ? <span className="block truncate" title={order.addres}>{order.addres}</span>
+              : <span className="text-gray-400">—</span>
+            }
+          </td>
+
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
               {order?._id ? (

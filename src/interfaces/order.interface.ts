@@ -8,6 +8,7 @@ export interface Order {
   paymentDate: Date | null;
   createdAt: Date;
   clientId: string;
+  addres?: string;
   salesPersonId: string;
 
   OrderAddress: {

@@ -11,6 +11,8 @@ import { IoIosInformationCircle } from "react-icons/io";
 
 export const PlaceOrder = () => {
   const navigate = useNavigate();
+  const [addres, setAddres] = useState("");
+
   const [loaded, setLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -78,7 +80,8 @@ export const PlaceOrder = () => {
       // Crear el payload
       const payload = {
         idClient: user._id,
-        orderItems: orderItems
+        orderItems: orderItems,
+        addres: addres.trim() || ""
       };
 
   
@@ -94,6 +97,8 @@ export const PlaceOrder = () => {
 
       // Éxito: Limpiar carrito y redirigir
       clearCart();
+      setAddres("");
+
       
       
       if (result.order && result.order._id) {
@@ -176,6 +181,29 @@ export const PlaceOrder = () => {
           Impuestos y retenciones se reflejarán en la Factura Electrónica.
         </p>
       </div>
+
+      {/* Información adicional (opcional) */}
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Información adicional (opcional)
+          </label>
+
+          <textarea
+            value={addres}
+            onChange={(e) => setAddres(e.target.value)}
+            rows={3}
+            placeholder='Ej: "Por favor entregar en la dirección El Palito"'
+            className="
+              w-full rounded-md border border-gray-300 bg-white
+              px-3 py-2 text-sm text-gray-900
+              focus:outline-none focus:ring-1 focus:ring-[#F4C048] focus:border-[#F2B318]
+            "
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Puedes dejarlo vacío si no necesitas agregar indicaciones.
+          </p>
+        </div>
+
 
         {errorMessage && (
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">

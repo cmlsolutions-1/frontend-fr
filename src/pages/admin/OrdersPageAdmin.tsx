@@ -157,6 +157,9 @@ export default function OrdersPageAdmin() {
                 Estado
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-black">
+                Observaciones
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-black">
                 Opciones
               </th>
               <th className="px-6 py-4 text-left text-sm font-medium text-black">
@@ -198,6 +201,14 @@ export default function OrdersPageAdmin() {
                 </span>
               </div>
             </td>
+
+            {/* Observaciones */}
+            <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+            {order.addres?.trim()
+              ? <span className="block truncate" title={order.addres}>{order.addres}</span>
+              : <span className="text-gray-400">—</span>
+            }
+          </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
               <Link to={`/orders/${order._id}`} className="hover:underline">

@@ -188,6 +188,9 @@ export default function OrdersByIdPage() {
             <h2 className="text-2xl font-bold mb-2">Resumen de orden</h2>
             <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
 
+           
+
+
             <div className="grid grid-cols-2 gap-3">
               <span className="text-gray-600">No. Productos</span>
               <span className="text-right font-medium">
@@ -214,9 +217,28 @@ export default function OrdersByIdPage() {
               <span className="mt-5 text-2xl font-bold text-gray-900">
                 Total:
               </span>
-              <span className="mt-5 text-2xl font-bold text-gray-900 text-right">
+              <span className="mt-5 text-2xl font-bold text-gray-900 text-right mb-2">
                 {currencyFormat(total)}
               </span>
+            </div>
+
+            <div className="w-full h-0.5 rounded bg-gray-100 mb-5" />
+
+             {/* Observaciones / Información adicional */}
+             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <h3 className="text-sm font-semibold text-gray-800 mb-1">
+                Observaciones del pedido
+              </h3>
+
+              {order.addres?.trim() ? (
+                <p className="text-sm text-gray-700 whitespace-pre-line">
+                  {order.addres}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No hay observaciones adicionales.
+                </p>
+              )}
             </div>
 
             {/* Mostrar información de ofertas si existen */}
