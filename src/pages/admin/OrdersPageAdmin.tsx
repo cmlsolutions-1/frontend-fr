@@ -10,11 +10,14 @@ import { useAuthStore } from "@/store/auth-store";
 import type { Order } from "@/interfaces/order.interface";
 import { getClientById } from "@/services/client.service";
 import { getSalesPersonById } from "@/services/client.service";
+import { Home } from "lucide-react";
+
 
 export default function OrdersPageAdmin() {
 
 
   // ACTIVAR BAKEND 
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -133,8 +136,30 @@ export default function OrdersPageAdmin() {
 
 
   return (
-    <div className="px-4 sm:px-8 py-4 mt-[120px]">
-      <h2 className="text-xl font-bold mb-4">Lista de Pedidos Clientes</h2>
+    <div className="px-4 sm:px-8 py-4 mt-[120px] space-y-4">
+      {/* Título principal */}
+    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+      Lista de Pedidos Clientes
+    </h1>
+    {/* Subtitle + botón en la misma fila */}
+      <div className="flex items-center justify-between">
+        <p className="text-base md:text-lg text-gray-600">
+          Revisa los pedidos de todos los clientes y descarga el PDF cuando lo necesites
+        </p>
+
+        <button
+          onClick={() => navigate("/homePage")}
+          className="
+            flex items-center gap-2
+            text-sm font-semibold
+            text-gray-600 hover:text-[#F4C048]
+            transition
+          "
+        >
+          <Home className="w-4 h-4" />
+          Inicio
+        </button>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full border bg-white">

@@ -11,10 +11,13 @@ import { getOrdersByClient } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
 import type { Cliente } from "@/interfaces/user.interface";
 
+import { Home } from "lucide-react";
+
 export default function OrdersPage() {
 
 
   // ACTIVAR BAKEND 
+  const navigate = useNavigate();
   
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,12 +75,34 @@ export default function OrdersPage() {
   //TERMINA BACKEND
 
   return (
-    <div className="px-4 sm:px-8 py-4 mt-[100px]">
-      <h2 className="text-xl font-bold mb-4">Historial Pedidos</h2>
+    <div className="px-4 sm:px-8 py-4 mt-[120px] space-y-4">
+      {/* Título principal */}
+    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+      Historial Pedidos
+    </h1>
+    {/* Subtitle + botón en la misma fila */}
+      <div className="flex items-center justify-between">
+        <p className="text-base md:text-lg text-gray-600">
+          Revisa tus pedidos y descarga el PDF cuando lo necesites
+        </p>
+
+        <button
+          onClick={() => navigate("/homePage")}
+          className="
+            flex items-center gap-2
+            text-sm font-semibold
+            text-gray-600 hover:text-[#F4C048]
+            transition
+          "
+        >
+          <Home className="w-4 h-4" />
+          Inicio
+        </button>
+      </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead className="bg-gray-100">
+        <table className="min-w-full border bg-white">
+          <thead className="bg-gray-200">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
                 Nro. Pedido
