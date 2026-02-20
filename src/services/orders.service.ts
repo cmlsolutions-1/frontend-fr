@@ -225,3 +225,37 @@ export const createOrder = async (
     return { ok: false, message: error instanceof Error ? error.message : "Error al crear la orden" };
   }
 };
+
+//ENPOIND PARA ANULAR ORDEN
+export const cancelOrder = async (
+  orderId: string,
+  reasonCancellation: string
+): Promise<{ ok: boolean; message?: string; order?: Order }> => {
+  try {
+    if (!orderId) throw new Error("ID de orden no válido");
+    if (!reasonCancellation?.trim()) throw new Error("Debes ingresar un motivo");
+
+    const response = await fetch(`${API_URL}/cancel`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        _id: orderId,
+        reasonCancellation: reasonCancellation.trim(),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    return { ok: true, message: "Orden anulada correctamente", order: data };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Error al anular la orden",
+    };
+  }
+};

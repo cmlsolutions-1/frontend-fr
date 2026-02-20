@@ -132,20 +132,28 @@ export default function OrdersPageSalesPerson() {
                   {order.syscafeOrder || "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  <div className="flex items-center">
-                    <IoCardOutline
-                      className={
-                        order.isPaid ? "text-green-700" : "text-red-700"
-                      }
-                    />
-                    <span
-                      className={`ml-2 font-medium ${
-                        order.isPaid ? "text-green-700" : "text-red-700"
-                      }`}
-                    >
-                      {order.isPaid ? "Gestionada" : "No Gestionada"}
-                    </span>
-                  </div>
+                <div className="flex items-center">
+                <IoCardOutline
+                  className={
+                    order.isCanceled
+                      ? "text-orange-600"
+                      : order.isPaid
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }
+                />
+                <span
+                  className={`ml-2 font-medium ${
+                    order.isCanceled
+                      ? "text-orange-600"
+                      : order.isPaid
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }`}
+                >
+                  {order.isCanceled ? "Anulada" : order.isPaid ? "Gestionada" : "No Gestionada"}
+                </span>
+              </div>
                 </td>
 
                 {/* Observaciones */}

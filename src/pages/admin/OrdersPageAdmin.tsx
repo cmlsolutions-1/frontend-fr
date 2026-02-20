@@ -215,25 +215,40 @@ export default function OrdersPageAdmin() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               <div className="flex items-center">
                 <IoCardOutline
-                  className={order.isPaid ? "text-green-700" : "text-red-700"}
+                  className={
+                    order.isCanceled
+                      ? "text-orange-600"
+                      : order.isPaid
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }
                 />
                 <span
                   className={`ml-2 font-medium ${
-                    order.isPaid ? "text-green-700" : "text-red-700"
+                    order.isCanceled
+                      ? "text-orange-600"
+                      : order.isPaid
+                      ? "text-green-700"
+                      : "text-red-700"
                   }`}
                 >
-                  {order.isPaid ? "Gestionada" : "No Gestionada"}
+                  {order.isCanceled ? "Anulada" : order.isPaid ? "Gestionada" : "No Gestionada"}
                 </span>
               </div>
             </td>
 
             {/* Observaciones */}
             <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-            {order.addres?.trim()
-              ? <span className="block truncate" title={order.addres}>{order.addres}</span>
-              : <span className="text-gray-400">—</span>
-            }
-          </td>
+              {order.isCanceled ? (
+                <span className="block truncate text-orange-700" title={order.reasonCancellation || ""}>
+                  {order.reasonCancellation?.trim() ? `Motivo: ${order.reasonCancellation}` : "Motivo: —"}
+                </span>
+              ) : order.addres?.trim() ? (
+                <span className="block truncate" title={order.addres}>{order.addres}</span>
+              ) : (
+                <span className="text-gray-400">—</span>
+              )}
+            </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
               <Link to={`/orders/${order._id}`} className="hover:underline">

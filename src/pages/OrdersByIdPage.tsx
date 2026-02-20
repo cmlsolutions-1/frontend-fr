@@ -9,6 +9,7 @@ import { OrderStatus, Title } from "@/components";
 import { OrderStatusButton } from "@/components/orders/OrderStatusButton";
 import { useAuthStore } from '@/store/auth-store';
 import { ArrowLeft } from "lucide-react";
+import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
 
 export default function OrdersByIdPage() {
   const { _id } = useParams<{ _id: string }>();
@@ -136,6 +137,16 @@ export default function OrdersByIdPage() {
           {/* Carrito */}
           <div className="flex flex-col mt-5">
             <OrderStatus isPaid={order.isPaid} />
+            {order.isCanceled && (
+            <div className="mt-3 rounded-md border border-orange-200 bg-orange-50 p-3">
+              <p className="text-sm font-semibold text-orange-700">Pedido ANULADO</p>
+              {order.reasonCancellation?.trim() && (
+                <p className="text-sm text-orange-700 mt-1">
+                  Motivo: {order.reasonCancellation}
+                </p>
+              )}
+            </div>
+          )}
 
             {order.items?.length > 0 ? (
               order.items.map((item: any, index: number) => {
@@ -229,16 +240,18 @@ export default function OrdersByIdPage() {
               <h3 className="text-sm font-semibold text-gray-800 mb-1">
                 Observaciones del pedido
               </h3>
-
-              {order.addres?.trim() ? (
-                <p className="text-sm text-gray-700 whitespace-pre-line">
-                  {order.addres}
-                </p>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  No hay observaciones adicionales.
-                </p>
-              )}
+{/* Pendiente por modificar del porque fue cancelada / Información adicional */}
+              {order.isCanceled ? (
+                  <p className="text-sm text-orange-700 whitespace-pre-line">
+                    {order.syscafeOrder.trim()
+                      ? `Motivo de cancelación: ${order.syscafeOrder}`
+                      : "Motivo de cancelación: —"}
+                  </p>
+                ) : order.addres?.trim() ? (
+                  <p className="text-sm text-gray-700 whitespace-pre-line">{order.addres}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">No hay observaciones adicionales.</p>
+                )}
             </div>
 
             {/* Mostrar información de ofertas si existen */}
@@ -261,6 +274,7 @@ export default function OrdersByIdPage() {
             <OrderStatusButton
               orderId={order._id}
               initialIsPaid={order.isPaid}
+              isCanceled={order.isCanceled}
               syscafeOrder={order.syscafeOrder}
               onStatusChange={(newIsPaid, newSyscafeOrder) => {
                 setOrder((prevOrder: any) => ({
@@ -270,6 +284,20 @@ export default function OrdersByIdPage() {
                 }));
               }}
             />
+            </div>
+            <div className="mt-6">
+              <CancelOrderButton
+                orderId={order._id}
+                isCanceled={order.isCanceled}
+                initialReason={order.reasonCancellation}
+                onCanceled={(reason) => {
+                  setOrder((prevOrder: any) => ({
+                    ...prevOrder,
+                    isCanceled: true,
+                    reasonCancellation: reason,
+                  }));
+                }}
+              />
             </div>
 
             <Link

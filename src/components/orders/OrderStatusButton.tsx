@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth-store';
 interface Props {
   orderId: string;
   initialIsPaid: boolean;
+  isCanceled?: boolean;
   syscafeOrder?: string | null;
   onStatusChange?: (newIsPaid: boolean, syscafeOrder?: string) => void;
 }
@@ -14,6 +15,7 @@ interface Props {
 export const OrderStatusButton = ({
   orderId,
   initialIsPaid,
+  isCanceled,
   syscafeOrder,
   onStatusChange,
 }: Props) => {
@@ -38,6 +40,11 @@ export const OrderStatusButton = ({
   
 
   const handleMarkAsPaid = async () => {
+    if (isCanceled) {
+      setErrorMessage("Esta orden está anulada y no puede gestionarse");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
     if (isPaid || !canManageOrders || loading) return;
   
     if (!externalOrderName.trim()) {
@@ -89,7 +96,7 @@ export const OrderStatusButton = ({
           type="text"
           value={externalOrderName}
           onChange={(e) => setExternalOrderName(e.target.value)}
-          disabled={isPaid}
+          disabled={isPaid || loading || !!isCanceled}
           placeholder="Ej: PE-00021"
           className={`w-full px-3 py-2 rounded-md border text-sm
             ${
@@ -103,27 +110,36 @@ export const OrderStatusButton = ({
           <p className="text-xs text-gray-500 mt-1">
             Este pedido ya fue gestionado y no puede editarse
           </p>
+          
+        )}
+
+        {isCanceled && (
+          <p className="text-xs text-orange-700 mt-1">
+            Este pedido fue anulado y no puede gestionarse
+          </p>
         )}
       </div>
 
       <button
         onClick={handleMarkAsPaid}
-        disabled={isPaid || loading}
+        disabled={isPaid || loading || !!isCanceled}
         className={`w-full py-3 px-4 rounded-md text-white ${
-          isPaid
+          isCanceled
+            ? "bg-orange-500 cursor-not-allowed"
+            : isPaid
             ? "bg-green-500 cursor-not-allowed"
             : loading
             ? "bg-gray-500 cursor-not-allowed"
             : "bg-red-600 hover:bg-red-700"
         }`}
       >
-        {loading ? (
-          "Actualizando..."
-        ) : isPaid ? (
-          "Gestionada"
-        ) : (
-          "Marcar como Gestionada"
-        )}
+        {loading
+        ? "Actualizando..."
+        : isCanceled
+        ? "Anulada"
+        : isPaid
+        ? "Gestionada"
+        : "Marcar como Gestionada"}
       </button>
       {/* Mensaje de éxito */}
       {showSuccessMessage && (

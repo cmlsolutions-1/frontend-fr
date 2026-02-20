@@ -9,6 +9,9 @@ export interface Order {
   createdAt: Date;
   clientId: string;
   addres?: string;
+  isCanceled?: boolean;
+  reasonCancellation?: string;
+  syscafeOrder?: string;
   salesPersonId: string;
 
   OrderAddress: {
