@@ -1,11 +1,11 @@
-// src/components/userGestion/UserSalesPerson.tsx
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Mail, PhoneOutgoing, MapPin,BadgeDollarSign,CheckCircle, XCircle } from "lucide-react";
+import { Mail, PhoneOutgoing, BadgeDollarSign, CheckCircle, XCircle } from "lucide-react";
 import { getClientsBySalesPerson } from "@/services/client.salesPerson";
-import type { Cliente, Email, Phone, Role } from "@/interfaces/user.interface";
+import type { Cliente, Role } from "@/interfaces/user.interface";
+import { ClientSearch } from "@/components/ui/ClientSearch";
+import { IoSearchOutline } from "react-icons/io5";
 
 interface UserSalesPersonProps {
   currentSellerId: string; // El _id del vendedor logueado
@@ -13,56 +13,56 @@ interface UserSalesPersonProps {
 
 export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  //  Normalizar clientes 
+  // Normalizar clientes
   const normalizeClients = (data: any[], currentSellerId: string): Cliente[] => {
-  return data.map((item: any): Cliente => ({
-    _id: item._id ?? "",
-    id: item.id ?? crypto.randomUUID(),
-    name: item.name ?? "",
-    lastName: item.lastName ?? "",
-    password: item.password ?? "",
-    emails: [
-      {
-        EmailAddres: item.email ?? "Sin correo",
-        IsPrincipal: true,
-      },
-    ],
-    phones: [
-      {
-        NumberPhone: item.phone ?? "",
-        Indicative: "+57",
-        IsPrincipal: true,
-      },
-    ],
-    address: item.address
-      ? Array.isArray(item.address)
-        ? item.address
-        : [item.address]
-      : ["Sin dirección"],
-    city: item.city ?? "",
-    role: (item.role as Role) ?? "Client",
-    priceCategoryId: item.priceCategory?._id ?? item.priceCategoryId ?? "",
-    priceCategory: item.priceCategory
-      ? {
-          _id: item.priceCategory._id ?? "",
-          code: item.priceCategory.code ?? "",
-          name: item.priceCategory.name ?? "Sin categoría",
-        }
-      : undefined,
-    salesPersonId: item.salesPersonId ?? currentSellerId,
-    clients: item.clients ?? [],
-    state:
-      item.state === "Active"
-        ? "activo"
-        : item.state === "Inactive"
-        ? "inactivo"
-        : (item.state as "activo" | "inactivo") ?? "activo",
-  }));
-};
-
+    return data.map((item: any): Cliente => ({
+      _id: item._id ?? "",
+      id: item.id ?? crypto.randomUUID(),
+      name: item.name ?? "",
+      lastName: item.lastName ?? "",
+      password: item.password ?? "",
+      emails: [
+        {
+          EmailAddres: item.email ?? "Sin correo",
+          IsPrincipal: true,
+        },
+      ],
+      phones: [
+        {
+          NumberPhone: item.phone ?? "",
+          Indicative: "+57",
+          IsPrincipal: true,
+        },
+      ],
+      address: item.address
+        ? Array.isArray(item.address)
+          ? item.address
+          : [item.address]
+        : ["Sin dirección"],
+      city: item.city ?? "",
+      role: (item.role as Role) ?? "Client",
+      priceCategoryId: item.priceCategory?._id ?? item.priceCategoryId ?? "",
+      priceCategory: item.priceCategory
+        ? {
+            _id: item.priceCategory._id ?? "",
+            code: item.priceCategory.code ?? "",
+            name: item.priceCategory.name ?? "Sin categoría",
+          }
+        : undefined,
+      salesPersonId: item.salesPersonId ?? currentSellerId,
+      clients: item.clients ?? [],
+      state:
+        item.state === "Active"
+          ? "activo"
+          : item.state === "Inactive"
+          ? "inactivo"
+          : (item.state as "activo" | "inactivo") ?? "activo",
+    }));
+  };
 
   // Cargar clientes del vendedor actual
   useEffect(() => {
@@ -79,13 +79,13 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
 
         const data = await getClientsBySalesPerson(currentSellerId);
         const normalized = normalizeClients(Array.isArray(data) ? data : [], currentSellerId);
-        setClientes(normalized);
-      } catch (err) {
 
-        setError(
-          err instanceof Error ? err.message : "No se pudieron cargar los clientes."
-        );
+        setClientes(normalized);
+        setFilteredClientes(normalized); // ✅ importante: inicializar la lista visible
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "No se pudieron cargar los clientes.");
         setClientes([]);
+        setFilteredClientes([]);
       } finally {
         setLoading(false);
       }
@@ -114,27 +114,44 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
 
   return (
     <div className="min-h-screen py-8 px-6 mt-[100px]">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-semibold text-gray-800">
-          Mis Clientes
-        </h1>
-      </div>
+      {/* Header */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+  
+  {/* Columna izquierda */}
+  <div className="text-center md:text-left">
+    <h1 className="text-3xl font-semibold text-gray-800">
+      Mis Clientes
+    </h1>
+    <p className="text-sm text-gray-500 mt-1">
+      {filteredClientes.length} cliente
+      {filteredClientes.length !== 1 ? "s" : ""}
+    </p>
+  </div>
 
-      {clientes.length === 0 ? (
+  {/* Columna centro (buscador centrado real) */}
+  <div className="flex justify-center">
+    <ClientSearch
+      clientes={clientes}
+      onResults={(results) => setFilteredClientes(results)}
+    />
+  </div>
+
+  {/* Columna derecha vacía (para mantener el centro exacto) */}
+  <div className="hidden md:block" />
+</div>
+
+      {/* Lista */}
+      {filteredClientes.length === 0 ? (
         <p className="text-gray-500 text-center py-20 text-lg">
-          No tienes clientes asignados.
+          No se encontraron clientes.
         </p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {clientes.map((cliente) => {
+          {filteredClientes.map((cliente) => {
             const email =
-              cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddres ||
-              "Sin correo";
-            const phoneNumber =
-              cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
+              cliente.emails?.find((e) => e.IsPrincipal)?.EmailAddres || "Sin correo";
+            const phoneNumber = cliente.phones?.[0]?.NumberPhone || "Sin teléfono";
             const phoneIndicative = cliente.phones?.[0]?.Indicative || "+57";
-            
-            // const priceCategory = cliente.priceCategoryId || "Sin categoría";
 
             return (
               <Card
@@ -147,29 +164,27 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
                       <CardTitle className="text-xl font-medium text-gray-800">
                         {cliente.name} {cliente.lastName}
                       </CardTitle>
+
                       <div className="text-xs font-mono text-gray-400 mt-1">
                         Nit: {cliente.id?.slice(0, 8) + "..."}
                       </div>
 
                       <div className="mt-2 flex flex-wrap gap-2">
-                      {/* Estado del cliente */}
-                      <Badge
-                        variant={
-                          cliente.state === "activo" ? "default" : "secondary"
-                        }
-                        className="flex items-center gap-1"
-                      >
-                        {cliente.state === "activo" ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-red-500" />
-                        )}
-                        <span className="capitalize">{cliente.state || "Sin estado"}</span>
-                      </Badge>
+                        {/* Estado */}
+                        <Badge
+                          variant={cliente.state === "activo" ? "default" : "secondary"}
+                          className="flex items-center gap-1"
+                        >
+                          {cliente.state === "activo" ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-red-500" />
+                          )}
+                          <span className="capitalize">{cliente.state || "Sin estado"}</span>
+                        </Badge>
 
-                         {/* Categoría de precio */}
+                        {/* Categoría precio */}
                         {cliente.priceCategory && (
-                          
                           <Badge
                             variant={
                               cliente.priceCategory.name?.toLowerCase().includes("vip")
@@ -192,6 +207,7 @@ export default function UserSalesPerson({ currentSellerId }: UserSalesPersonProp
                     <Mail className="w-4 h-4 text-gray-500" />
                     <span className="truncate">{email}</span>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <PhoneOutgoing className="w-4 h-4 text-gray-500" />
                     <span className="truncate">

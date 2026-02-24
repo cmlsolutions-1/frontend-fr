@@ -10,6 +10,8 @@ import { OrderStatusButton } from "@/components/orders/OrderStatusButton";
 import { useAuthStore } from '@/store/auth-store';
 import { ArrowLeft } from "lucide-react";
 import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
+import { ArrowUp } from "lucide-react";
+
 
 export default function OrdersByIdPage() {
   const { _id } = useParams<{ _id: string }>();
@@ -18,6 +20,8 @@ export default function OrdersByIdPage() {
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+ 
+
 
 
   // Función para determinar la ruta de vuelta según el rol
@@ -75,6 +79,9 @@ export default function OrdersByIdPage() {
 
     loadOrder();
   }, [_id, navigate]);
+
+  
+  
 
   // Manejar estados de loading y error
   if (loading) {
@@ -196,7 +203,7 @@ export default function OrdersByIdPage() {
 
           {/* Checkout */}
           <div className="bg-white rounded-xl shadow-xl p-7">
-            <h2 className="text-2xl font-bold mb-2">Resumen de orden</h2>
+            <h2 className="text-2xl font-bold mb-2">Resumen de ordenes</h2>
             <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
 
            

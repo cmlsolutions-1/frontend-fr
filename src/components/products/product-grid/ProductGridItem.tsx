@@ -15,6 +15,8 @@ export const ProductGridItem = ({ product }: Props) => {
   const isClient = user?.role === "Client";
   const isAdminOrSales = user?.role === "Admin" || user?.role === "SalesPerson";
 
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   const getMasterValue = (product: Product) => {
     const masterPackage = product.packages?.find(
       (p) => p.typePackage === "Master"
@@ -99,23 +101,26 @@ export const ProductGridItem = ({ product }: Props) => {
   return (
     <div className="rounded-md overflow-hidden bg-white shadow-md h-full flex flex-col transition-all duration-200 hover:shadow-lg">
       {/* Imagen */}
-      <Link
-        to={`/product/${product._id}`}
-        className="block w-full aspect-[4/3] "
-      >
-        <img
-          src={displayImage}
-          alt={product.detalle}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onError={(e) => {
-            if (displayImage !== fallbackImage) {
-              setDisplayImage(fallbackImage);
-            }
-          }}
-        />
-      </Link>
+      <Link to={`/product/${product._id}`} className="block w-full aspect-[4/3] relative">
+      {!imgLoaded && (
+        <div className="absolute inset-0 animate-pulse bg-gray-200" />
+      )}
+
+      <img
+        src={displayImage}
+        alt={product.detalle}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
+        onLoad={() => setImgLoaded(true)}
+        className={`w-full h-full object-cover transition-transform duration-300 hover:scale-105
+          ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+        onError={() => {
+          setImgLoaded(true);
+          if (displayImage !== fallbackImage) setDisplayImage(fallbackImage);
+        }}
+      />
+    </Link>
       {/* Contenido */}
       <div className="p-4 flex flex-col justify-between flex-1 ">
         <Link
