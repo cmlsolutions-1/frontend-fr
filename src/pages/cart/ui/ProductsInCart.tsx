@@ -65,7 +65,7 @@ export const ProductsInCart: React.FC<Props> = ({ readOnly = false }) => {
 
         const availableStock = getAvailableStock(product);
 
-        // ✅ handler con validación
+        // handler con validación
         const handleQtyChange = (nextQty: number) => {
           if (readOnly) return;
 
