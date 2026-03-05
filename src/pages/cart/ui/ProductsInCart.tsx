@@ -7,6 +7,8 @@ import { useCartStore } from "@/store";
 import { ProductImage, QuantitySelector } from "@/components";
 import { CartProduct } from "@/interfaces";
 
+import { Trash2 } from "lucide-react";
+
 interface Props {
   readOnly?: boolean; // para modo checkout
 }
@@ -138,11 +140,12 @@ export const ProductsInCart: React.FC<Props> = ({ readOnly = false }) => {
 
               {!readOnly && (
                 <button
-                  onClick={() => removeProduct(product)}
-                  className="underline mt-3 font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Remover
-                </button>
+                onClick={() => removeProduct(product)}
+                className="flex items-center gap-2 mt-3 text-red-600 hover:text-red-700 font-medium"
+              >
+                <Trash2 className="w-4 h-4" />
+                Borrar
+              </button>
               )}
           </div>
         </div>

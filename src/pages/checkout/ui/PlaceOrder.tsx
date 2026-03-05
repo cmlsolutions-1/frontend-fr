@@ -88,6 +88,7 @@ export const PlaceOrder = () => {
 
       // Crear la orden
       const result = await createOrder(payload);
+      console.log("Resultado de createOrder:", result);
 
       if (!result.ok) {
         setErrorMessage(result.message || "Error al crear la orden");
