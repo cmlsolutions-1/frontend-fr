@@ -201,29 +201,94 @@ export const createOrder = async (
 ): Promise<{ ok: boolean; order?: any; message?: string }> => {
   try {
 
-
     const response = await fetch(`${API_URL}`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
+    const text = await response.text();
 
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(`Error ${response.status}: ${errorText}`);
+    // Intentar convertir a JSON si es posible
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
     }
 
-    const data = await response.json();
+    if (!response.ok) {
 
-    
-    return { ok: true, order: data, message: "Orden creada correctamente" };
+      const rawMessage =
+        data?.message ||
+        text ||
+        "No se pudo crear la orden.";
+
+      const friendlyMessage = formatOrderError(rawMessage, response.status);
+
+      return {
+        ok: false,
+        message: friendlyMessage,
+      };
+    }
+
+    const orderData = data ?? JSON.parse(text);
+
+    return {
+      ok: true,
+      order: orderData,
+      message: "Orden creada correctamente",
+    };
+
   } catch (error) {
 
-    return { ok: false, message: error instanceof Error ? error.message : "Error al crear la orden" };
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado al crear la orden.",
+    };
   }
+};
+
+const formatOrderError = (message: string, status: number) => {
+
+  const msg = message.toLowerCase();
+
+  // TOKEN
+  if (status === 401 || msg.includes("token")) {
+    return "Tu sesión expiró. Por favor inicia sesión nuevamente.";
+  }
+
+  // STOCK
+  if (msg.includes("stock insuficiente")) {
+
+    const disponibleMatch = message.match(/Disponible:\s*(\d+)/i);
+    const solicitadoMatch = message.match(/solicitado:\s*(\d+)/i);
+
+    const disponible = disponibleMatch ? disponibleMatch[1] : null;
+    const solicitado = solicitadoMatch ? solicitadoMatch[1] : null;
+
+    if (disponible && solicitado) {
+      return `Stock insuficiente para este producto. Disponible: ${disponible} unidades. Solicitaste: ${solicitado}. Por favor ajusta la cantidad.`;
+    }
+
+    return "Stock insuficiente para uno de los productos del carrito.";
+  }
+
+  // PRECIOS
+  if (msg.includes("no se encontraron precios")) {
+    return "Uno de los productos no tiene precio asignado para tu categoría. Contacta a tu vendedor.";
+  }
+
+  // ERROR GENERAL LIMPIO
+  return message
+    .replace(/^error\s*\d+:/i, "")
+    .replace(/^\{.*"message":"/i, "")
+    .replace(/"\s*,?\s*"statuscode".*\}$/i, "")
+    .replace(/error al crear la orden:/i, "")
+    .trim();
 };
 
 //ENPOIND PARA ANULAR ORDEN
