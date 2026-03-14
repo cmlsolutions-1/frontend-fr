@@ -1,12 +1,8 @@
-//src/pages/product/ui/AddToCart
-
-import { useState } from "react";
-import { QuantitySelector} from "@/components";
-//import { QuantitySelector, SizeSelector } from "@/components";
+import { useMemo, useState } from "react";
+import { QuantitySelector } from "@/components";
 import type { CartProduct, Product } from "@/interfaces";
-import { useCartStore } from '@/store';
+import { useCartStore } from "@/store";
 import { useAuthStore } from "@/store/auth-store";
-
 
 interface Props {
   product: Product;
@@ -15,50 +11,117 @@ interface Props {
 export const AddToCart = ({ product }: Props) => {
   const { user } = useAuthStore();
 
-  const addProductToCart = useCartStore( state => state.addProductTocart );
+  const addProductToCart = useCartStore((state) => state.addProductTocart);
+  const cart = useCartStore((state) => state.cart);
 
-  //const [size, setSize] = useState<Size | undefined>();
   const [quantity, setQuantity] = useState<number>(1);
-  const [posted, setPosted] = useState(false);
+  const [qtyError, setQtyError] = useState("");
+
+  // stock disponible del producto
+  const availableStock = product.stock ?? 0;
+
+  // cantidad actual de este producto en el carrito
+  const quantityInCart = useMemo(() => {
+    const existingProduct = cart.find((item) => item._id === product._id);
+    return existingProduct ? existingProduct.quantity : 0;
+  }, [cart, product._id]);
+
+  // stock restante real que todavía se puede agregar desde esta pantalla
+  const remainingStock = Math.max(availableStock - quantityInCart, 0);
+
+  const handleQuantityChange = (nextQty: number) => {
+    if (nextQty < 1) {
+      setQtyError("La cantidad mínima permitida es 1.");
+      return;
+    }
+
+    if (availableStock <= 0) {
+      setQtyError("Este producto no tiene stock disponible.");
+      return;
+    }
+
+    if (remainingStock <= 0) {
+      setQtyError("Ya alcanzaste el stock disponible de este producto.");
+      return;
+    }
+
+    if (nextQty > remainingStock) {
+      setQtyError(
+        `Stock insuficiente: solo puedes agregar ${remainingStock} unidad(es) más. Verifica la cantidad antes de ingresar.`
+      );
+      return;
+    }
+
+    setQtyError("");
+    setQuantity(nextQty);
+  };
 
   const addToCart = () => {
-    setPosted(true);
+    if (availableStock <= 0) {
+      setQtyError("Este producto no tiene stock disponible.");
+      return;
+    }
 
-    //if (!size) return;
+    if (quantity < 1) {
+      setQtyError("La cantidad mínima permitida es 1.");
+      return;
+    }
+
+    if (remainingStock <= 0) {
+      setQtyError("Ya alcanzaste el stock disponible de este producto.");
+      return;
+    }
+
+    if (quantity > remainingStock) {
+      setQtyError(
+        `Stock insuficiente: solo puedes agregar ${remainingStock} unidad(es) más. Verifica la cantidad antes de ingresar.`
+      );
+      return;
+    }
 
     const cartProduct: CartProduct = {
-      ...product,      // toma todo lo de Product
-      quantity: quantity, // y agregamos la cantidad
+      ...product,
+      quantity,
     };
 
     addProductToCart(cartProduct);
-    setPosted(false);
+    setQtyError("");
     setQuantity(1);
-    //setSize(undefined);
-
-
   };
 
-  //No mostrar el botón si el rol no es "Client"
+  // No mostrar el botón si el rol no es Client
   if (user?.role !== "Client") {
     return null;
   }
 
-
   return (
     <>
-      {posted && (
-        <span className="mt-2 text-red-500 fade-in">
-          Debe de seleccionar una talla*
+      <QuantitySelector
+        quantity={quantity}
+        onQuantityChanged={handleQuantityChange}
+      />
+
+      <p className="mt-2 text-sm text-gray-500">
+        Stock disponible: {availableStock}
+      </p>
+
+      {quantityInCart > 0 && (
+        <p className="mt-1 text-sm text-gray-500">
+          Ya tienes {quantityInCart} unidad(es) en el carrito.
+        </p>
+      )}
+
+      {qtyError && (
+        <span className="mt-2 block text-sm font-medium text-red-600 fade-in">
+          {qtyError}
         </span>
       )}
 
-      {/* Selector de Cantidad */}
-      <QuantitySelector quantity={quantity} onQuantityChanged={setQuantity} />
-
-      {/* Button */}
-      <button onClick={addToCart} className="btn-primary my-5 flex items-center justify-center rounded-md border border-transparent 
-                bg-[#F2B318] px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]">
+      <button
+        onClick={addToCart}
+        disabled={availableStock <= 0 || remainingStock <= 0}
+        className="btn-primary my-5 flex items-center justify-center rounded-md border border-transparent bg-[#F2B318] px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-[#F4C048] disabled:cursor-not-allowed disabled:opacity-50"
+      >
         Agregar al carrito
       </button>
     </>

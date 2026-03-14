@@ -186,8 +186,8 @@ export const ProductPage = () => {
       <>
         <button
           onClick={() =>
-            product.subCategory?._id &&
-            navigate(`/homePage?categories=${product.subCategory._id}&page=1`)
+            product.subCategory?.name &&
+            navigate(`/homePage?categories=${product.subCategory.code}&page=1`)
           }
           className="hover:text-blue-700 text-blue-600 
           truncate max-w-[80px] md:max-w-none overflow-hidden"

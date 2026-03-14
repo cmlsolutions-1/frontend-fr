@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+//src/pages/cart/ui/ProductsInCart.tsx
+
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import React from "react";
 import { useCartStore } from "@/store";
