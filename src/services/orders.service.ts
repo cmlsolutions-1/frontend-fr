@@ -209,7 +209,7 @@ export const createOrder = async (
 
     const text = await response.text();
 
-    // Intentar convertir a JSON si es posible
+    
     let data: any = null;
     try {
       data = JSON.parse(text);
