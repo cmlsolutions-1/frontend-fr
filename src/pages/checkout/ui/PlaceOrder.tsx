@@ -6,7 +6,6 @@ import { useCartStore } from "@/store";
 import { currencyFormat } from "@/utils";
 import { createOrder } from "@/services/orders.service";
 import { useAuthStore } from "@/store/auth-store";
-import { CartItem } from "@/interfaces/cart.interface";
 import { IoIosInformationCircle } from "react-icons/io";
 
 export const PlaceOrder = () => {
@@ -77,6 +76,13 @@ export const PlaceOrder = () => {
         priceCategory: clientPriceCategory
       }));
 
+      const stockContext = cart.map((item) => ({
+        quantity: item.quantity,
+        idProduct: item._id,
+        reference: item.referencia || item.codigo,
+        stock: item.stock,
+      }));
+
       // Crear el payload
       const payload = {
         idClient: user._id,
@@ -87,7 +93,7 @@ export const PlaceOrder = () => {
   
 
       // Crear la orden
-      const result = await createOrder(payload);
+      const result = await createOrder(payload, stockContext);
       console.log("Resultado de createOrder:", result);
 
       if (!result.ok) {

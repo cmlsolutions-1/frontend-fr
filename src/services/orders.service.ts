@@ -196,8 +196,16 @@ interface CreateOrderPayload {
   orderItems: OrderItem[];
 }
 
+interface OrderStockContextItem {
+  idProduct: string;
+  reference?: string;
+  stock?: number;
+  quantity: number;
+}
+
 export const createOrder = async (
-  payload: CreateOrderPayload
+  payload: CreateOrderPayload,
+  stockContext: OrderStockContextItem[] = []
 ): Promise<{ ok: boolean; order?: any; message?: string }> => {
   try {
 
@@ -224,7 +232,7 @@ export const createOrder = async (
         text ||
         "No se pudo crear la orden.";
 
-      const friendlyMessage = formatOrderError(rawMessage, response.status);
+      const friendlyMessage = formatOrderError(rawMessage, response.status, stockContext);
 
       return {
         ok: false,
@@ -252,7 +260,11 @@ export const createOrder = async (
   }
 };
 
-const formatOrderError = (message: string, status: number) => {
+const formatOrderError = (
+  message: string,
+  status: number,
+  stockContext: OrderStockContextItem[] = []
+) => {
 
   const msg = message.toLowerCase();
 
@@ -263,6 +275,8 @@ const formatOrderError = (message: string, status: number) => {
 
   // STOCK
   if (msg.includes("stock insuficiente")) {
+    const stockDetailMessage = buildStockDetailMessage(stockContext);
+    if (stockDetailMessage) return stockDetailMessage;
 
     const disponibleMatch = message.match(/Disponible:\s*(\d+)/i);
     const solicitadoMatch = message.match(/solicitado:\s*(\d+)/i);
@@ -289,6 +303,33 @@ const formatOrderError = (message: string, status: number) => {
     .replace(/"\s*,?\s*"statuscode".*\}$/i, "")
     .replace(/error al crear la orden:/i, "")
     .trim();
+};
+
+const buildStockDetailMessage = (items: OrderStockContextItem[]) => {
+  if (items.length === 0) return "";
+
+  const productsWithInsufficientStock = items.filter((item) => {
+    const stock = Number(item.stock ?? 0);
+    return stock <= 0 || item.quantity > stock;
+  });
+
+  const productsToShow =
+    productsWithInsufficientStock.length > 0 ? productsWithInsufficientStock : items;
+
+  const details = productsToShow.map((item) => {
+    const stock = Number(item.stock ?? 0);
+    const reference = item.reference || item.idProduct;
+
+    if (stock <= 0) {
+      return `ref ${reference} stock ${stock}, retirarlo`;
+    }
+
+    return `ref ${reference} stock ${stock} solicitaste ${item.quantity}, ajustarlo`;
+  });
+
+  const productLabel = details.length === 1 ? "el producto" : "los productos";
+
+  return `Stock insuficiente para ${productLabel} de ${details.join("; ")}.`;
 };
 
 //ENPOIND PARA ANULAR ORDEN
