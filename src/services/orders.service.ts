@@ -196,11 +196,18 @@ interface CreateOrderPayload {
   orderItems: OrderItem[];
 }
 
+interface OrderStockContextItem {
+  idProduct: string;
+  reference?: string;
+  stock?: number;
+  quantity: number;
+}
+
 export const createOrder = async (
-  payload: CreateOrderPayload
+  payload: CreateOrderPayload,
+  stockContext: OrderStockContextItem[] = []
 ): Promise<{ ok: boolean; order?: any; message?: string }> => {
   try {
-
 
     const response = await fetch(`${API_URL}`, {
       method: "POST",
@@ -208,22 +215,121 @@ export const createOrder = async (
       body: JSON.stringify(payload),
     });
 
-
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(`Error ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
+    const text = await response.text();
 
     
-    return { ok: true, order: data, message: "Orden creada correctamente" };
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+
+      const rawMessage =
+        data?.message ||
+        text ||
+        "No se pudo crear la orden.";
+
+      const friendlyMessage = formatOrderError(rawMessage, response.status, stockContext);
+
+      return {
+        ok: false,
+        message: friendlyMessage,
+      };
+    }
+
+    const orderData = data ?? JSON.parse(text);
+
+    return {
+      ok: true,
+      order: orderData,
+      message: "Orden creada correctamente",
+    };
+
   } catch (error) {
 
-    return { ok: false, message: error instanceof Error ? error.message : "Error al crear la orden" };
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado al crear la orden.",
+    };
   }
+};
+
+const formatOrderError = (
+  message: string,
+  status: number,
+  stockContext: OrderStockContextItem[] = []
+) => {
+
+  const msg = message.toLowerCase();
+
+  // TOKEN
+  if (status === 401 || msg.includes("token")) {
+    return "Tu sesión expiró. Por favor inicia sesión nuevamente.";
+  }
+
+  // STOCK
+  if (msg.includes("stock insuficiente")) {
+    const stockDetailMessage = buildStockDetailMessage(stockContext);
+    if (stockDetailMessage) return stockDetailMessage;
+
+    const disponibleMatch = message.match(/Disponible:\s*(\d+)/i);
+    const solicitadoMatch = message.match(/solicitado:\s*(\d+)/i);
+
+    const disponible = disponibleMatch ? disponibleMatch[1] : null;
+    const solicitado = solicitadoMatch ? solicitadoMatch[1] : null;
+
+    if (disponible && solicitado) {
+      return `Stock insuficiente para este producto. Disponible: ${disponible} unidades. Solicitaste: ${solicitado}. Por favor ajusta la cantidad.`;
+    }
+
+    return "Stock insuficiente para uno de los productos del carrito.";
+  }
+
+  // PRECIOS
+  if (msg.includes("no se encontraron precios")) {
+    return "Uno de los productos no tiene precio asignado para tu categoría. Contacta a tu vendedor.";
+  }
+
+  // ERROR GENERAL LIMPIO
+  return message
+    .replace(/^error\s*\d+:/i, "")
+    .replace(/^\{.*"message":"/i, "")
+    .replace(/"\s*,?\s*"statuscode".*\}$/i, "")
+    .replace(/error al crear la orden:/i, "")
+    .trim();
+};
+
+const buildStockDetailMessage = (items: OrderStockContextItem[]) => {
+  if (items.length === 0) return "";
+
+  const productsWithInsufficientStock = items.filter((item) => {
+    const stock = Number(item.stock ?? 0);
+    return stock <= 0 || item.quantity > stock;
+  });
+
+  const productsToShow =
+    productsWithInsufficientStock.length > 0 ? productsWithInsufficientStock : items;
+
+  const details = productsToShow.map((item) => {
+    const stock = Number(item.stock ?? 0);
+    const reference = item.reference || item.idProduct;
+
+    if (stock <= 0) {
+      return `ref ${reference} stock ${stock}, retirarlo`;
+    }
+
+    return `ref ${reference} stock ${stock} solicitaste ${item.quantity}, ajustarlo`;
+  });
+
+  const productLabel = details.length === 1 ? "el producto" : "los productos";
+
+  return `Stock insuficiente para ${productLabel} de ${details.join("; ")}.`;
 };
 
 //ENPOIND PARA ANULAR ORDEN

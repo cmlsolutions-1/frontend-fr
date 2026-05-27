@@ -92,7 +92,7 @@ export const ProductsInCart = () => {
                 onClick={() => removeProduct(product)}
                 className="underline mt-3 font-medium text-indigo-600 hover:text-indigo-500"
               >
-                Remover
+                Borrar
               </button>
             </div>
           </div>
