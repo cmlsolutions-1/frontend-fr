@@ -1,3 +1,10 @@
+# ----------- STAGE 1: BUILD -----------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
 
 COPY . .
 
@@ -8,8 +15,7 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 
-# ----------- STAGE 2: PRODUCTION -----------
-FROM nginx:alpine
+ FROM nginx:alpine
 
 # Elimina config default de nginx
 RUN rm -rf /etc/nginx/conf.d/default.conf
