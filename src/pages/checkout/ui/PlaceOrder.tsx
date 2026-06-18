@@ -5,8 +5,17 @@ import clsx from "clsx";
 import { useCartStore } from "@/store";
 import { currencyFormat } from "@/utils";
 import { createOrder } from "@/services/orders.service";
+import { getProductById } from "@/services/products.service";
 import { useAuthStore } from "@/store/auth-store";
+import type { CartProduct } from "@/interfaces";
 import { IoIosInformationCircle } from "react-icons/io";
+
+interface CartStockAdjustment {
+  reference: string;
+  previousQuantity: number;
+  currentStock: number;
+  action: "adjusted" | "removed";
+}
 
 export const PlaceOrder = () => {
   const navigate = useNavigate();
@@ -20,6 +29,7 @@ export const PlaceOrder = () => {
   const getCartWithOffers = useCartStore((state) => state.getCartWithOffers);
   const { itemsInCart, subTotal, tax, total, discount } = getCartWithOffers();
   const cart = useCartStore((state) => state.cart);
+  const setCart = useCartStore((state) => state.setCart);
   const clearCart = useCartStore((state) => state.clearCart);
 
   const user = useAuthStore((state) => state.user);
@@ -69,14 +79,28 @@ export const PlaceOrder = () => {
 
 
     try {
+      const { adjustedCart, adjustments } = await syncCartWithCurrentStock(cart);
+
+      if (adjustments.length > 0) {
+        setCart(adjustedCart);
+      }
+
+      if (adjustedCart.length === 0) {
+        setErrorMessage(
+          "No pudimos crear la orden porque los productos del carrito ya no tienen stock disponible. Retiramos esos productos del carrito."
+        );
+        setIsPlacingOrder(false);
+        return;
+      }
+
       // Preparar los items de la orden con la estructura correcta
-      const orderItems = cart.map(item => ({
+      const orderItems = adjustedCart.map(item => ({
         quantity: item.quantity,
         idProduct: item._id,
         priceCategory: clientPriceCategory
       }));
 
-      const stockContext = cart.map((item) => ({
+      const stockContext = adjustedCart.map((item) => ({
         quantity: item.quantity,
         idProduct: item._id,
         reference: item.referencia || item.codigo,
@@ -109,7 +133,11 @@ export const PlaceOrder = () => {
       
       
       if (result.order && result.order._id) {
-        navigate(`/orders/${result.order._id}`);
+        navigate(`/orders/${result.order._id}`, {
+          state: {
+            checkoutAdjustmentMessage: buildAdjustmentMessage(adjustments),
+          },
+        });
       } else {
         navigate("/orders");
       }
@@ -253,4 +281,63 @@ export const PlaceOrder = () => {
       </div>
     </div>
   );
+};
+
+const syncCartWithCurrentStock = async (cart: CartProduct[]) => {
+  const products = await Promise.all(
+    cart.map(async (item) => ({
+      cartItem: item,
+      currentProduct: await getProductById(item._id),
+    }))
+  );
+
+  const adjustments: CartStockAdjustment[] = [];
+  const adjustedCart: CartProduct[] = [];
+
+  products.forEach(({ cartItem, currentProduct }) => {
+    const currentStock = Number(currentProduct.stock ?? 0);
+    const reference = currentProduct.referencia || cartItem.referencia || cartItem.codigo;
+
+    if (currentStock <= 0) {
+      adjustments.push({
+        reference,
+        previousQuantity: cartItem.quantity,
+        currentStock,
+        action: "removed",
+      });
+      return;
+    }
+
+    const nextQuantity = Math.min(cartItem.quantity, currentStock);
+
+    if (nextQuantity !== cartItem.quantity) {
+      adjustments.push({
+        reference,
+        previousQuantity: cartItem.quantity,
+        currentStock,
+        action: "adjusted",
+      });
+    }
+
+    adjustedCart.push({
+      ...currentProduct,
+      quantity: nextQuantity,
+    });
+  });
+
+  return { adjustedCart, adjustments };
+};
+
+const buildAdjustmentMessage = (adjustments: CartStockAdjustment[]) => {
+  if (adjustments.length === 0) return "";
+
+  const details = adjustments.map((adjustment) => {
+    if (adjustment.action === "removed") {
+      return `ref ${adjustment.reference} se retiro porque tiene stock ${adjustment.currentStock}`;
+    }
+
+    return `ref ${adjustment.reference} paso de ${adjustment.previousQuantity} a ${adjustment.currentStock} unidades`;
+  });
+
+  return `Ajustamos tu pedido de acuerdo al inventario actual: ${details.join("; ")}.`;
 };

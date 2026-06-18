@@ -30,6 +30,7 @@ interface State {
   addProductTocart: (product: CartProduct) => void;
   updateProductQuantity: (product: CartProduct, quantity: number) => void;
   removeProduct: (product: CartProduct) => void;
+  setCart: (cart: CartProduct[]) => void;
   clearCart: () => void;
 
   // Métodos para ofertas
@@ -221,6 +222,10 @@ export const useCartStore = create<State>()(
         );
 
         set({ cart: updatedCartProducts });
+      },
+
+      setCart: (cart: CartProduct[]) => {
+        set({ cart });
       },
 
       clearCart: () => {

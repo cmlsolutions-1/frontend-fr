@@ -95,7 +95,7 @@ export const ProductsInCart: React.FC<Props> = ({ readOnly = false }) => {
           <div key={`${product._id}`} className="flex mb-5">
             <ProductImage
               src={imageUrl || fallbackImage}
-              width={100}
+              width={130}
               height={100}
               alt={product.detalle}
               className="mr-5 rounded"

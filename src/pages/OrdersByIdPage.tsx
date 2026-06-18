@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getOrderById } from "@/services/orders.service";
 import { currencyFormat } from "@/utils";
 import { OrderStatus, Title } from "@/components";
@@ -16,10 +16,14 @@ import { ArrowUp } from "lucide-react";
 export default function OrdersByIdPage() {
   const { _id } = useParams<{ _id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const checkoutAdjustmentMessage =
+    (location.state as { checkoutAdjustmentMessage?: string } | null)
+      ?.checkoutAdjustmentMessage || "";
  
 
 
@@ -205,6 +209,14 @@ export default function OrdersByIdPage() {
           <div className="bg-white rounded-xl shadow-xl p-7">
             <h2 className="text-2xl font-bold mb-2">Resumen de ordenes</h2>
             <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
+
+            {checkoutAdjustmentMessage && (
+              <div className="mb-5 rounded-md border border-yellow-200 bg-yellow-50 p-3">
+                <p className="text-sm font-medium text-yellow-800">
+                  {checkoutAdjustmentMessage}
+                </p>
+              </div>
+            )}
 
            
 

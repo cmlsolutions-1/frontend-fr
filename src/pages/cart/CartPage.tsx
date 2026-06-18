@@ -72,28 +72,19 @@ export const CartPage = () => {
             <OrderSummary />
 
             {hasStockErrors && (
-              <p className="mt-4 text-sm font-medium text-red-600">
-                Debes corregir las cantidades de los productos con stock insuficiente
-                antes de continuar al checkout.
+              <p className="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm font-medium text-yellow-800">
+                Al continuar, ajustaremos automaticamente las cantidades segun el
+                inventario actual y retiraremos los productos sin stock.
               </p>
             )}
 
             <div className="mt-5 mb-2 w-full">
-              {hasStockErrors ? (
-                <button
-                  disabled
-                  className="flex w-full cursor-not-allowed items-center justify-center rounded-md border border-transparent bg-gray-400 px-6 py-3 text-base font-medium text-white shadow-xs opacity-70"
-                >
-                  Checkout
-                </button>
-              ) : (
-                <Link
-                  className="flex items-center justify-center rounded-md border border-transparent bg-[#F2B318] px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]"
-                  to="/checkout"
-                >
-                  Checkout
-                </Link>
-              )}
+              <Link
+                className="flex items-center justify-center rounded-md border border-transparent bg-[#F2B318] px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-[#F4C048]"
+                to="/checkout"
+              >
+                Checkout
+              </Link>
             </div>
           </div>
         </div>
