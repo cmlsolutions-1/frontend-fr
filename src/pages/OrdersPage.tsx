@@ -10,6 +10,19 @@ import { Pagination } from "@/components";
 
 type StatusFilter = "ALL" | "PAID" | "UNPAID" | "CANCELED";
 
+const formatOrderDate = (date?: string) => {
+  if (!date) return "—";
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "—";
+
+  return parsedDate.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -167,6 +180,8 @@ export default function OrdersPage() {
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Nro. Pedido</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Nombre Cliente</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Fecha Creación</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Fecha Gestión</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Pedido Syscafe</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Estado</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Observaciones</th>
@@ -183,6 +198,12 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {user?.name && user?.lastName ? `${user.name} ${user.lastName}` : user?.name || user?.lastName || "Sin Nombre"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {formatOrderDate(order.createdDate)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {formatOrderDate(order.paymendDate)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                   {order.syscafeOrder || "N/A"}

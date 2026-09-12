@@ -4,12 +4,26 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { IoCardOutline, IoDownloadOutline } from "react-icons/io5";
 import { OrderPDFButton } from "@/components/orders/OrderPDFButton";
+import { OrderExcelButton } from "@/components/orders/OrderExcelButton";
 import { useAuthStore } from "@/store/auth-store";
 import { getOrdersBySalesPerson } from "@/services/orders.service";
 import { ArrowUp, Home } from "lucide-react";
 import { Pagination } from "@/components";
 
 type StatusFilter = "ALL" | "PAID" | "UNPAID" | "CANCELED";
+
+const formatOrderDate = (date?: string) => {
+  if (!date) return "—";
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "—";
+
+  return parsedDate.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
 export default function OrdersPageSalesPerson() {
   const navigate = useNavigate();
@@ -198,10 +212,13 @@ export default function OrdersPageSalesPerson() {
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Nro. Pedido</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Nombre Cliente</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Fecha Creación</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Fecha Gestión</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Pedido Syscafe</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Estado</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-black">Observaciones</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Opciones</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Excel</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Acciones</th>
             </tr>
           </thead>
@@ -219,6 +236,14 @@ export default function OrdersPageSalesPerson() {
                     : order.Client && (order.Client.name || order.Client.lastName)
                     ? order.Client.name || order.Client.lastName
                     : "Cliente no encontrado"}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {formatOrderDate(order.createdDate)}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {formatOrderDate(order.paymendDate)}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
@@ -264,6 +289,13 @@ export default function OrdersPageSalesPerson() {
                   <Link to={`/orders/${order._id}`} className="hover:underline">
                     Ver orden
                   </Link>
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <IoDownloadOutline />
+                    <OrderExcelButton order={order} />
+                  </div>
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">

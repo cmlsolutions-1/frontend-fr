@@ -12,7 +12,7 @@ import React from 'react';
 import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { MdDelete } from "react-icons/md";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Rocket } from "lucide-react";
 import { ArrowRightCircle } from "lucide-react";
 
 
@@ -117,7 +117,7 @@ const HomePage = () => {
 
         if (isMounted) {
           // Verificar si es un error de autenticación
-          if (err.isAuthError) { // <-- Verificar la propiedad isAuthError
+          if (isAuthError(err)) { // <-- Verificar la propiedad isAuthError
             // --- Manejar error de autenticación ---
             logout(); // Limpiar estado de autenticación
             localStorage.removeItem("authToken"); // Limpiar token si es necesario
@@ -228,19 +228,40 @@ const HomePage = () => {
       <button
         onClick={() => navigate("/newsProducts")}
         className="
-        mt-[95px] w-full flex items-center justify-between gap-3
-          bg-[#F4C048] text-white
-          px-4 py-3 rounded-lg shadow
-          hover:bg-[#f1b212] transition-colors
+          group relative mx-3 mt-[95px] w-[calc(100%-1.5rem)] overflow-hidden
+          rounded-2xl border border-white/10
+          bg-[#101214] text-white shadow-[0_18px_36px_rgba(0,0,0,0.22)]
+          focus:outline-none focus:ring-2 focus:ring-[#F4C048] focus:ring-offset-2
+          sm:mx-5 sm:w-[calc(100%-2.5rem)]
         "
+        aria-label="Ver nuevos productos"
       >
-        <span className="text-sm md:text-base font-semibold">
-          ¡Ven a conocer nuestros nuevos productos!
-        </span>
+        <span className="pointer-events-none absolute inset-0 home-news-scan" />
+        <span className="relative flex min-h-[58px] items-center gap-3 px-4 py-3 sm:px-6">
+          <span className="hidden shrink-0 items-center gap-2 rounded-full border border-[#F4C048]/40 bg-[#F4C048]/15 px-3 py-1 text-xs font-bold text-[#F4C048] shadow-[0_0_22px_rgba(244,192,72,0.22)] sm:inline-flex">
+            <Rocket className="h-4 w-4" />
+            Nuevo
+          </span>
 
-        <span className="flex items-center gap-1 text-xs md:text-sm font-medium underline">
-        <ShoppingBag className="w-4 h-4" /> 
-      </span>
+          <span className="relative min-w-0 flex-1 overflow-hidden">
+            <span className="home-news-carousel block h-8 sm:h-9">
+              <span className="home-news-slide">
+                ¡Ven a conocer nuestros nuevos productos!
+              </span>
+              <span className="home-news-slide">
+                Nuevas referencias disponibles para tu próximo pedido
+              </span>
+              <span className="home-news-slide">
+                Explora novedades antes de cerrar tu compra
+              </span>
+            </span>
+          </span>
+
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-md bg-[#F4C048] px-3 py-2 text-xs font-bold text-black shadow-[0_0_24px_rgba(244,192,72,0.35)] transition group-hover:bg-[#ffd86a] md:text-sm">
+            Ver ahora
+            <ArrowRightCircle className="h-4 w-4" />
+          </span>
+        </span>
       </button>
 
     <div className="container mx-auto px-4 py-6 space-y-6 ">
@@ -349,6 +370,10 @@ const HomePage = () => {
       )}
     </>
   );
+};
+
+const isAuthError = (error: unknown): error is { isAuthError: boolean } => {
+  return typeof error === "object" && error !== null && "isAuthError" in error;
 };
 
 export default HomePage;
