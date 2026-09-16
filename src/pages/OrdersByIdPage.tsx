@@ -21,9 +21,10 @@ export default function OrdersByIdPage() {
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigationState =
+    location.state as { checkoutAdjustmentMessage?: string; returnTo?: string } | null;
   const checkoutAdjustmentMessage =
-    (location.state as { checkoutAdjustmentMessage?: string } | null)
-      ?.checkoutAdjustmentMessage || "";
+    navigationState?.checkoutAdjustmentMessage || "";
  
 
 
@@ -44,7 +45,7 @@ export default function OrdersByIdPage() {
     }
   };
 
-  const backRoute = getBackRoute();
+  const backRoute = navigationState?.returnTo || getBackRoute();
 
 
   

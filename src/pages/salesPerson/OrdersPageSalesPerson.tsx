@@ -25,12 +25,20 @@ const formatOrderDate = (date?: string) => {
   });
 };
 
+const truncateText = (value?: string, maxLength = 20) => {
+  if (!value?.trim()) return "N/A";
+  return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+};
+
 export default function OrdersPageSalesPerson() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const returnTo = `/salesPerson/orders${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const { user } = useAuthStore();
 
   // botón flotante
@@ -48,23 +56,33 @@ export default function OrdersPageSalesPerson() {
   // cargar pedidos
   useEffect(() => {
     const loadOrders = async () => {
+      setLoading(true);
       try {
         if (!user || user.role !== "SalesPerson") {
           setOrders([]);
+          setTotalOrders(0);
+          setTotalPages(1);
           return;
         }
 
-        const result = await getOrdersBySalesPerson(user._id);
+        const result = await getOrdersBySalesPerson(user._id, {
+          page: currentPage,
+          limit: ORDERS_PER_PAGE,
+        });
         setOrders(result.ok ? result.orders : []);
+        setTotalOrders(result.total || result.orders?.length || 0);
+        setTotalPages(result.totalPages || 1);
       } catch {
         setOrders([]);
+        setTotalOrders(0);
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
     };
 
     loadOrders();
-  }, [user]);
+  }, [user, currentPage]);
 
   // scroll para botón flotante
   useEffect(() => {
@@ -129,13 +147,6 @@ export default function OrdersPageSalesPerson() {
       return fullName.includes(q);
     });
   }, [orders, statusFilter, clientQuery]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PER_PAGE));
-
-  const paginatedOrders = useMemo(() => {
-    const start = (currentPage - 1) * ORDERS_PER_PAGE;
-    return filteredOrders.slice(start, start + ORDERS_PER_PAGE);
-  }, [filteredOrders, currentPage]);
 
   if (loading) {
     return (
@@ -202,7 +213,7 @@ export default function OrdersPageSalesPerson() {
 
         {/* Contador */}
         <div className="ml-auto text-sm text-gray-500">
-          Mostrando {filteredOrders.length} pedido(s)
+          Mostrando {filteredOrders.length} de {totalOrders} pedido(s)
         </div>
       </div>
 
@@ -224,18 +235,26 @@ export default function OrdersPageSalesPerson() {
           </thead>
 
           <tbody>
-            {paginatedOrders.map((order) => (
+            {filteredOrders.map((order) => (
+              (() => {
+                const clientName =
+                  order.Client && order.Client.name && order.Client.lastName
+                    ? `${order.Client.name} ${order.Client.lastName}`
+                    : order.Client && (order.Client.name || order.Client.lastName)
+                    ? order.Client.name || order.Client.lastName
+                    : "Cliente no encontrado";
+
+                return (
               <tr key={order._id} className="border-b hover:bg-gray-100 transition-colors duration-200">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                   {order.orderNumber || order._id?.slice(-6) || "N/A"}
                 </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {order.Client && order.Client.name && order.Client.lastName
-                    ? `${order.Client.name} ${order.Client.lastName}`
-                    : order.Client && (order.Client.name || order.Client.lastName)
-                    ? order.Client.name || order.Client.lastName
-                    : "Cliente no encontrado"}
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[260px]"
+                  title={clientName}
+                >
+                  {truncateText(clientName, 32)}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -246,8 +265,11 @@ export default function OrdersPageSalesPerson() {
                   {formatOrderDate(order.paymendDate)}
                 </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
-                  {order.syscafeOrder || "N/A"}
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 max-w-[180px]"
+                  title={order.syscafeOrder || "N/A"}
+                >
+                  {truncateText(order.syscafeOrder)}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -278,7 +300,7 @@ export default function OrdersPageSalesPerson() {
                 <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
                   {order.addres?.trim() ? (
                     <span className="block truncate" title={order.addres}>
-                      {order.addres}
+                      {truncateText(order.addres, 32)}
                     </span>
                   ) : (
                     <span className="text-gray-400">—</span>
@@ -286,7 +308,11 @@ export default function OrdersPageSalesPerson() {
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
-                  <Link to={`/orders/${order._id}`} className="hover:underline">
+                  <Link
+                    to={`/orders/${order._id}`}
+                    state={{ returnTo }}
+                    className="hover:underline"
+                  >
                     Ver orden
                   </Link>
                 </td>
@@ -305,6 +331,8 @@ export default function OrdersPageSalesPerson() {
                   </div>
                 </td>
               </tr>
+                );
+              })()
             ))}
           </tbody>
         </table>

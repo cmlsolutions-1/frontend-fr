@@ -23,9 +23,15 @@ const formatOrderDate = (date?: string) => {
   });
 };
 
+const truncateText = (value?: string, maxLength = 20) => {
+  if (!value?.trim()) return "N/A";
+  return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+};
+
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const returnTo = `/orders${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -192,12 +198,22 @@ export default function OrdersPage() {
 
           <tbody>
             {paginatedOrders.map((order) => (
+              (() => {
+                const clientName =
+                  user?.name && user?.lastName
+                    ? `${user.name} ${user.lastName}`
+                    : user?.name || user?.lastName || "Sin Nombre";
+
+                return (
               <tr key={order._id} className="border-b hover:bg-gray-100 transition-colors duration-200">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                   {order.orderNumber || order._id?.slice(-6) || "N/A"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {user?.name && user?.lastName ? `${user.name} ${user.lastName}` : user?.name || user?.lastName || "Sin Nombre"}
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[260px]"
+                  title={clientName}
+                >
+                  {truncateText(clientName, 32)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {formatOrderDate(order.createdDate)}
@@ -205,8 +221,11 @@ export default function OrdersPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {formatOrderDate(order.paymendDate)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
-                  {order.syscafeOrder || "N/A"}
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 max-w-[180px]"
+                  title={order.syscafeOrder || "N/A"}
+                >
+                  {truncateText(order.syscafeOrder)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   <div className="flex items-center">
@@ -226,14 +245,22 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
                   {order.addres?.trim() ? (
-                    <span className="block truncate" title={order.addres}>{order.addres}</span>
+                    <span className="block truncate" title={order.addres}>
+                      {truncateText(order.addres, 32)}
+                    </span>
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 underline">
                   {order?._id ? (
-                    <Link to={`/orders/${order._id}`} className="hover:underline">Ver orden</Link>
+                    <Link
+                      to={`/orders/${order._id}`}
+                      state={{ returnTo }}
+                      className="hover:underline"
+                    >
+                      Ver orden
+                    </Link>
                   ) : (
                     <span className="text-gray-400 cursor-not-allowed">ID no disponible</span>
                   )}
@@ -245,6 +272,8 @@ export default function OrdersPage() {
                   </div>
                 </td>
               </tr>
+                );
+              })()
             ))}
           </tbody>
         </table>

@@ -30,11 +30,27 @@ const getAuthHeaders = () => {
   return headers;
 };
 
-//Admin obtiene todas las órdenes
+//Admin obtiene órdenes paginadas
+interface GetOrdersByUserParams {
+  page?: number;
+  limit?: number;
+}
 
-export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] }> => {
+export const getOrdersByUser = async ({
+  page = 1,
+  limit = 50,
+}: GetOrdersByUserParams = {}): Promise<{
+  ok: boolean;
+  orders: Order[];
+  total?: number;
+  totalPages?: number;
+}> => {
   try {
-    const response = await fetch(`${API_URL}`, {
+    const url = new URL(API_URL);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("limit", String(limit));
+
+    const response = await fetch(url.toString(), {
       method: "GET",
       headers: getAuthHeaders(), 
     });
@@ -43,13 +59,34 @@ export const getOrdersByUser = async (): Promise<{ ok: boolean; orders: Order[] 
 
     const data = await response.json();
 
+    if (Array.isArray(data)) {
+      const start = (page - 1) * limit;
+
+      return {
+        ok: true,
+        orders: data.slice(start, start + limit),
+        total: data.length,
+        totalPages: Math.max(1, Math.ceil(data.length / limit)),
+      };
+    }
+
+    const orders = data?.orders || data?.data || data?.items || data?.results || [];
+    const total = data?.total || data?.totalItems || data?.count || orders.length;
+    const totalPages =
+      data?.totalPages ||
+      data?.pages ||
+      data?.totalPage ||
+      Math.max(1, Math.ceil(total / limit));
+
     return {
       ok: true,
-      orders: Array.isArray(data) ? data : [],
+      orders: Array.isArray(orders) ? orders : [],
+      total,
+      totalPages,
     };
   } catch (error) {
  
-    return { ok: false, orders: [] };
+    return { ok: false, orders: [], total: 0, totalPages: 1 };
   }
 };
 
@@ -96,14 +133,27 @@ export const getOrdersByClient = async (
 
 // SalesPerson → obtiene órdenes de clientes asociados a un vendedor
 export const getOrdersBySalesPerson = async (
-  salesPersonId: string
-): Promise<{ ok: boolean; orders: Order[] }> => {
+  salesPersonId: string,
+  {
+    page = 1,
+    limit = 50,
+  }: GetOrdersByUserParams = {}
+): Promise<{
+  ok: boolean;
+  orders: Order[];
+  total?: number;
+  totalPages?: number;
+}> => {
   try {
     if (!salesPersonId) {
       throw new Error("ID de vendedor no válido");
     }
 
-    const response = await fetch(`${API_URL}/getOrdersBySalesPerson/${salesPersonId}`, {
+    const url = new URL(`${API_URL}/getOrdersBySalesPerson/${salesPersonId}`);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("limit", String(limit));
+
+    const response = await fetch(url.toString(), {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -114,19 +164,35 @@ export const getOrdersBySalesPerson = async (
     }
 
     const data = await response.json();
-   
-  
-    let ordersArray: Order[] = [];
+
     if (Array.isArray(data)) {
-      ordersArray = data;
-    } else if (data && typeof data === 'object') {
-      ordersArray = [data];
+      const start = (page - 1) * limit;
+
+      return {
+        ok: true,
+        orders: data.slice(start, start + limit),
+        total: data.length,
+        totalPages: Math.max(1, Math.ceil(data.length / limit)),
+      };
     }
-    
-    return { ok: true, orders: ordersArray };
+
+    const orders = data?.orders || data?.data || data?.items || data?.results || [];
+    const total = data?.total || data?.totalItems || data?.count || orders.length;
+    const totalPages =
+      data?.totalPages ||
+      data?.pages ||
+      data?.totalPage ||
+      Math.max(1, Math.ceil(total / limit));
+
+    return {
+      ok: true,
+      orders: Array.isArray(orders) ? orders : [],
+      total,
+      totalPages,
+    };
   } catch (error) {
 
-    return { ok: false, orders: [] };
+    return { ok: false, orders: [], total: 0, totalPages: 1 };
   }
 };
 

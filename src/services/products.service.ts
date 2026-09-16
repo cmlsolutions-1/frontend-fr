@@ -298,11 +298,37 @@ export const updateProductMaster = async (
 };
 
 
+export interface FavoriteProductsResponse {
+  products: Product[];
+  totalPages: number;
+  total: number;
+}
+
+const parseFavoriteProductsResponse = (data: any, page: number, limit: number): FavoriteProductsResponse => {
+  const products = Array.isArray(data)
+    ? data
+    : data?.products || data?.data || data?.items || data?.results || [];
+
+  const total = Number(data?.total ?? data?.totalItems ?? data?.count ?? products.length);
+  const totalPages = Number(
+    data?.totalPages ??
+    data?.pages ??
+    data?.pagination?.totalPages ??
+    Math.max(1, Math.ceil(total / limit))
+  );
+
+  return {
+    products: products as Product[],
+    total,
+    totalPages: Array.isArray(data) && products.length === limit ? page + 1 : totalPages,
+  };
+};
+
 // Obtener lista de favoritos
 export const listFavoriteProducts = async (params: {
   page: number;
   limit: number;
-}): Promise<Product[]> => {
+}): Promise<FavoriteProductsResponse> => {
   const { page, limit } = params;
 
   const url = new URL(`${API_URL}/products/list-favorite/`);
@@ -327,7 +353,7 @@ export const listFavoriteProducts = async (params: {
   }
 
   const data = await response.json();
-  return data as Product[];
+  return parseFavoriteProductsResponse(data, page, limit);
 };
 
 // Activar / desactivar “Nuevo” (isFavorite)
