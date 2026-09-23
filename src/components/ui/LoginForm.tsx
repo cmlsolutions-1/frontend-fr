@@ -46,12 +46,13 @@ export const LoginForm = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-white">
       {/* Imagen izquierda */}
-      <div className="relative w-full md:w-3/4 h-64 md:h-auto">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/imgsLogin/3.jpg)" }}
+      <div className="relative w-full md:w-3/4 h-64 md:h-auto overflow-hidden bg-neutral-950">
+        <img
+          src="/imgsLogin/2.png"
+          alt="Trabajador utilizando una herramienta de corte"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-5" />
+        <div className="absolute inset-0 bg-black/20" />
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 md:px-16 text-white text-center">
           <h1 className="text-3xl md:text-5xl font-bold mb-4">¡Bienvenido!</h1>
